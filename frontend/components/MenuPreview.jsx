@@ -90,7 +90,7 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
               <div
                 key={item._id}
                 onClick={() => router.push(`/product/${item._id}`)}
-                className="bg-white rounded-2xl border border-stone-200/90 p-3.5 sm:p-4 hover:border-stone-300 transition-all flex items-center gap-3.5 sm:gap-4 justify-between min-h-[120px] sm:min-h-[148px] group shadow-2xs cursor-pointer"
+                className="bg-white rounded-2xl border border-stone-200/90 p-4 sm:p-5 hover:border-stone-300 transition-all flex items-center gap-4 sm:gap-5 justify-between min-h-[148px] sm:min-h-[164px] group shadow-2xs cursor-pointer"
               >
                 {/* Food Image - opens image lightbox only */}
                 <button
@@ -99,7 +99,7 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
                     e.stopPropagation();
                     setLightboxItem(item);
                   }}
-                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden flex-none bg-stone-100 border border-stone-100 relative shadow-2xs block cursor-zoom-in text-left focus:outline-none focus:ring-2 focus:ring-[#1B3B2B]/40"
+                  className="w-32 h-32 sm:w-36 sm:h-36 rounded-xl overflow-hidden flex-none bg-stone-100 border border-stone-100 relative shadow-2xs block cursor-zoom-in text-left focus:outline-none focus:ring-2 focus:ring-[#1B3B2B]/40"
                   aria-label={`Enlarge photo of ${item.name}`}
                   title="Click to view larger image"
                 >
@@ -126,12 +126,12 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
 
                 <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
                   <div>
-                    <h3 className="font-bold text-sm text-[#11261B] truncate mb-0.5">
+                    <h3 className="font-bold text-base sm:text-lg text-[#11261B] line-clamp-1 mb-1 leading-snug">
                       <span className="group-hover:text-[#C85A17] transition-colors">
                         {item.name}
                       </span>
                     </h3>
-                    <div className="flex items-center gap-1 text-[11px] mb-1">
+                    <div className="flex items-center gap-1.5 text-xs sm:text-[13px] mb-1.5">
                       {item.ratingSummary?.reviewCount > 0 ? (
                         <>
                           <span className="text-amber-500">★</span>
@@ -139,34 +139,40 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
                             {item.ratingSummary.averageRating}
                           </span>
                           <span className="text-stone-400">
-                            ({item.ratingSummary.reviewCount})
+                            · {item.ratingSummary.reviewCount}
                           </span>
                         </>
                       ) : (
-                        <span className="text-stone-400 flex items-center gap-1 text-[10px]">
+                        <span className="text-stone-400 flex items-center gap-1 text-[11px]">
                           <span className="text-stone-300">★</span> New
                         </span>
                       )}
                     </div>
-                    <p className="text-stone-400 text-xs line-clamp-1 mb-2 leading-relaxed">
-                      {item.description}
+                    <p className="overflow-hidden text-stone-500 mb-2 text-xs sm:text-[12px] text-ellipsis whitespace-nowrap">
+                      {item.description.split("#")[0]}
                     </p>
 
                     {/* Half / Full Variant Selector */}
+                    <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
+                      {currency}
+                      {displayPrice}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mt-auto pt-1">
                     {isHalfFull && (
-                      <div className="flex items-center gap-1.5 mb-2">
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setItemVariant(item._id, "half");
                           }}
-                          className={`px-2 py-0.5 text-[10px] font-bold rounded-md border transition-all cursor-pointer ${currentVariant === "half"
-                              ? "bg-[#1B3B2B] text-white border-[#1B3B2B]"
-                              : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
+                          className={`px-2.5 py-1 text-sm font-semibold rounded-lg border transition-all cursor-pointer ${currentVariant === "half"
+                            ? "bg-[#1B3B2B] text-white border-[#1B3B2B]"
+                            : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
                             }`}
                         >
-                          Half: {currency}{item.halfPrice}
+                          Half
                         </button>
                         <button
                           type="button"
@@ -174,21 +180,15 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
                             e.stopPropagation();
                             setItemVariant(item._id, "full");
                           }}
-                          className={`px-2 py-0.5 text-[10px] font-bold rounded-md border transition-all cursor-pointer ${currentVariant === "full"
-                              ? "bg-[#1B3B2B] text-white border-[#1B3B2B]"
-                              : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
+                          className={`px-2.5 py-1 text-sm font-semibold rounded-lg border transition-all cursor-pointer ${currentVariant === "full"
+                            ? "bg-[#1B3B2B] text-white border-[#1B3B2B]"
+                            : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
                             }`}
                         >
-                          Full: {currency}{item.fullPrice}
+                          Full
                         </button>
                       </div>
                     )}
-                  </div>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="text-xs sm:text-sm font-extrabold text-[#1B3B2B]">
-                      {currency}
-                      {displayPrice}
-                    </span>
                     {isAvailable ? (
                       <button
                         type="button"
@@ -196,13 +196,12 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
                           e.stopPropagation();
                           addToCart(item._id, currentVariant);
                         }}
-                        className="px-3.5 py-1.5 rounded-full bg-[#1B3B2B] hover:bg-[#11261B] text-white text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
+                        className="ml-auto px-4 sm:px-4.5 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs sm:text-[13px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
                       >
-                        <span>ADD</span>
-                        <span className="text-xs">+</span>
+                        <span className="text-sm leading-none">+</span>
                       </button>
                     ) : (
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100">
+                      <span className="ml-auto text-xs font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100">
                         Unavailable
                       </span>
                     )}

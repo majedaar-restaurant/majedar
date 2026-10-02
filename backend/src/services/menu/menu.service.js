@@ -38,16 +38,29 @@ export const createMenuItem = async (data, file = null) => {
         image = await uploadImageBuffer(file.buffer, 'majedar/menu');
     }
 
-    const menuItem = new MenuItem({
-        name: data.name.trim(),
-        description: data.description.trim(),
-        price: data.price,
+    const pricingType = data.pricingType || 'single';
+    const itemData = {
+        name: data.name ? data.name.trim() : '',
+        description: data.description ? data.description.trim() : '',
+        pricingType,
         category: categoryDoc._id,
         image,
-        isVeg: data.isVeg !== undefined ? data.isVeg : true,
+        isVeg: data.isVeg !== undefined ? data.isVeg : (data.isVegetarian !== undefined ? data.isVegetarian : true),
         isBestseller: data.isBestseller !== undefined ? data.isBestseller : false,
         isAvailable: data.isAvailable !== undefined ? data.isAvailable : true,
-    });
+    };
+
+    if (pricingType === 'single') {
+        itemData.price = data.price;
+        itemData.halfPrice = null;
+        itemData.fullPrice = null;
+    } else {
+        itemData.price = null;
+        itemData.halfPrice = data.halfPrice;
+        itemData.fullPrice = data.fullPrice;
+    }
+
+    const menuItem = new MenuItem(itemData);
 
     await menuItem.save();
     return menuItem.populate('category', 'name slug isActive');
@@ -159,10 +172,27 @@ export const updateMenuItem = async (id, updates, file = null) => {
 
     if (updates.name !== undefined) item.name = updates.name.trim();
     if (updates.description !== undefined) item.description = updates.description.trim();
-    if (updates.price !== undefined) item.price = updates.price;
     if (updates.isVeg !== undefined) item.isVeg = updates.isVeg;
     if (updates.isBestseller !== undefined) item.isBestseller = updates.isBestseller;
     if (updates.isAvailable !== undefined) item.isAvailable = updates.isAvailable;
+
+    if (updates.pricingType !== undefined) {
+        item.pricingType = updates.pricingType;
+    }
+
+    if (item.pricingType === 'single') {
+        if (updates.price !== undefined) item.price = updates.price;
+        if (updates.pricingType === 'single') {
+            item.halfPrice = null;
+            item.fullPrice = null;
+        }
+    } else if (item.pricingType === 'half-full') {
+        if (updates.halfPrice !== undefined) item.halfPrice = updates.halfPrice;
+        if (updates.fullPrice !== undefined) item.fullPrice = updates.fullPrice;
+        if (updates.pricingType === 'half-full') {
+            item.price = null;
+        }
+    }
 
     // Handle image update
     if (file && file.buffer) {
@@ -198,3 +228,5 @@ export const deleteMenuItem = async (id) => {
     await MenuItem.findByIdAndDelete(id);
     return { id, name: item.name };
 };
+
+export const getPublicMenuItems = (options = {}) => getMenuItems({ ...options, isPublic: true });

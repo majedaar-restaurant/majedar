@@ -21,7 +21,14 @@ export async function getAdminPayments(params = {}) {
   const queryString = query.toString();
   const endpoint = `/admin/payments${queryString ? `?${queryString}` : ""}`;
   const res = await apiRequest(endpoint);
-  return res?.data || { attempts: [], total: 0, page: 1, limit: 50 };
+  return res?.data || {
+    records: [],
+    attempts: [],
+    total: 0,
+    page: 1,
+    limit: 50,
+    summary: { totalPaid: 0, cashTotal: 0, onlineTotal: 0, count: 0 },
+  };
 }
 
 /**

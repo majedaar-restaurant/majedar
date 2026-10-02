@@ -109,7 +109,6 @@ export default function MenuPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Menu Management"
         title="Menu"
         description="Manage dishes, prices, categories, and live availability."
         action={<Button href="/dashboard/menu/add">+ Add Menu Item</Button>}

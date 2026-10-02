@@ -89,12 +89,29 @@ export async function subscribeAdminPush() {
   await registerAdminServiceWorker();
   const registration = await navigator.serviceWorker.ready;
 
-  // 4. Subscribe with PushManager
+  // 4. Subscribe with PushManager (handle existing subscriptions safely)
   const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey,
-  });
+  let subscription;
+
+  try {
+    subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey,
+      });
+    }
+  } catch (subErr) {
+    // If mismatch or stale state, unsubscribe and try fresh
+    const staleSub = await registration.pushManager.getSubscription().catch(() => null);
+    if (staleSub) {
+      await staleSub.unsubscribe().catch(() => {});
+    }
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey,
+    });
+  }
 
   // 5. Send subscription to backend
   const subJson = subscription.toJSON();

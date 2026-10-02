@@ -1,6 +1,7 @@
 import { Message } from '../../models/Message.js';
 import { Customer } from '../../models/Customer.js';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../../utils/errors.js';
+import { getDateRangeFilter } from '../../utils/date-filter.js';
 
 /**
  * Submit an authenticated customer message with duplicate spam prevention.
@@ -58,7 +59,7 @@ export const createMessage = async ({
 /**
  * Get all messages for admin view with optional filtering and pagination.
  */
-export const getMessages = async ({ status, type, search } = {}) => {
+export const getMessages = async ({ status, type, search, datePreset, dateFrom, dateTo, page, limit } = {}) => {
     const filter = {};
 
     if (status) {
@@ -69,6 +70,15 @@ export const getMessages = async ({ status, type, search } = {}) => {
         filter.type = type;
     }
 
+    // Apply server-side date filter (Today, This Week, or Custom Range in IST)
+    const dateFilter = getDateRangeFilter({
+        datePreset,
+        dateFrom,
+        dateTo,
+        fieldName: 'createdAt',
+    });
+    Object.assign(filter, dateFilter);
+
     if (search && search.trim()) {
         const regex = new RegExp(search.trim(), 'i');
         filter.$or = [
@@ -76,14 +86,35 @@ export const getMessages = async ({ status, type, search } = {}) => {
             { email: regex },
             { phone: regex },
             { message: regex },
+            { orderNumber: regex },
         ];
     }
 
-    const messages = await Message.find(filter)
+    const hasPagination = page !== undefined || limit !== undefined;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 50));
+    const skip = (pageNum - 1) * limitNum;
+
+    let query = Message.find(filter)
         .populate('customer', 'name email phone')
         .sort({ createdAt: -1 });
 
-    return messages;
+    if (hasPagination) {
+        query = query.skip(skip).limit(limitNum);
+    }
+
+    const [messages, total] = await Promise.all([
+        query,
+        Message.countDocuments(filter),
+    ]);
+
+    return {
+        messages,
+        total,
+        page: hasPagination ? pageNum : 1,
+        limit: hasPagination ? limitNum : total,
+        totalPages: Math.ceil(total / (hasPagination ? limitNum : (total || 1))),
+    };
 };
 
 /**

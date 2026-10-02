@@ -1,17 +1,49 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import { Button, Modal, PageHeader, StatusBadge, useToast } from "@/components/ui";
-import { getAdminOrderById, updateAdminOrderStatus } from "@/lib/api/orders";
+import { getAdminOrderById, updateAdminOrderStatus, assignAdminOrderRider } from "@/lib/api/orders";
+import { getAdminRiders } from "@/lib/api/riders";
 import { getOrderPaymentAttempts } from "@/lib/api/payments";
 import { getWhatsAppShareUrl } from "@/lib/whatsapp";
+import { connectAdminSocket } from "@/lib/socket";
+import { alertManager } from "@/lib/alert-manager";
 
 const STATUS_LABELS = {
   placed: "Placed",
+  confirmed: "Confirmed",
   preparing: "Preparing",
+  ready_for_pickup: "Ready for Pickup",
+  out_for_delivery: "Out for Delivery",
   completed: "Completed",
   cancelled: "Cancelled",
+  expired: "Expired",
+};
+
+const VALID_NEXT_STATUSES = {
+  placed: [
+    { value: "confirmed", label: "Confirmed — Accept order" },
+    { value: "cancelled", label: "Cancelled — Reject/Void order" },
+  ],
+  confirmed: [
+    { value: "preparing", label: "Preparing — In kitchen" },
+    { value: "cancelled", label: "Cancelled — Void order" },
+  ],
+  preparing: [
+    { value: "ready_for_pickup", label: "Ready for Pickup — Food packed" },
+    { value: "cancelled", label: "Cancelled — Void order" },
+  ],
+  ready_for_pickup: [
+    { value: "out_for_delivery", label: "Out for Delivery — Handed to rider" },
+    { value: "cancelled", label: "Cancelled — Void order" },
+  ],
+  out_for_delivery: [
+    { value: "completed", label: "Completed — Delivered to customer" },
+  ],
+  completed: [],
+  cancelled: [],
+  expired: [],
 };
 
 const PAYMENT_LABELS = {
@@ -28,6 +60,39 @@ const PAYMENT_TONES = {
   pending: "pending",
   created: "neutral",
 };
+
+function AcceptanceCountdown({ deadline, onExpire }) {
+  const [secondsLeft, setSecondsLeft] = useState(() => {
+    if (!deadline) return 0;
+    return Math.max(0, Math.floor((new Date(deadline).getTime() - Date.now()) / 1000));
+  });
+
+  useEffect(() => {
+    if (!deadline) return;
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((new Date(deadline).getTime() - Date.now()) / 1000));
+      setSecondsLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(interval);
+        if (onExpire) onExpire();
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [deadline, onExpire]);
+
+  if (secondsLeft <= 0) {
+    return <span style={{ color: "var(--danger, #dc2626)", fontWeight: 700 }}>Expired</span>;
+  }
+
+  const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+  const secs = String(secondsLeft % 60).padStart(2, "0");
+
+  return (
+    <span style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--crimson, #b91c1c)" }}>
+      ⏱ {mins}:{secs}
+    </span>
+  );
+}
 
 function WhatsAppIcon({ size = 17 }) {
   return (
@@ -65,6 +130,14 @@ export default function OrderDetailPage({ params: paramsPromise }) {
   const [newOrderStatus, setNewOrderStatus] = useState("placed");
   const [newPaymentStatus, setNewPaymentStatus] = useState("pending");
   const [updating, setUpdating] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
+
+  // Rider modal
+  const [showRiderModal, setShowRiderModal] = useState(false);
+  const [activeRiders, setActiveRiders] = useState([]);
+  const [selectedRiderId, setSelectedRiderId] = useState("");
+  const [loadingRiders, setLoadingRiders] = useState(false);
+  const [assigningRider, setAssigningRider] = useState(false);
 
   const toast = useToast();
 
@@ -84,30 +157,166 @@ export default function OrderDetailPage({ params: paramsPromise }) {
     }
   };
 
-  useEffect(() => {
-    async function fetchOrderData() {
-      setLoading(true);
-      try {
-        const [orderData, attemptsData] = await Promise.all([
-          getAdminOrderById(id),
-          getOrderPaymentAttempts(id).catch(() => []),
-        ]);
-        setOrder(orderData);
-        setPaymentAttempts(Array.isArray(attemptsData) ? attemptsData : []);
-        if (orderData) {
-          setNewOrderStatus(orderData.orderStatus || "placed");
-          setNewPaymentStatus(orderData.paymentStatus || "pending");
-        }
-      } catch (err) {
-        toast(err?.message || "Failed to load order details", "danger");
-      } finally {
-        setLoading(false);
+  const fetchOrderData = useCallback(async () => {
+    try {
+      const [orderData, attemptsData] = await Promise.all([
+        getAdminOrderById(id),
+        getOrderPaymentAttempts(id).catch(() => []),
+      ]);
+      setOrder(orderData);
+      setPaymentAttempts(Array.isArray(attemptsData) ? attemptsData : []);
+      if (orderData) {
+        setNewOrderStatus(orderData.orderStatus || "placed");
+        setNewPaymentStatus(orderData.paymentStatus || "pending");
+        setIsExpired(orderData.acceptanceDeadline ? new Date(orderData.acceptanceDeadline).getTime() <= Date.now() : false);
       }
+    } catch (err) {
+      toast(err?.message || "Failed to load order details", "danger");
+    } finally {
+      setLoading(false);
     }
+  }, [id, toast]);
+
+  useEffect(() => {
     if (id) {
       fetchOrderData();
     }
-  }, [id, toast]);
+  }, [id, fetchOrderData]);
+
+  // Real-time synchronization for this order
+  useEffect(() => {
+    if (!id) return;
+
+    const socket = connectAdminSocket();
+    if (!socket) return;
+
+    socket.emit("join:order", { orderId: id });
+
+    const handleConfirmed = (payload) => {
+      if (payload?.orderId !== id) return;
+      alertManager.removePendingOrder(id);
+      setOrder((prev) => (prev ? { ...prev, orderStatus: "confirmed", confirmedAt: payload.confirmedAt } : prev));
+      setNewOrderStatus("confirmed");
+    };
+
+    const handleStatusChanged = (payload) => {
+      if (payload?.orderId !== id) return;
+      if (payload.orderStatus !== "placed") {
+        alertManager.removePendingOrder(id);
+      }
+      setOrder((prev) => (prev ? { ...prev, orderStatus: payload.orderStatus } : prev));
+      setNewOrderStatus(payload.orderStatus);
+    };
+
+    const handleRiderAssigned = (payload) => {
+      if (payload?.orderId !== id) return;
+      fetchOrderData();
+    };
+
+    const handleExpired = (payload) => {
+      if (payload?.orderId !== id) return;
+      alertManager.removePendingOrder(id);
+      setOrder((prev) => (prev ? { ...prev, orderStatus: "expired", expiredAt: payload.expiredAt } : prev));
+      setNewOrderStatus("expired");
+    };
+
+    const handleCancelled = (payload) => {
+      if (payload?.orderId !== id) return;
+      alertManager.removePendingOrder(id);
+      setOrder((prev) => (prev ? { ...prev, orderStatus: "cancelled", cancelledAt: payload.cancelledAt } : prev));
+      setNewOrderStatus("cancelled");
+    };
+
+    const handleReconnect = () => {
+      socket.emit("join:order", { orderId: id });
+      fetchOrderData();
+    };
+
+    socket.on("order:confirmed", handleConfirmed);
+    socket.on("order:status_changed", handleStatusChanged);
+    socket.on("rider:assigned", handleRiderAssigned);
+    socket.on("order:expired", handleExpired);
+    socket.on("order:cancelled", handleCancelled);
+    socket.on("connect", handleReconnect);
+
+    return () => {
+      socket.off("order:confirmed", handleConfirmed);
+      socket.off("order:status_changed", handleStatusChanged);
+      socket.off("rider:assigned", handleRiderAssigned);
+      socket.off("order:expired", handleExpired);
+      socket.off("order:cancelled", handleCancelled);
+      socket.off("connect", handleReconnect);
+      socket.emit("leave:order", { orderId: id });
+    };
+  }, [id, fetchOrderData]);
+
+  const handleQuickConfirm = async () => {
+    setUpdating(true);
+    alertManager.removePendingOrder(id);
+    try {
+      const updated = await updateAdminOrderStatus(id, { orderStatus: "confirmed" });
+      setOrder(updated);
+      toast("Order confirmed successfully within acceptance window!", "success");
+    } catch (err) {
+      toast(err?.message || "Failed to confirm order", "danger");
+      await fetchOrderData();
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!window.confirm(`Are you sure you want to cancel Order #${order.orderNumber}?`)) return;
+    setUpdating(true);
+    alertManager.removePendingOrder(id);
+    try {
+      const updated = await updateAdminOrderStatus(id, { orderStatus: "cancelled" });
+      setOrder(updated);
+      toast("Order cancelled successfully", "neutral");
+    } catch (err) {
+      toast(err?.message || "Failed to cancel order", "danger");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const openRiderModal = async () => {
+    setShowRiderModal(true);
+    setLoadingRiders(true);
+    try {
+      const riders = await getAdminRiders({ isActive: true });
+      setActiveRiders(riders);
+      if (order.rider?._id) {
+        setSelectedRiderId(order.rider._id);
+      } else if (riders.length > 0) {
+        setSelectedRiderId(riders[0]._id);
+      }
+    } catch (err) {
+      toast(err?.message || "Failed to load active riders", "danger");
+    } finally {
+      setLoadingRiders(false);
+    }
+  };
+
+  const handleAssignRiderSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedRiderId) {
+      toast("Please select an active rider", "danger");
+      return;
+    }
+
+    setAssigningRider(true);
+    try {
+      const updated = await assignAdminOrderRider(id, selectedRiderId);
+      setOrder(updated);
+      toast("Delivery rider assigned successfully", "success");
+      setShowRiderModal(false);
+    } catch (err) {
+      toast(err?.message || "Failed to assign rider", "danger");
+    } finally {
+      setAssigningRider(false);
+    }
+  };
 
   const handleUpdateStatus = async () => {
     setUpdating(true);
@@ -164,16 +373,16 @@ export default function OrderDetailPage({ params: paramsPromise }) {
 
   const formattedDate = order.createdAt
     ? new Date(order.createdAt).toLocaleDateString("en-IN", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
     : "—";
 
-  const isTerminalState = order.orderStatus === "completed" || order.orderStatus === "cancelled";
+  const isTerminalState = order.orderStatus === "completed" || order.orderStatus === "cancelled" || order.orderStatus === "expired";
   const isOnlinePayment = order.paymentMethod === "razorpay";
 
   return (
@@ -205,12 +414,112 @@ export default function OrderDetailPage({ params: paramsPromise }) {
             <Button variant="secondary" type="button" onClick={() => window.print()}>
               <PrintIcon /> Print Order
             </Button>
-            <Button type="button" onClick={() => setShowStatusModal(true)}>
-              Update Status
-            </Button>
+            {!isTerminalState && (
+              <Button type="button" onClick={() => setShowStatusModal(true)}>
+                Update Status
+              </Button>
+            )}
           </>
         }
       />
+
+      {order.orderStatus === "placed" && (
+        <div
+          style={{
+            background: "#fff1f2",
+            border: "1px solid #fecdd3",
+            borderRadius: "8px",
+            padding: "16px 20px",
+            marginBottom: "20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "14px",
+          }}
+        >
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+              <span
+                style={{
+                  background: "var(--crimson, #b91c1c)",
+                  color: "#fff",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                NEW ORDER
+              </span>
+              <strong style={{ fontSize: "15px", color: "#881337" }}>
+                Order #{order.orderNumber}
+              </strong>
+            </div>
+            <p className="muted" style={{ margin: 0, fontSize: "13px" }}>
+              Waiting for confirmation
+            </p>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+            <div style={{ fontSize: "18px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <AcceptanceCountdown
+                deadline={order.acceptanceDeadline}
+                onExpire={() => {
+                  setIsExpired(true);
+                  fetchOrderData();
+                }}
+              />
+              <span style={{ fontSize: "12px", color: "var(--muted)" }}>remaining</span>
+            </div>
+            <Button
+              type="button"
+              onClick={handleQuickConfirm}
+              disabled={updating || isExpired || order.orderStatus === "expired"}
+              style={{
+                background: (isExpired || order.orderStatus === "expired")
+                  ? "#9ca3af"
+                  : "var(--forest-deep, #14532d)",
+                cursor: (isExpired || order.orderStatus === "expired")
+                  ? "not-allowed"
+                  : "pointer",
+              }}
+            >
+              {updating ? "Confirming..." : "Confirm Order"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCancelOrder}
+              disabled={updating}
+              style={{
+                color: "var(--crimson, #b91c1c)",
+                borderColor: "#fecdd3",
+                background: "#ffffff",
+              }}
+            >
+              Cancel Order
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {order.orderStatus === "expired" && (
+        <div
+          style={{
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: "8px",
+            padding: "14px 18px",
+            marginBottom: "20px",
+            color: "#991b1b",
+            fontSize: "13px",
+          }}
+        >
+          <strong>⚠️ Order Expired:</strong> This order was not confirmed within the 3-minute acceptance window and has automatically expired ({order.expiryReason || "admin_acceptance_timeout"}).
+        </div>
+      )}
 
       <div className="detail-layout">
         {/* Left column */}
@@ -447,6 +756,69 @@ export default function OrderDetailPage({ params: paramsPromise }) {
             </div>
           </article>
 
+          {/* Assigned Rider card */}
+          <article className="surface detail-card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+              <p className="detail-section-title" style={{ margin: 0 }}>
+                🚴 Assigned Rider
+              </p>
+              {!isTerminalState && (
+                <button
+                  type="button"
+                  className="row-action"
+                  onClick={openRiderModal}
+                  style={{ fontWeight: 600, fontSize: "12px", cursor: "pointer" }}
+                >
+                  {order.rider ? "Change Rider" : "Assign Rider"}
+                </button>
+              )}
+            </div>
+
+            {order.rider ? (
+              <div
+                style={{
+                  padding: "12px",
+                  background: "var(--bg-subtle, #faf8f5)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--line-soft)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <strong style={{ fontSize: "14px" }}>{order.rider.name}</strong>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      background: "var(--forest-soft, #f0fdf4)",
+                      color: "var(--forest-deep, #14532d)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Assigned
+                  </span>
+                </div>
+                <div style={{ marginTop: "6px" }}>
+                  <a
+                    href={`tel:${order.rider.phone}`}
+                    style={{
+                      color: "var(--crimson)",
+                      textDecoration: "none",
+                      fontSize: "13px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    +91 {order.rider.phone}
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: "10px 0", color: "var(--muted)", fontSize: "13px", fontStyle: "italic" }}>
+                No delivery rider assigned yet.
+              </div>
+            )}
+          </article>
+
           {/* Timeline & Actions */}
           <article className="surface detail-card">
             <p className="detail-section-title">Order Timeline</p>
@@ -515,7 +887,7 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                 <div style={{ padding: "8px 12px", background: "var(--bg-subtle)", borderRadius: "6px", fontSize: "12px" }}>
                   <strong>{STATUS_LABELS[order.orderStatus] || order.orderStatus}</strong>
                   <p className="muted" style={{ margin: "4px 0 0 0", fontSize: "11px" }}>
-                    This order is in a terminal state ({order.orderStatus}) and cannot be transitioned further.
+                    This order is in a terminal state ({STATUS_LABELS[order.orderStatus]}) and cannot be transitioned further.
                   </p>
                 </div>
               ) : (
@@ -524,20 +896,14 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                   onChange={(e) => setNewOrderStatus(e.target.value)}
                   disabled={updating}
                 >
-                  {order.orderStatus === "placed" && (
-                    <>
-                      <option value="placed">Placed — Order received</option>
-                      <option value="preparing">Preparing — In kitchen</option>
-                      <option value="cancelled">Cancelled — Order voided</option>
-                    </>
-                  )}
-                  {order.orderStatus === "preparing" && (
-                    <>
-                      <option value="preparing">Preparing — In kitchen</option>
-                      <option value="completed">Completed — Fulfilled</option>
-                      <option value="cancelled">Cancelled — Order voided</option>
-                    </>
-                  )}
+                  <option value={order.orderStatus}>
+                    {STATUS_LABELS[order.orderStatus]} (Current)
+                  </option>
+                  {VALID_NEXT_STATUSES[order.orderStatus]?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               )}
             </label>
@@ -579,12 +945,76 @@ export default function OrderDetailPage({ params: paramsPromise }) {
               </Button>
               <Button
                 onClick={handleUpdateStatus}
-                disabled={updating || (isTerminalState && isOnlinePayment)}
+                disabled={updating || isTerminalState}
               >
                 {updating ? "Updating..." : "Save Status"}
               </Button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Assign/Change Rider Modal */}
+      {showRiderModal && (
+        <Modal
+          title={order.rider ? "Change Delivery Rider" : "Assign Delivery Rider"}
+          onClose={() => !assigningRider && setShowRiderModal(false)}
+        >
+          <form onSubmit={handleAssignRiderSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <p style={{ color: "var(--muted)", fontSize: "13px", margin: 0 }}>
+              Select an active delivery rider to fulfill Order #{order.orderNumber}.
+            </p>
+
+            {loadingRiders ? (
+              <div style={{ padding: "20px", textAlign: "center", color: "var(--muted)" }}>
+                Loading available riders...
+              </div>
+            ) : activeRiders.length === 0 ? (
+              <div style={{ padding: "16px", background: "#fef2f2", borderRadius: "6px", color: "#991b1b", fontSize: "13px" }}>
+                No active riders found. Please add or activate a rider in the{" "}
+                <Link href="/dashboard/riders" style={{ textDecoration: "underline", fontWeight: 600 }}>
+                  Riders section
+                </Link>.
+              </div>
+            ) : (
+              <div>
+                <label style={{ display: "block", marginBottom: "6px", fontWeight: 500, fontSize: "14px" }}>
+                  Available Active Riders
+                </label>
+                <select
+                  className="input"
+                  value={selectedRiderId}
+                  onChange={(e) => setSelectedRiderId(e.target.value)}
+                  disabled={assigningRider}
+                  required
+                  style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--line-soft)" }}
+                >
+                  {activeRiders.map((r) => (
+                    <option key={r._id} value={r._id}>
+                      {r.name} (+91 {r.phone})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "12px" }}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowRiderModal(false)}
+                disabled={assigningRider}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={assigningRider || activeRiders.length === 0}
+              >
+                {assigningRider ? "Assigning..." : "Confirm Assignment"}
+              </Button>
+            </div>
+          </form>
         </Modal>
       )}
     </>

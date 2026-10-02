@@ -183,7 +183,6 @@ export default function EditMenuItemPage({ params: paramsPromise }) {
   return (
     <>
       <PageHeader
-        eyebrow="Menu Management"
         title={`Edit: ${name}`}
         description={`Editing dish configuration and pricing.`}
       />

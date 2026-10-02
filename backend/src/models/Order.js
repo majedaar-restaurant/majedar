@@ -170,9 +170,45 @@ const orderSchema = new mongoose.Schema(
         },
         orderStatus: {
             type: String,
-            enum: ['placed', 'preparing', 'completed', 'cancelled'],
+            enum: [
+                'placed',
+                'confirmed',
+                'preparing',
+                'ready_for_pickup',
+                'out_for_delivery',
+                'completed',
+                'cancelled',
+                'expired',
+            ],
             default: 'placed',
             index: true,
+        },
+        rider: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Rider',
+            default: null,
+            index: true,
+        },
+        acceptedAt: {
+            type: Date,
+            default: null,
+        },
+        confirmedAt: {
+            type: Date,
+            default: null,
+        },
+        acceptanceDeadline: {
+            type: Date,
+            default: null,
+            index: true,
+        },
+        expiredAt: {
+            type: Date,
+            default: null,
+        },
+        expiryReason: {
+            type: String,
+            default: null,
         },
         pushNotificationSent: {
             type: Boolean,
@@ -200,5 +236,6 @@ const orderSchema = new mongoose.Schema(
 // Indexes for fast lookup
 orderSchema.index({ customer: 1, createdAt: -1 });
 orderSchema.index({ orderStatus: 1, createdAt: -1 });
+orderSchema.index({ orderStatus: 1, acceptanceDeadline: 1 });
 
 export const Order = mongoose.model('Order', orderSchema);

@@ -105,13 +105,16 @@ export async function deleteSubscription({ endpoint, adminId = null }) {
  * @returns {Promise<{ sent: number, failed: number, purged: number }>}
  */
 export async function sendAdminPushNotification({ type, title, body, url, data = {} }) {
+    console.log(`[PUSH] Notification triggered: type=${type}, title="${title}"`);
+
     if (!ensureVapidDetails()) {
-        console.warn('[AdminPush] VAPID keys not configured; push delivery skipped.');
+        console.warn('[PUSH] VAPID keys not configured; push delivery skipped.');
         return { sent: 0, failed: 0, purged: 0 };
     }
 
     try {
         const subscriptions = await AdminPushSubscription.find({});
+        console.log(`[PUSH] Found ${subscriptions.length} active admin subscription(s) in DB`);
         if (!subscriptions.length) {
             return { sent: 0, failed: 0, purged: 0 };
         }
@@ -119,8 +122,8 @@ export async function sendAdminPushNotification({ type, title, body, url, data =
         const payload = JSON.stringify({
             title: title || 'Majedaar Restaurant',
             body: body || '',
-            icon: '/brand/logo-mark.svg',
-            badge: '/brand/logo-mark.svg',
+            icon: '/brand/logo-full.png',
+            badge: '/brand/logo-full.png',
             data: {
                 url: url || '/dashboard',
                 type,
@@ -148,16 +151,20 @@ export async function sendAdminPushNotification({ type, title, body, url, data =
                     },
                 };
 
+                const truncatedEndpoint = sub.endpoint?.length > 50 ? `${sub.endpoint.slice(0, 45)}...` : sub.endpoint;
+
                 try {
-                    await webpush.sendNotification(pushSub, payload, pushOptions);
+                    console.log(`[PUSH] Attempting send to: ${truncatedEndpoint}`);
+                    const pushResult = await webpush.sendNotification(pushSub, payload, pushOptions);
                     sentCount++;
+                    console.log(`[PUSH] Send SUCCEEDED (status: ${pushResult.statusCode}) for: ${truncatedEndpoint}`);
                 } catch (err) {
                     failCount++;
+                    console.error(`[PUSH] Send FAILED (status: ${err.statusCode || 'N/A'}, message: ${err.message}) for: ${truncatedEndpoint}`);
                     // 410 Gone or 404 Not Found indicates subscription expired or revoked
                     if (err.statusCode === 410 || err.statusCode === 404) {
                         staleEndpointIds.push(sub._id);
-                    } else {
-                        console.error(`[AdminPush] Error sending push to endpoint:`, err.message);
+                        console.warn(`[PUSH] Stale subscription marked for removal: ${sub._id}`);
                     }
                 }
             })
@@ -167,11 +174,13 @@ export async function sendAdminPushNotification({ type, title, body, url, data =
         if (staleEndpointIds.length) {
             const delRes = await AdminPushSubscription.deleteMany({ _id: { $in: staleEndpointIds } });
             purgedCount = delRes.deletedCount || 0;
+            console.log(`[PUSH] Removed ${purgedCount} expired/invalid subscription(s) from database.`);
         }
 
+        console.log(`[PUSH] Summary: ${sentCount} sent, ${failCount} failed, ${purgedCount} purged`);
         return { sent: sentCount, failed: failCount, purged: purgedCount };
     } catch (globalErr) {
-        console.error('[AdminPush] Unhandled error in sendAdminPushNotification:', globalErr.message);
+        console.error('[PUSH] Unhandled error in sendAdminPushNotification:', globalErr.message);
         return { sent: 0, failed: 0, purged: 0 };
     }
 }

@@ -36,7 +36,7 @@ export default function PlaceOrder() {
   const [zones, setZones] = useState([]);
   const [loadingZones, setLoadingZones] = useState(true);
   const [selectedZoneId, setSelectedZoneId] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [paymentMethod, setPaymentMethod] = useState("cod");
   const [submitting, setSubmitting] = useState(false);
   const [orderError, setOrderError] = useState("");
 
@@ -626,39 +626,27 @@ export default function PlaceOrder() {
 
               {/* Payment Method Selector */}
               <div className="space-y-3 mb-6">
-                {/* 1. Online Payment Option (Razorpay) */}
+                {/* 1. Online Payment Option (Razorpay) — Temporarily Disabled */}
                 <div
-                  onClick={() => setPaymentMethod("razorpay")}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === "razorpay"
-                    ? "border-[#1B3B2B] bg-[#E3EFE8]/25 shadow-2xs"
-                    : "border-stone-200 hover:border-stone-300 bg-white"
-                    }`}
+                  className="p-4 rounded-2xl border-2 border-stone-200 bg-stone-50/80 cursor-not-allowed opacity-75 transition-all select-none"
+                  title="Online payment is currently unavailable. Please choose Cash on Delivery."
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
-                      <span
-                        className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center flex-none ${paymentMethod === "razorpay"
-                          ? "border-[#1B3B2B] bg-[#1B3B2B]"
-                          : "border-stone-300 bg-white"
-                          }`}
-                      >
-                        {paymentMethod === "razorpay" && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                        )}
-                      </span>
+                      <span className="mt-0.5 w-4 h-4 rounded-full border border-stone-300 bg-stone-100 flex items-center justify-center flex-none" />
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-[#11261B]">
-                            Online Secured Payment
+                          <span className="text-xs font-bold text-stone-500">
+                            Online Payment
                           </span>
                         </div>
-                        <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
-                          UPI (GPay, PhonePe, Paytm), Cards, Net Banking &amp; Wallets
+                        <p className="text-[11px] text-stone-400 mt-0.5 leading-relaxed">
+                          UPI (GPay, PhonePe, Paytm), Cards &amp; Net Banking
                         </p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full flex-none">
-                      Instant
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-100/90 border border-amber-200 px-2 py-0.5 rounded-full flex-none">
+                      Online Payment — Coming Soon
                     </span>
                   </div>
                 </div>

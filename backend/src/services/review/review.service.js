@@ -2,11 +2,13 @@ import mongoose from 'mongoose';
 import { Review } from '../../models/Review.js';
 import { Order } from '../../models/Order.js';
 import { MenuItem } from '../../models/MenuItem.js';
+import { Customer } from '../../models/Customer.js';
 import {
     BadRequestError,
     NotFoundError,
     ForbiddenError,
 } from '../../utils/errors.js';
+import { getDateRangeFilter } from '../../utils/date-filter.js';
 
 /**
  * Create a new customer review for a menu item in a completed order.
@@ -145,7 +147,7 @@ export const getMenuItemRatingSummary = async (menuItemId) => {
 /**
  * Admin: View reviews across the platform.
  */
-export const getAdminReviews = async ({ page = 1, limit = 20, rating } = {}) => {
+export const getAdminReviews = async ({ page = 1, limit = 20, rating, search, datePreset, dateFrom, dateTo } = {}) => {
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
     const skip = (pageNum - 1) * limitNum;
@@ -153,6 +155,49 @@ export const getAdminReviews = async ({ page = 1, limit = 20, rating } = {}) => 
     const filter = {};
     if (rating !== undefined) {
         filter.rating = Number(rating);
+    }
+
+    // Apply server-side date filter (Today, This Week, or Custom Range in IST)
+    const dateFilter = getDateRangeFilter({
+        datePreset,
+        dateFrom,
+        dateTo,
+        fieldName: 'createdAt',
+    });
+    Object.assign(filter, dateFilter);
+
+    // Apply search on Customer and Menu Item
+    if (search && search.trim()) {
+        const s = search.trim();
+        const escaped = s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const regex = new RegExp(escaped, 'i');
+
+        let customerIds = [];
+        let menuItemIds = [];
+        try {
+            const [matchingCusts, matchingItems] = await Promise.all([
+                Customer.find({
+                    $or: [
+                        { name: regex },
+                        { email: regex },
+                        { phone: regex },
+                        { firstName: regex },
+                        { lastName: regex },
+                    ],
+                }).select('_id').lean(),
+                MenuItem.find({ name: regex }).select('_id').lean(),
+            ]);
+            customerIds = (matchingCusts || []).map((c) => c._id);
+            menuItemIds = (matchingItems || []).map((m) => m._id);
+        } catch (_) {}
+
+        filter.$and = filter.$and || [];
+        filter.$and.push({
+            $or: [
+                ...(customerIds.length > 0 ? [{ customer: { $in: customerIds } }] : []),
+                ...(menuItemIds.length > 0 ? [{ menuItem: { $in: menuItemIds } }] : []),
+            ],
+        });
     }
 
     const [reviews, totalReviews] = await Promise.all([
@@ -169,6 +214,9 @@ export const getAdminReviews = async ({ page = 1, limit = 20, rating } = {}) => 
 
     return {
         reviews,
+        total: totalReviews,
+        page: pageNum,
+        limit: limitNum,
         pagination: {
             page: pageNum,
             limit: limitNum,

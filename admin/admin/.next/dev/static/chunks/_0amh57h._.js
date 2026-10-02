@@ -123,7 +123,6 @@ function MenuPage() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PageHeader"], {
-                eyebrow: "Menu Management",
                 title: "Menu",
                 description: "Manage dishes, prices, categories, and live availability.",
                 action: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -131,7 +130,7 @@ function MenuPage() {
                     children: "+ Add Menu Item"
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/menu/page.js",
-                    lineNumber: 115,
+                    lineNumber: 114,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
@@ -159,12 +158,12 @@ function MenuPage() {
                                     d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                    lineNumber: 131,
+                                    lineNumber: 130,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                lineNumber: 120,
+                                lineNumber: 119,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -174,13 +173,13 @@ function MenuPage() {
                                 onChange: (e)=>setSearch(e.target.value)
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                lineNumber: 133,
+                                lineNumber: 132,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/menu/page.js",
-                        lineNumber: 119,
+                        lineNumber: 118,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -190,7 +189,7 @@ function MenuPage() {
                                 children: "Category"
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                lineNumber: 142,
+                                lineNumber: 141,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -202,7 +201,7 @@ function MenuPage() {
                                         children: "All Categories"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 147,
+                                        lineNumber: 146,
                                         columnNumber: 13
                                     }, this),
                                     categories.map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -210,19 +209,19 @@ function MenuPage() {
                                             children: c.name
                                         }, c._id, false, {
                                             fileName: "[project]/app/dashboard/menu/page.js",
-                                            lineNumber: 149,
+                                            lineNumber: 148,
                                             columnNumber: 15
                                         }, this))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                lineNumber: 143,
+                                lineNumber: 142,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/menu/page.js",
-                        lineNumber: 141,
+                        lineNumber: 140,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -232,7 +231,7 @@ function MenuPage() {
                                 children: "Available"
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                lineNumber: 157,
+                                lineNumber: 156,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -244,7 +243,7 @@ function MenuPage() {
                                         children: "All"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 162,
+                                        lineNumber: 161,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -252,7 +251,7 @@ function MenuPage() {
                                         children: "Available"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 163,
+                                        lineNumber: 162,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -260,19 +259,19 @@ function MenuPage() {
                                         children: "Unavailable"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 164,
+                                        lineNumber: 163,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                lineNumber: 158,
+                                lineNumber: 157,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/menu/page.js",
-                        lineNumber: 156,
+                        lineNumber: 155,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -282,7 +281,7 @@ function MenuPage() {
                                 children: "Featured"
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                lineNumber: 169,
+                                lineNumber: 168,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -294,7 +293,7 @@ function MenuPage() {
                                         children: "All"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 174,
+                                        lineNumber: 173,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -302,7 +301,7 @@ function MenuPage() {
                                         children: "Bestseller"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 175,
+                                        lineNumber: 174,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -310,25 +309,25 @@ function MenuPage() {
                                         children: "Standard"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 176,
+                                        lineNumber: 175,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                lineNumber: 170,
+                                lineNumber: 169,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/menu/page.js",
-                        lineNumber: 168,
+                        lineNumber: 167,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/dashboard/menu/page.js",
-                lineNumber: 118,
+                lineNumber: 117,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -342,7 +341,7 @@ function MenuPage() {
                     children: "Loading menu items..."
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/menu/page.js",
-                    lineNumber: 183,
+                    lineNumber: 182,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Table"], {
                     columns: [
@@ -384,19 +383,19 @@ function MenuPage() {
                                                     unoptimized: true
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                                    lineNumber: 220,
+                                                    lineNumber: 219,
                                                     columnNumber: 27
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                                lineNumber: 210,
+                                                lineNumber: 209,
                                                 columnNumber: 25
                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 className: "item-thumb",
                                                 children: item.name.slice(0, 2).toUpperCase()
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                                lineNumber: 230,
+                                                lineNumber: 229,
                                                 columnNumber: 25
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -405,7 +404,7 @@ function MenuPage() {
                                                         children: item.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                                        lineNumber: 235,
+                                                        lineNumber: 234,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
@@ -419,31 +418,31 @@ function MenuPage() {
                                                         children: item.description
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                                        lineNumber: 236,
+                                                        lineNumber: 235,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/page.js",
-                                                lineNumber: 234,
+                                                lineNumber: 233,
                                                 columnNumber: 23
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 208,
+                                        lineNumber: 207,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                    lineNumber: 207,
+                                    lineNumber: 206,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                     children: catName
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                    lineNumber: 242,
+                                    lineNumber: 241,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -460,7 +459,7 @@ function MenuPage() {
                                                         children: "Half:"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                                        lineNumber: 246,
+                                                        lineNumber: 245,
                                                         columnNumber: 30
                                                     }, this),
                                                     " ",
@@ -468,6 +467,33 @@ function MenuPage() {
                                                         children: [
                                                             "₹",
                                                             item.halfPrice
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/dashboard/menu/page.js",
+                                                        lineNumber: 245,
+                                                        columnNumber: 67
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/dashboard/menu/page.js",
+                                                lineNumber: 245,
+                                                columnNumber: 25
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "muted",
+                                                        children: "Full:"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/dashboard/menu/page.js",
+                                                        lineNumber: 246,
+                                                        columnNumber: 30
+                                                    }, this),
+                                                    " ",
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        children: [
+                                                            "₹",
+                                                            item.fullPrice
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/menu/page.js",
@@ -479,38 +505,11 @@ function MenuPage() {
                                                 fileName: "[project]/app/dashboard/menu/page.js",
                                                 lineNumber: 246,
                                                 columnNumber: 25
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        className: "muted",
-                                                        children: "Full:"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/dashboard/menu/page.js",
-                                                        lineNumber: 247,
-                                                        columnNumber: 30
-                                                    }, this),
-                                                    " ",
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                        children: [
-                                                            "₹",
-                                                            item.fullPrice
-                                                        ]
-                                                    }, void 0, true, {
-                                                        fileName: "[project]/app/dashboard/menu/page.js",
-                                                        lineNumber: 247,
-                                                        columnNumber: 67
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/dashboard/menu/page.js",
-                                                lineNumber: 247,
-                                                columnNumber: 25
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 245,
+                                        lineNumber: 244,
                                         columnNumber: 23
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                         children: [
@@ -519,12 +518,12 @@ function MenuPage() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 250,
+                                        lineNumber: 249,
                                         columnNumber: 23
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                    lineNumber: 243,
+                                    lineNumber: 242,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -541,12 +540,12 @@ function MenuPage() {
                                         children: item.isVeg ? "Veg" : "Non-Veg"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 254,
+                                        lineNumber: 253,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                    lineNumber: 253,
+                                    lineNumber: 252,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -557,12 +556,12 @@ function MenuPage() {
                                         onClick: ()=>toggleAvail(item._id, item.isAvailable)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 269,
+                                        lineNumber: 268,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                    lineNumber: 268,
+                                    lineNumber: 267,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -573,12 +572,12 @@ function MenuPage() {
                                         onClick: ()=>toggleBestseller(item._id, item.isBestseller)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/page.js",
-                                        lineNumber: 277,
+                                        lineNumber: 276,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                    lineNumber: 276,
+                                    lineNumber: 275,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -589,7 +588,7 @@ function MenuPage() {
                                             children: "Edit"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/menu/page.js",
-                                            lineNumber: 285,
+                                            lineNumber: 284,
                                             columnNumber: 21
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -602,30 +601,30 @@ function MenuPage() {
                                             children: "Delete"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/menu/page.js",
-                                            lineNumber: 291,
+                                            lineNumber: 290,
                                             columnNumber: 21
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/menu/page.js",
-                                    lineNumber: 284,
+                                    lineNumber: 283,
                                     columnNumber: 19
                                 }, this)
                             ]
                         }, item._id, true, {
                             fileName: "[project]/app/dashboard/menu/page.js",
-                            lineNumber: 206,
+                            lineNumber: 205,
                             columnNumber: 17
                         }, this);
                     }
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/menu/page.js",
-                    lineNumber: 187,
+                    lineNumber: 186,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/menu/page.js",
-                lineNumber: 181,
+                lineNumber: 180,
                 columnNumber: 7
             }, this)
         ]

@@ -124,7 +124,6 @@ export default function CategoriesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Menu Management"
         title="Categories"
         description="Organise the menu so guests can find their favourites."
         action={<Button onClick={openAdd}>+ Add Category</Button>}
@@ -328,8 +327,8 @@ export default function CategoriesPage() {
                 {submitting
                   ? "Saving..."
                   : editTarget
-                  ? "Save Changes"
-                  : "Add Category"}
+                    ? "Save Changes"
+                    : "Add Category"}
               </Button>
             </div>
           </form>

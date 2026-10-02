@@ -10,9 +10,21 @@ const STATUS_CONFIG = {
     label: "Order Placed",
     classes: "text-blue-800 bg-blue-50 border-blue-200",
   },
+  confirmed: {
+    label: "Order Confirmed",
+    classes: "text-emerald-800 bg-emerald-50 border-emerald-200",
+  },
   preparing: {
     label: "In Kitchen (Preparing)",
     classes: "text-amber-800 bg-amber-50 border-amber-200",
+  },
+  ready_for_pickup: {
+    label: "Ready for Pickup",
+    classes: "text-indigo-800 bg-indigo-50 border-indigo-200",
+  },
+  out_for_delivery: {
+    label: "Out for Delivery",
+    classes: "text-purple-800 bg-purple-50 border-purple-200",
   },
   completed: {
     label: "Completed",
@@ -21,6 +33,10 @@ const STATUS_CONFIG = {
   cancelled: {
     label: "Cancelled",
     classes: "text-rose-800 bg-rose-50 border-rose-200",
+  },
+  expired: {
+    label: "Expired",
+    classes: "text-stone-700 bg-stone-100 border-stone-300",
   },
 };
 
@@ -72,9 +88,6 @@ export default function MyOrders() {
             <h1 className="font-hero text-2xl sm:text-3xl font-bold text-[#1B3B2B] tracking-wide">
               My Orders
             </h1>
-            <p className="text-xs text-stone-500 mt-1">
-              Your real-time order history and delivery progress
-            </p>
           </div>
           <Link
             href="/orderanddine"
@@ -157,12 +170,12 @@ export default function MyOrders() {
                 STATUS_CONFIG[order.orderStatus] || STATUS_CONFIG.placed;
               const formattedDate = order.createdAt
                 ? new Date(order.createdAt).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
                 : "Recent";
 
               return (
@@ -186,10 +199,9 @@ export default function MyOrders() {
                         {statusCfg.label}
                       </span>
                       <span
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider ${
-                          PAYMENT_STATUS_CONFIG[order.paymentStatus] ||
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider ${PAYMENT_STATUS_CONFIG[order.paymentStatus] ||
                           "text-stone-600 bg-stone-50 border-stone-200"
-                        }`}
+                          }`}
                       >
                         {order.paymentStatus}
                       </span>
@@ -213,21 +225,9 @@ export default function MyOrders() {
                           )}
                           <span className="text-stone-400">× {item.quantity}</span>
                         </div>
-                        <span className="font-semibold text-stone-600">
-                          ₹{item.subtotal || item.price * item.quantity}
-                        </span>
                       </li>
                     ))}
                   </ul>
-
-                  {/* Address Summary */}
-                  {order.deliveryAddress && (
-                    <div className="text-[11px] text-stone-500 mb-4 bg-stone-50 p-3 rounded-xl">
-                      <span className="font-semibold text-stone-700">Delivery To: </span>
-                      {order.deliveryAddress.address}
-                      {order.deliveryAddress.area && `, ${order.deliveryAddress.area}`}
-                    </div>
-                  )}
 
                   {/* Bottom Row */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-stone-100">
@@ -243,26 +243,22 @@ export default function MyOrders() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* Pay Online / Pay Now button for eligible unpaid orders */}
                       {order.paymentStatus !== "paid" &&
                         order.orderStatus !== "cancelled" &&
-                        order.orderStatus !== "completed" && (
-                          <Link
-                            href={`/my-orders/${order._id}`}
-                            className={`self-start sm:self-auto text-xs font-bold text-white px-4 py-1.5 rounded-full transition-colors ${
-                              order.paymentMethod === "cod"
-                                ? "bg-[#1B3B2B] hover:bg-[#11261B]"
-                                : "bg-[#0F4C81] hover:bg-[#0a3a63]"
-                            }`}
+                        order.orderStatus !== "completed" &&
+                        order.orderStatus !== "expired" && (
+                          <span
+                            title="Online payment is temporarily disabled"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 bg-stone-100 border border-stone-200 px-3 py-1 rounded-full cursor-not-allowed select-none"
                           >
-                            {order.paymentMethod === "cod" ? "Pay Online →" : "Pay Now →"}
-                          </Link>
+                            Online Payment — Coming Soon
+                          </span>
                         )}
                       <Link
                         href={`/my-orders/${order._id}`}
                         className="self-start sm:self-auto text-xs font-bold text-[#1B3B2B] border border-stone-300 hover:border-[#1B3B2B] px-4 py-1.5 rounded-full transition-colors bg-white hover:bg-stone-50"
                       >
-                        View Details &amp; Rate →
+                        View Details &amp; Track →
                       </Link>
                     </div>
                   </div>

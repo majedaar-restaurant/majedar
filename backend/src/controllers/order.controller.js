@@ -54,11 +54,17 @@ export const getMyOrderById = async (req, res, next) => {
  */
 export const getAdminOrders = async (req, res, next) => {
     try {
-        const orders = await orderService.getAdminOrders(req.query);
+        const result = await orderService.getAdminOrders(req.query);
         return sendSuccess(res, {
             statusCode: 200,
             message: 'Orders retrieved successfully',
-            data: { orders },
+            data: {
+                orders: result.orders,
+                total: result.total,
+                page: result.page,
+                limit: result.limit,
+                totalPages: result.totalPages,
+            },
         });
     } catch (error) {
         next(error);
@@ -90,6 +96,22 @@ export const updateOrderStatus = async (req, res, next) => {
         return sendSuccess(res, {
             statusCode: 200,
             message: 'Order status updated successfully',
+            data: { order },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Admin: Assign or change rider for an order.
+ */
+export const assignRider = async (req, res, next) => {
+    try {
+        const order = await orderService.assignRiderToOrder(req.params.id, req.body.riderId);
+        return sendSuccess(res, {
+            statusCode: 200,
+            message: 'Rider assigned to order successfully',
             data: { order },
         });
     } catch (error) {

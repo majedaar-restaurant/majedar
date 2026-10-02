@@ -17,7 +17,6 @@ function BookingsPage() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PageHeader"], {
-                eyebrow: "Front of House",
                 title: "Table Bookings",
                 description: "Dine-in table reservation system."
             }, void 0, false, {
@@ -37,7 +36,7 @@ function BookingsPage() {
                         description: "Dine-in table booking and reservation management APIs will be connected in an upcoming phase. Currently, the kitchen is actively fulfilling delivery and takeout orders."
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/bookings/page.js",
-                        lineNumber: 16,
+                        lineNumber: 15,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -50,18 +49,18 @@ function BookingsPage() {
                             children: "View Live Orders"
                         }, void 0, false, {
                             fileName: "[project]/app/dashboard/bookings/page.js",
-                            lineNumber: 21,
+                            lineNumber: 20,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/bookings/page.js",
-                        lineNumber: 20,
+                        lineNumber: 19,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/dashboard/bookings/page.js",
-                lineNumber: 15,
+                lineNumber: 14,
                 columnNumber: 7
             }, this)
         ]

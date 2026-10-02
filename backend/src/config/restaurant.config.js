@@ -20,8 +20,17 @@ export const restaurantConfig = {
             fee: parseInt(process.env.DELIVERY_FEE_TIER2, 10) || 30,
         },
     },
-    minimumOrderAmount: parseInt(process.env.MINIMUM_ORDER_AMOUNT, 10) || 100,
+    minimumOrderAmount: parseInt(process.env.MINIMUM_ORDER_AMOUNT, 10) || 150,
     city: 'Ayodhya',
+    onlinePaymentEnabled: process.env.ONLINE_PAYMENT_ENABLED === 'true',
+};
+
+export const isOnlinePaymentEnabled = () => {
+    return Boolean(restaurantConfig.onlinePaymentEnabled);
+};
+
+export const setOnlinePaymentEnabled = (enabled) => {
+    restaurantConfig.onlinePaymentEnabled = Boolean(enabled);
 };
 
 export const isRestaurantOpen = () => {

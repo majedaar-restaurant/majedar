@@ -25,8 +25,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Majedaar Restaurant';
   const options = {
     body: data.body || '',
-    icon: data.icon || '/brand/logo-mark.svg',
-    badge: data.badge || '/brand/logo-mark.svg',
+    icon: data.icon || '/brand/logo-full.png',
+    badge: data.badge || '/brand/logo-full.png',
     data: data.data || {},
     vibrate: [200, 100, 200],
     tag: (data.data?.type || 'general') + '-' + Date.now(),
@@ -47,22 +47,28 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data?.url || '/dashboard';
+  const rawUrl = event.notification.data?.url || '/dashboard';
+  const fullTargetUrl = new URL(rawUrl, self.location.origin).href;
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // If an existing admin tab is open, focus it and navigate
+      // If an existing admin tab is open on this origin, focus and navigate it
       for (const client of clientList) {
-        if (client.url && 'focus' in client) {
-          if ('navigate' in client && targetUrl) {
-            client.navigate(targetUrl);
+        try {
+          const clientOrigin = new URL(client.url, self.location.origin).origin;
+          if (clientOrigin === self.location.origin && 'focus' in client) {
+            if ('navigate' in client && fullTargetUrl) {
+              return client.navigate(fullTargetUrl).then((navClient) => {
+                return navClient ? navClient.focus() : client.focus();
+              }).catch(() => client.focus());
+            }
+            return client.focus();
           }
-          return client.focus();
-        }
+        } catch (_) {}
       }
       // Otherwise open a new window
       if (self.clients.openWindow) {
-        return self.clients.openWindow(targetUrl);
+        return self.clients.openWindow(fullTargetUrl);
       }
     })
   );

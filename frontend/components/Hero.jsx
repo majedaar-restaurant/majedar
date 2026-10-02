@@ -136,10 +136,10 @@ const HeroCategoryTicker = ({ onSelectCategory }) => {
     return (
       <div className="hero-category-ticker" aria-label="Loading food categories">
         <div className="hero-category-ticker__track justify-center">
-          {[1, 2, 3, 4, 5, 6].map((idx) => (
-            <div key={idx} className="flex flex-col items-center gap-2 animate-pulse flex-none px-3">
-              <div className="w-14 h-14 sm:w-14 sm:h-14 rounded-full bg-stone-200/80 border-2 border-stone-200" />
-              <div className="w-12 h-3 rounded-md bg-stone-200/80" />
+          {[1, 2, 3].map((idx) => (
+            <div key={idx} className="flex flex-col items-center gap-2.5 animate-pulse flex-none px-3">
+              <div className="w-[4.75rem] h-[4.75rem] sm:w-20 sm:h-20 rounded-full bg-stone-200/80 border-2 border-stone-200" />
+              <div className="w-16 h-3.5 rounded-md bg-stone-200/80" />
             </div>
           ))}
         </div>
@@ -206,14 +206,8 @@ const Hero = ({ onSelectCategory }) => {
     <section className="bg-[#FAF8F5] pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-stone-200/60 text-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto flex flex-col items-center">
-          {/* Opening Status Badge */}
-          <div className="mb-5 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#E3EFE8] text-[#1B3B2B] text-xs font-semibold tracking-wide">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#1B3B2B]"></span>
-            <span>Open today &bull; 11:00 AM &ndash; 11:30 PM</span>
-          </div>
-
           {/* Main Title */}
-          <h1 className="font-hero font-bold text-[clamp(1.75rem,5.2vw,4.5rem)] text-[#11261B] tracking-wider uppercase leading-tight py-1.5 mb-3 text-center overflow-visible">
+          <h1 className="font-hero font-bold text-[clamp(3rem,5.2vw,4.5rem)] text-[#11261B] tracking-wider uppercase leading-tight py-1.5 mb-3 text-center overflow-visible">
             MAJEDAAR RESTAURANT
           </h1>
 

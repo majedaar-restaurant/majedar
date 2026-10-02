@@ -79,10 +79,10 @@ const RelatedProducts = ({ category, currentId }) => {
               </button>
 
               <div>
-                <p className="text-xs font-bold text-stone-800 truncate mb-1 group-hover:text-[#C85A17] transition-colors">
+                <p className="text-xs sm:text-sm font-bold text-stone-800 truncate mb-1 group-hover:text-[#C85A17] transition-colors">
                   {item.name}
                 </p>
-                <p className="text-xs font-extrabold text-[#1B3B2B]">
+                <p className="text-xs sm:text-sm font-extrabold text-[#1B3B2B]">
                   {item.pricingType === "half-full"
                     ? `${currency}${item.halfPrice} - ${currency}${item.fullPrice}`
                     : `${currency}${item.price}`}

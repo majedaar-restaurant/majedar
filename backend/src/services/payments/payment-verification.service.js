@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { PaymentAttempt } from '../../models/Payment.js';
 import { Order } from '../../models/Order.js';
+import { Customer } from '../../models/Customer.js';
 import {
     createRazorpayOrder,
     verifyPaymentSignature,
@@ -18,7 +19,10 @@ import {
     UnauthorizedError,
 } from '../../utils/errors.js';
 import { config } from '../../config/env.js';
+import { isOnlinePaymentEnabled } from '../../config/restaurant.config.js';
 import { sendAdminPushNotification } from '../notifications/admin-push.service.js';
+import { emitPaymentSuccess } from '../../socket/socket.server.js';
+import { getDateRangeFilter } from '../../utils/date-filter.js';
 
 // ─────────────────────────────────────────────────────────
 // HELPERS
@@ -60,6 +64,17 @@ const triggerPaymentPushNotification = async (attemptId, orderNumber, amountInPa
 
             if (claimed) {
                 const amountInRupees = (amountInPaise / 100).toFixed(2);
+
+                try {
+                    emitPaymentSuccess({
+                        orderId: claimed.order,
+                        orderNumber,
+                        amount: amountInPaise / 100,
+                    });
+                } catch (socketErr) {
+                    console.error('[PaymentService] Socket emission error for payment:', socketErr.message);
+                }
+
                 sendAdminPushNotification({
                     type: 'PAYMENT_RECEIVED',
                     title: 'Payment Received — Majedaar',
@@ -99,6 +114,12 @@ const assertOrderPayable = (order) => {
     }
     if (order.orderStatus === 'completed') {
         throw new BadRequestError('Cannot initiate payment for a completed order.');
+    }
+    if (order.orderStatus === 'expired') {
+        throw new BadRequestError('Cannot initiate payment for an expired order.');
+    }
+    if (!isOnlinePaymentEnabled()) {
+        throw new BadRequestError('Online payment is currently unavailable. Please choose Cash on Delivery.');
     }
 };
 
@@ -416,36 +437,170 @@ const handleOrderPaid = async (payload) => {
     }
 };
 
-// ─────────────────────────────────────────────────────────
-// ADMIN QUERIES
-// ─────────────────────────────────────────────────────────
-
-/**
- * Get all payment attempts with optional filters (admin view).
- *
- * @param {Object} filters - { status, method, page, limit }
- * @returns {Promise<Array<PaymentAttempt>>}
- */
 export const getAllPaymentAttempts = async (filters = {}) => {
-    const query = {};
-    if (filters.status) query.status = filters.status;
-    if (filters.method) query.method = filters.method;
+    // Authoritative scope: ONLY paid payments
+    const matchQuery = { paymentStatus: 'paid' };
 
+    // Method filter: 'cod' (Cash / COD), 'razorpay' (Online)
+    const rawMethod = (filters.paymentMethod || filters.method || '').toLowerCase().trim();
+    if (rawMethod === 'cod' || rawMethod === 'cash') {
+        matchQuery.paymentMethod = 'cod';
+    } else if (rawMethod === 'razorpay' || rawMethod === 'online') {
+        matchQuery.paymentMethod = 'razorpay';
+    }
+
+    // Apply server-side date filter (Today, This Week, or Custom Range in IST)
+    const dateFilter = getDateRangeFilter({
+        datePreset: filters.datePreset,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+        fieldName: 'createdAt',
+    });
+    Object.assign(matchQuery, dateFilter);
+
+    // Apply search across Order #, Customer (name/email/phone), and Razorpay ID
+    if (filters.search && filters.search.trim()) {
+        const s = filters.search.trim();
+        const escaped = s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const regex = new RegExp(escaped, 'i');
+
+        let customerIds = [];
+        let onlineOrderIdsFromRzp = [];
+        try {
+            const [matchingCusts, matchingAttempts] = await Promise.all([
+                Customer.find({ $or: [{ name: regex }, { email: regex }, { phone: regex }] }).select('_id').lean(),
+                PaymentAttempt.find({ $or: [{ razorpayPaymentId: regex }, { razorpayOrderId: regex }] }).select('order').lean(),
+            ]);
+            customerIds = (matchingCusts || []).map((c) => c._id);
+            onlineOrderIdsFromRzp = (matchingAttempts || []).map((a) => a.order).filter(Boolean);
+        } catch (_) { }
+
+        matchQuery.$and = matchQuery.$and || [];
+        matchQuery.$and.push({
+            $or: [
+                { orderNumber: regex },
+                ...(customerIds.length > 0 ? [{ customer: { $in: customerIds } }] : []),
+                ...(onlineOrderIdsFromRzp.length > 0 ? [{ _id: { $in: onlineOrderIdsFromRzp } }] : []),
+            ],
+        });
+    }
+
+    // MongoDB Aggregation for Authoritative Financial Summary (Calculated on ALL matching records, NOT just current page)
+    const summaryAgg = await Order.aggregate([
+        { $match: matchQuery },
+        {
+            $group: {
+                _id: null,
+                count: { $sum: 1 },
+                totalPaid: { $sum: '$total' },
+                cashTotal: {
+                    $sum: {
+                        $cond: [{ $eq: ['$paymentMethod', 'cod'] }, '$total', 0],
+                    },
+                },
+                onlineTotal: {
+                    $sum: {
+                        $cond: [{ $eq: ['$paymentMethod', 'razorpay'] }, '$total', 0],
+                    },
+                },
+            },
+        },
+    ]);
+
+    const rawSummary = summaryAgg[0] || { count: 0, totalPaid: 0, cashTotal: 0, onlineTotal: 0 };
+    const summary = {
+        totalPaid: Math.round((rawSummary.totalPaid || 0) * 100) / 100,
+        cashTotal: Math.round((rawSummary.cashTotal || 0) * 100) / 100,
+        onlineTotal: Math.round((rawSummary.onlineTotal || 0) * 100) / 100,
+        count: rawSummary.count || 0,
+    };
+
+    const total = summary.count;
     const page = Math.max(parseInt(filters.page, 10) || 1, 1);
     const limit = Math.min(parseInt(filters.limit, 10) || 50, 100);
     const skip = (page - 1) * limit;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    const [attempts, total] = await Promise.all([
-        PaymentAttempt.find(query)
-            .populate('order', 'orderNumber total paymentMethod paymentStatus orderStatus')
-            .populate('customer', 'name email phone')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit),
-        PaymentAttempt.countDocuments(query),
-    ]);
+    // Fetch paginated paid orders
+    const orders = await Order.find(matchQuery)
+        .populate('customer', 'name email phone')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
 
-    return { attempts, total, page, limit };
+    // Map online payment attempts for Razorpay transaction details
+    const onlineOrderIds = orders.filter((o) => o.paymentMethod === 'razorpay').map((o) => o._id);
+    const attemptsMap = new Map();
+    if (onlineOrderIds.length > 0) {
+        const attempts = await PaymentAttempt.find({
+            order: { $in: onlineOrderIds },
+            status: 'paid',
+        }).lean();
+        for (const a of attempts) {
+            attemptsMap.set(a.order.toString(), a);
+        }
+    }
+
+    const records = orders.map((ord) => {
+        const isOnline = ord.paymentMethod === 'razorpay';
+        const attempt = isOnline ? attemptsMap.get(ord._id.toString()) : null;
+        const transId = isOnline
+            ? (attempt?.razorpayPaymentId || attempt?.razorpayOrderId || `RZP-${ord.orderNumber}`)
+            : `COD-${ord.orderNumber}`;
+
+        return {
+            _id: attempt?._id || ord._id,
+            orderId: ord._id,
+            orderNumber: ord.orderNumber,
+            order: {
+                _id: ord._id,
+                orderNumber: ord.orderNumber,
+                total: ord.total,
+                paymentMethod: ord.paymentMethod,
+                paymentStatus: ord.paymentStatus,
+                orderStatus: ord.orderStatus,
+            },
+            customer: ord.customer
+                ? {
+                    _id: ord.customer._id,
+                    name: ord.customer.name,
+                    email: ord.customer.email,
+                    phone: ord.customer.phone,
+                }
+                : null,
+            paymentMethod: ord.paymentMethod,
+            methodDisplay: isOnline ? 'Online' : 'Cash / COD',
+            method: attempt?.method || (isOnline ? 'Online' : 'Cash / COD'),
+            transactionId: transId,
+            razorpayPaymentId: attempt?.razorpayPaymentId || null,
+            razorpayOrderId: attempt?.razorpayOrderId || null,
+            amount: ord.total,
+            amountInPaise: Math.round(ord.total * 100),
+            status: 'paid',
+            createdAt: ord.createdAt,
+            paidAt: attempt?.updatedAt || ord.updatedAt || ord.createdAt,
+            refundId: attempt?.refundId || null,
+            refundAmount: attempt?.refundAmount || null,
+            refundStatus: attempt?.refundStatus || null,
+        };
+    });
+
+    return {
+        records,
+        attempts: records,
+        summary,
+        total,
+        page,
+        limit,
+        totalPages,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages,
+        },
+    };
 };
 
 /**

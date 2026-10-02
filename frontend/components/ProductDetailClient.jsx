@@ -179,26 +179,22 @@ export default function ProductDetailClient({ initialProduct, productId }) {
                   <button
                     type="button"
                     onClick={() => setSelectedVariant("half")}
-                    className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all cursor-pointer ${
-                      selectedVariant === "half"
-                        ? "bg-[#1B3B2B] text-white border-[#1B3B2B] shadow-2xs"
-                        : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
-                    }`}
+                    className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all cursor-pointer ${selectedVariant === "half"
+                      ? "bg-[#1B3B2B] text-white border-[#1B3B2B] shadow-2xs"
+                      : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
+                      }`}
                   >
                     <span>Half Portion</span>
-                    <span className="font-extrabold">{currency}{productData.halfPrice}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setSelectedVariant("full")}
-                    className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all cursor-pointer ${
-                      selectedVariant === "full"
-                        ? "bg-[#1B3B2B] text-white border-[#1B3B2B] shadow-2xs"
-                        : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
-                    }`}
+                    className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all cursor-pointer ${selectedVariant === "full"
+                      ? "bg-[#1B3B2B] text-white border-[#1B3B2B] shadow-2xs"
+                      : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
+                      }`}
                   >
                     <span>Full Portion</span>
-                    <span className="font-extrabold">{currency}{productData.fullPrice}</span>
                   </button>
                 </div>
                 <p className="text-2xl sm:text-3xl font-extrabold text-[#1B3B2B] mt-3 sm:mt-4">

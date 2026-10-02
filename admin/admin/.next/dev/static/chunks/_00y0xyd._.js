@@ -142,7 +142,6 @@ function AddMenuItemPage() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PageHeader"], {
-                eyebrow: "Menu Management",
                 title: "Add Menu Item",
                 description: "Add a new dish to the Majedaar menu with authoritative pricing."
             }, void 0, false, {
@@ -164,7 +163,7 @@ function AddMenuItemPage() {
                                         children: "Basic Information"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 149,
+                                        lineNumber: 148,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -177,7 +176,7 @@ function AddMenuItemPage() {
                                                         children: "Dish Name"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 152,
+                                                        lineNumber: 151,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -188,13 +187,13 @@ function AddMenuItemPage() {
                                                         disabled: submitting
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 153,
+                                                        lineNumber: 152,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 151,
+                                                lineNumber: 150,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -204,7 +203,7 @@ function AddMenuItemPage() {
                                                         children: "Category"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 163,
+                                                        lineNumber: 162,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -217,32 +216,32 @@ function AddMenuItemPage() {
                                                             children: "Loading categories..."
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                            lineNumber: 171,
+                                                            lineNumber: 170,
                                                             columnNumber: 21
                                                         }, this) : categories.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                             value: "",
                                                             children: "No categories available"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                            lineNumber: 173,
+                                                            lineNumber: 172,
                                                             columnNumber: 21
                                                         }, this) : categories.map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                                 value: c._id,
                                                                 children: c.name
                                                             }, c._id, false, {
                                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                                lineNumber: 176,
+                                                                lineNumber: 175,
                                                                 columnNumber: 23
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 164,
+                                                        lineNumber: 163,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 162,
+                                                lineNumber: 161,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -252,7 +251,7 @@ function AddMenuItemPage() {
                                                         children: "Dietary Type"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 185,
+                                                        lineNumber: 184,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -265,7 +264,7 @@ function AddMenuItemPage() {
                                                                 children: "Vegetarian"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                                lineNumber: 191,
+                                                                lineNumber: 190,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -273,19 +272,19 @@ function AddMenuItemPage() {
                                                                 children: "Non-Vegetarian"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                                lineNumber: 192,
+                                                                lineNumber: 191,
                                                                 columnNumber: 19
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 186,
+                                                        lineNumber: 185,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 184,
+                                                lineNumber: 183,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -295,7 +294,7 @@ function AddMenuItemPage() {
                                                         children: "Description (min 5 characters)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 197,
+                                                        lineNumber: 196,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -307,25 +306,25 @@ function AddMenuItemPage() {
                                                         disabled: submitting
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 198,
+                                                        lineNumber: 197,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 196,
+                                                lineNumber: 195,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 150,
+                                        lineNumber: 149,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                lineNumber: 148,
+                                lineNumber: 147,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -335,7 +334,7 @@ function AddMenuItemPage() {
                                         children: "Pricing"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 212,
+                                        lineNumber: 211,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -347,7 +346,7 @@ function AddMenuItemPage() {
                                         children: "Configure single pricing or half & full portions."
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 213,
+                                        lineNumber: 212,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -360,7 +359,7 @@ function AddMenuItemPage() {
                                                 children: "Pricing Mode"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 218,
+                                                lineNumber: 217,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -373,7 +372,7 @@ function AddMenuItemPage() {
                                                         children: "Single Price"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 224,
+                                                        lineNumber: 223,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -381,19 +380,19 @@ function AddMenuItemPage() {
                                                         children: "Half & Full"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 225,
+                                                        lineNumber: 224,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 219,
+                                                lineNumber: 218,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 217,
+                                        lineNumber: 216,
                                         columnNumber: 13
                                     }, this),
                                     pricingType === "single" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -403,7 +402,7 @@ function AddMenuItemPage() {
                                                 children: "Price (₹)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 231,
+                                                lineNumber: 230,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -417,13 +416,13 @@ function AddMenuItemPage() {
                                                 disabled: submitting
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 232,
+                                                lineNumber: 231,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 230,
+                                        lineNumber: 229,
                                         columnNumber: 15
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "form-grid",
@@ -439,7 +438,7 @@ function AddMenuItemPage() {
                                                         children: "Half Price (₹)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 246,
+                                                        lineNumber: 245,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -453,13 +452,13 @@ function AddMenuItemPage() {
                                                         disabled: submitting
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 247,
+                                                        lineNumber: 246,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 245,
+                                                lineNumber: 244,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -469,7 +468,7 @@ function AddMenuItemPage() {
                                                         children: "Full Price (₹)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 259,
+                                                        lineNumber: 258,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -483,31 +482,31 @@ function AddMenuItemPage() {
                                                         disabled: submitting
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 260,
+                                                        lineNumber: 259,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 258,
+                                                lineNumber: 257,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 244,
+                                        lineNumber: 243,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                lineNumber: 211,
+                                lineNumber: 210,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                        lineNumber: 146,
+                        lineNumber: 145,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -520,7 +519,7 @@ function AddMenuItemPage() {
                                         children: "Image"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 279,
+                                        lineNumber: 278,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -533,7 +532,7 @@ function AddMenuItemPage() {
                                         onChange: handleFileChange
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 280,
+                                        lineNumber: 279,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -567,25 +566,25 @@ function AddMenuItemPage() {
                                                         unoptimized: true
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 304,
+                                                        lineNumber: 303,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                    lineNumber: 294,
+                                                    lineNumber: 293,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     children: "Click to change image"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                    lineNumber: 313,
+                                                    lineNumber: 312,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/menu/add/page.js",
-                                            lineNumber: 293,
+                                            lineNumber: 292,
                                             columnNumber: 17
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                                             children: [
@@ -605,55 +604,55 @@ function AddMenuItemPage() {
                                                             d: "M4 16l4-4m0 0l4 4m-4-4v12M20 16V8a2 2 0 00-2-2H6a2 2 0 00-2 2v2"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                            lineNumber: 329,
+                                                            lineNumber: 328,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 318,
+                                                        lineNumber: 317,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                    lineNumber: 317,
+                                                    lineNumber: 316,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                                     children: "Drop a dish photo here"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                    lineNumber: 332,
+                                                    lineNumber: 331,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     children: "or click to browse from device"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                    lineNumber: 333,
+                                                    lineNumber: 332,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
                                                     children: "JPG, PNG or WEBP · max 5 MB"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                    lineNumber: 334,
+                                                    lineNumber: 333,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/menu/add/page.js",
-                                            lineNumber: 316,
+                                            lineNumber: 315,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 287,
+                                        lineNumber: 286,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                lineNumber: 278,
+                                lineNumber: 277,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -663,7 +662,7 @@ function AddMenuItemPage() {
                                         children: "Status"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 342,
+                                        lineNumber: 341,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -678,20 +677,20 @@ function AddMenuItemPage() {
                                                                 children: "Available"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                                lineNumber: 346,
+                                                                lineNumber: 345,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: "Orderable by customers right now."
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                                lineNumber: 347,
+                                                                lineNumber: 346,
                                                                 columnNumber: 19
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 345,
+                                                        lineNumber: 344,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Toggle"], {
@@ -700,13 +699,13 @@ function AddMenuItemPage() {
                                                         label: "Toggle item availability"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 349,
+                                                        lineNumber: 348,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 344,
+                                                lineNumber: 343,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -718,20 +717,20 @@ function AddMenuItemPage() {
                                                                 children: "Bestseller / Featured"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                                lineNumber: 357,
+                                                                lineNumber: 356,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: "Highlight in the featured menu section."
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                                lineNumber: 358,
+                                                                lineNumber: 357,
                                                                 columnNumber: 19
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 356,
+                                                        lineNumber: 355,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Toggle"], {
@@ -740,25 +739,25 @@ function AddMenuItemPage() {
                                                         label: "Toggle bestseller status"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                        lineNumber: 360,
+                                                        lineNumber: 359,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                                lineNumber: 355,
+                                                lineNumber: 354,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 343,
+                                        lineNumber: 342,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                lineNumber: 341,
+                                lineNumber: 340,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -775,7 +774,7 @@ function AddMenuItemPage() {
                                         children: "Cancel"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 373,
+                                        lineNumber: 372,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -785,25 +784,25 @@ function AddMenuItemPage() {
                                         children: submitting ? "Adding..." : "Add Menu Item"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                                        lineNumber: 379,
+                                        lineNumber: 378,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                                lineNumber: 369,
+                                lineNumber: 368,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/menu/add/page.js",
-                        lineNumber: 276,
+                        lineNumber: 275,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/dashboard/menu/add/page.js",
-                lineNumber: 145,
+                lineNumber: 144,
                 columnNumber: 7
             }, this)
         ]

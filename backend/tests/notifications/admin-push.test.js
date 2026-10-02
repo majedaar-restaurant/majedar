@@ -60,6 +60,7 @@ describe('Admin Web Push Notification System', () => {
 
     after(async () => {
         if (server) {
+            server.closeAllConnections?.();
             server.close();
         }
         if (admin) {

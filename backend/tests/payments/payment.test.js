@@ -28,6 +28,7 @@ import { DeliveryZone } from '../../src/models/DeliveryZone.js';
 import * as paymentService from '../../src/services/payments/payment-verification.service.js';
 import * as razorpayService from '../../src/services/payments/razorpay.service.js';
 import { config } from '../../src/config/env.js';
+import { setOnlinePaymentEnabled } from '../../src/config/restaurant.config.js';
 import {
     createPaymentSchema,
     verifyPaymentSchema,

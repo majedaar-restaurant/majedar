@@ -57,22 +57,48 @@ export const refundSchema = z.object({
 /**
  * Schema for admin payment list query parameters.
  */
-export const adminPaymentQuerySchema = z.object({
-    status: z.enum(['created', 'pending', 'paid', 'failed', 'refunded']).optional(),
-    method: z.string().trim().optional(),
-    page: z
-        .union([
-            z.number().int().min(1),
-            z.string().transform((v) => parseInt(v, 10)),
-        ])
-        .optional(),
-    limit: z
-        .union([
-            z.number().int().min(1).max(100),
-            z.string().transform((v) => parseInt(v, 10)),
-        ])
-        .optional(),
-}).strip();
+export const adminPaymentQuerySchema = z
+    .object({
+        status: z.string().trim().optional(),
+        paymentStatus: z.string().trim().optional(),
+        method: z.string().trim().optional(),
+        paymentMethod: z.string().trim().optional(),
+        search: z.string().trim().optional(),
+        datePreset: z.enum(['today', 'this-week', 'this_week', 'custom']).optional(),
+        dateFrom: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/, 'dateFrom must be in YYYY-MM-DD format')
+            .optional(),
+        dateTo: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/, 'dateTo must be in YYYY-MM-DD format')
+            .optional(),
+        page: z
+            .union([
+                z.number().int().min(1),
+                z.string().transform((v) => parseInt(v, 10)),
+            ])
+            .optional(),
+        limit: z
+            .union([
+                z.number().int().min(1).max(100),
+                z.string().transform((v) => parseInt(v, 10)),
+            ])
+            .optional(),
+    })
+    .refine(
+        (data) => {
+            if (data.dateFrom && data.dateTo) {
+                return data.dateFrom <= data.dateTo;
+            }
+            return true;
+        },
+        {
+            message: 'dateFrom cannot be after dateTo',
+            path: ['dateFrom'],
+        }
+    )
+    .strip();
 
 /**
  * Schema for paymentAttemptId path parameter (admin refund).

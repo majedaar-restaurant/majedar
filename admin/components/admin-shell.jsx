@@ -13,6 +13,9 @@ import {
   sendTestPushAlert,
   playNotificationChime,
 } from "@/lib/push-notifications";
+import { connectAdminSocket, disconnectAdminSocket } from "@/lib/socket";
+import { alertManager } from "@/lib/alert-manager";
+import { NewOrderAlertModal } from "@/components/ui/new-order-alert-modal";
 
 export const navItems = [
   {
@@ -24,6 +27,11 @@ export const navItems = [
     label: "Orders",
     href: "/dashboard/orders",
     icon: "orders",
+  },
+  {
+    label: "Riders",
+    href: "/dashboard/riders",
+    icon: "riders",
   },
   {
     label: "Payments",
@@ -72,6 +80,7 @@ function Icon({ name, size = 16 }) {
   const paths = {
     dashboard: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
     orders: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01",
+    riders: "M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16h2m-6 0h2m-2-5h5l2 4H7l2-4zm3-4a2 2 0 11-4 0 2 2 0 014 0z",
     payments: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
     menu: "M4 6h16M4 10h16M4 14h16M4 18h16",
     delivery: "M1 3h15v13H1zM16 8h4l3 3v5h-7V8zM5.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM18.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3z",
@@ -102,7 +111,7 @@ function breadcrumbLabel(pathname) {
 }
 
 // ── Sidebar nav ───────────────────────────────────────────────────────────────
-function SidebarNav({ pathname, onClose, unreadCount }) {
+function SidebarNav({ pathname, onClose, unreadCount, pendingOrdersCount = 0 }) {
   return (
     <nav className="side-nav" aria-label="Main navigation">
       <p className="nav-label">Workspace</p>
@@ -111,7 +120,12 @@ function SidebarNav({ pathname, onClose, unreadCount }) {
           pathname === item.href ||
           (item.href !== "/dashboard" && pathname.startsWith(item.href));
         const showChildren = item.children && isParentActive;
-        const badge = item.label === "Messages" && unreadCount > 0 ? unreadCount : item.badge;
+        const badge =
+          item.label === "Messages" && unreadCount > 0
+            ? unreadCount
+            : item.label === "Orders" && pendingOrdersCount > 0
+              ? `🔴 ${pendingOrdersCount}`
+              : item.badge;
 
         return (
           <div key={item.label}>
@@ -161,6 +175,13 @@ export default function AdminShell({ children }) {
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [subscribingPush, setSubscribingPush] = useState(false);
 
+  // Audio alert state managed by alertManager
+  const [alertState, setAlertState] = useState(() => alertManager.getState());
+
+  useEffect(() => {
+    return alertManager.subscribe(setAlertState);
+  }, []);
+
   const closeDrawer = () => setDrawerOpen(false);
 
   // Check and setup Web Push subscription state + SW message listener
@@ -177,7 +198,7 @@ export default function AdminShell({ children }) {
       .then((sub) => {
         setPushSubscribed(!!sub);
       })
-      .catch(() => {});
+      .catch(() => { });
 
     const handleSwMessage = (event) => {
       if (event.data?.type === "PUSH_NOTIFICATION") {
@@ -195,6 +216,83 @@ export default function AdminShell({ children }) {
       }
     };
   }, []);
+
+  // Persistent Admin Socket.IO connection for real-time notifications & continuous audio alerts
+  useEffect(() => {
+    if (!admin) return;
+
+    const socket = connectAdminSocket();
+    if (!socket) return;
+
+    socket.emit("join:admin");
+
+    const handleNewOrder = (payload) => {
+      alertManager.addPendingOrder(payload);
+    };
+
+    const handleConfirmed = (payload) => {
+      alertManager.removePendingOrder(payload?.orderId);
+    };
+
+    const handleExpired = (payload) => {
+      alertManager.removePendingOrder(payload?.orderId);
+    };
+
+    const handleStatusChanged = (payload) => {
+      if (payload?.orderStatus !== "placed") {
+        alertManager.removePendingOrder(payload?.orderId);
+      }
+    };
+
+    const handleCancelled = (payload) => {
+      alertManager.removePendingOrder(payload?.orderId);
+    };
+
+    const handlePaymentSuccess = () => {
+      playNotificationChime();
+    };
+
+    socket.on("order:new", handleNewOrder);
+    socket.on("new_order", handleNewOrder);
+    socket.on("order:confirmed", handleConfirmed);
+    socket.on("order:expired", handleExpired);
+    socket.on("order:cancelled", handleCancelled);
+    socket.on("order:status_changed", handleStatusChanged);
+    socket.on("payment:success", handlePaymentSuccess);
+
+    return () => {
+      socket.off("order:new", handleNewOrder);
+      socket.off("new_order", handleNewOrder);
+      socket.off("order:confirmed", handleConfirmed);
+      socket.off("order:expired", handleExpired);
+      socket.off("order:cancelled", handleCancelled);
+      socket.off("order:status_changed", handleStatusChanged);
+      socket.off("payment:success", handlePaymentSuccess);
+    };
+  }, [admin]);
+
+  // Sync existing placed orders on login to resume alerts if any unconfirmed orders remain
+  useEffect(() => {
+    if (!admin) return;
+    const syncExistingPlacedOrders = async () => {
+      try {
+        const apiBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/+$/, "");
+        const endpoint = apiBase.endsWith("/api")
+          ? `${apiBase}/admin/orders?orderStatus=placed`
+          : `${apiBase}/api/admin/orders?orderStatus=placed`;
+        const res = await fetch(endpoint, {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json.data)) {
+            alertManager.syncPendingOrders(json.data);
+          }
+        }
+      } catch (_) { }
+    };
+    syncExistingPlacedOrders();
+  }, [admin]);
 
   const handleTogglePush = async () => {
     if (pushStatus === "denied") {
@@ -292,7 +390,7 @@ export default function AdminShell({ children }) {
         </div>
 
         {/* Nav */}
-        <SidebarNav pathname={pathname} onClose={closeDrawer} unreadCount={unreadCount} />
+        <SidebarNav pathname={pathname} onClose={closeDrawer} unreadCount={unreadCount} pendingOrdersCount={alertState.pendingCount} />
 
         {/* Footer */}
         <div className="sidebar-footer">
@@ -341,6 +439,107 @@ export default function AdminShell({ children }) {
           </div>
 
           <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Order Sound Alert Control / Autoplay Unlock */}
+            {!alertState.isEnabled ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  alertManager.setEnabled(true);
+                  await alertManager.unlockAudio();
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  height: "28px",
+                  padding: "4px 9px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  background: "#fff1f2",
+                  color: "var(--crimson, #b91c1c)",
+                  border: "1px solid #fecdd3",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+                title="Click to enable continuous order ringtone alerts on this device"
+              >
+                <span>Enable Sound Alerts</span>
+              </button>
+            ) : alertState.isAudioPlaying ? (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    height: "28px",
+                    padding: "4px 8px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    background: "#fee2e2",
+                    color: "#991b1b",
+                    border: "1px solid #fca5a5",
+                    borderRadius: "4px",
+                  }}
+                  title="Looping order alert playing"
+                >
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: "#ef4444",
+                    }}
+                  />
+                  <span>🔊 Alerting ({alertState.pendingCount})</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => alertManager.setEnabled(false)}
+                  style={{
+                    height: "28px",
+                    padding: "4px 8px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    background: "#f3f4f6",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                  title="Mute audio alert"
+                >
+                  Mute
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!alertState.isUnlocked) {
+                    await alertManager.unlockAudio();
+                  }
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  height: "28px",
+                  padding: "4px 8px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  background: "#f0fdf4",
+                  color: "#16a34a",
+                  border: "1px solid #bbf7d0",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+                title="Order Sound Alerts Active across sessions"
+              >
+                <span>Alerts Active</span>
+              </button>
+            )}
+
             {/* Push notification alerts action */}
             {pushStatus === "granted" && pushSubscribed ? (
               <button
@@ -446,6 +645,9 @@ export default function AdminShell({ children }) {
         {/* Page */}
         <main className="page-content">{children}</main>
       </div>
+
+      {/* Prominent Real-time New Order Alert Modal / Toast */}
+      <NewOrderAlertModal pendingOrders={alertState.pendingOrders} />
     </div>
   );
 }

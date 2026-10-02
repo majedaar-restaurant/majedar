@@ -71,6 +71,13 @@ export const createMenuItemSchema = z
                     path: ['fullPrice'],
                 });
             }
+            if (data.halfPrice && data.fullPrice && data.fullPrice < data.halfPrice) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Full price must be greater than or equal to half price',
+                    path: ['fullPrice'],
+                });
+            }
         }
     });
 
@@ -107,7 +114,62 @@ export const updateMenuItemSchema = z
             .optional()
             .nullable(),
     })
-    .strip();
+    .strip()
+    .superRefine((data, ctx) => {
+        if (data.pricingType === 'single') {
+            if (data.price !== undefined && (data.price === null || data.price <= 0)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Price must be provided and greater than 0 for single pricing',
+                    path: ['price'],
+                });
+            }
+        } else if (data.pricingType === 'half-full') {
+            if (data.halfPrice !== undefined && (data.halfPrice === null || data.halfPrice <= 0)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Half price must be provided and greater than 0 for half-full pricing',
+                    path: ['halfPrice'],
+                });
+            }
+            if (data.fullPrice !== undefined && (data.fullPrice === null || data.fullPrice <= 0)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Full price must be provided and greater than 0 for half-full pricing',
+                    path: ['fullPrice'],
+                });
+            }
+            if (data.halfPrice && data.fullPrice && data.fullPrice < data.halfPrice) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Full price must be greater than or equal to half price',
+                    path: ['fullPrice'],
+                });
+            }
+        } else {
+            if (data.halfPrice !== undefined && (data.halfPrice === null || data.halfPrice <= 0)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Half price must be greater than 0',
+                    path: ['halfPrice'],
+                });
+            }
+            if (data.fullPrice !== undefined && (data.fullPrice === null || data.fullPrice <= 0)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Full price must be greater than 0',
+                    path: ['fullPrice'],
+                });
+            }
+            if (data.halfPrice && data.fullPrice && data.fullPrice < data.halfPrice) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Full price must be greater than or equal to half price',
+                    path: ['fullPrice'],
+                });
+            }
+        }
+    });
 
 export const menuQuerySchema = z
     .object({

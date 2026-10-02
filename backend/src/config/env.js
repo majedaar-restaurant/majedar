@@ -44,6 +44,7 @@ export const config = {
         keySecret: process.env.RAZORPAY_KEY_SECRET || '',
         webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',
     },
+    onlinePaymentEnabled: process.env.ONLINE_PAYMENT_ENABLED === 'true',
     vapid: {
         publicKey: process.env.VAPID_PUBLIC_KEY || 'BJ8B4LAumNPlvBe0a4VC2MuuvzMh6IXk-OH1rJqbozPqLs_XlJ8zzqg8C2wmGCz4wEPQb9Z9XMJeO_5zitiz59s',
         privateKey: process.env.VAPID_PRIVATE_KEY || 'EtwHkxk3C_nlHmo0Dwi6imRzgJcwZsif7Ws31B7HbbM',

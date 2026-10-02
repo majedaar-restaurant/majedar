@@ -282,83 +282,86 @@ const BestsellerSection = () => {
                       resumeAutoStep(3200);
                     }
                   }}
-                  className={`flex-none w-[220px] sm:w-[250px] md:w-[260px] bg-white rounded-2xl p-4 border transition-all duration-500 flex flex-col items-center text-center justify-between group cursor-pointer ${isActive
-                      ? "border-[#1B3B2B]/40 shadow-md scale-[1.04] z-10 opacity-100"
-                      : "border-stone-200/80 shadow-2xs scale-100 opacity-80 hover:opacity-100 hover:border-stone-300"
+                  className={`flex-none w-[270px] sm:w-[290px] md:w-[310px] bg-white rounded-2xl p-3.5 sm:p-4 border transition-all duration-500 flex flex-col justify-between group cursor-pointer ${isActive
+                    ? "border-[#1B3B2B]/40 shadow-lg scale-[1.03] z-10 opacity-100"
+                    : "border-stone-200/80 shadow-2xs scale-100 opacity-85 hover:opacity-100 hover:border-stone-300"
                     }`}
                   style={{
                     transformOrigin: "center center",
                   }}
                 >
-                  {/* Food image with clean circular ratio and fallback */}
-                  <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden mb-3 border-2 border-stone-100 shadow-2xs bg-stone-100 group-hover:scale-105 transition-transform duration-300 flex-none relative">
+                  {/* Rectangular Food image with overlays */}
+                  <div className="relative w-full aspect-[18/11] rounded-xl overflow-hidden mb-3 bg-stone-100 border border-stone-100 shadow-2xs group-hover:scale-[1.01] transition-transform duration-300 flex-none">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={getImg(item)}
                       alt={`${item.name} at Majedaar Restaurant`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = FALLBACK_IMG;
                       }}
                     />
-                    {item.isVeg !== undefined && (
-                      <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-xs p-1 rounded-md shadow-xs border border-stone-200">
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            item.isVeg ? "bg-emerald-600" : "bg-rose-600"
-                          }`}
-                        />
+
+                    {/* Overlays on Image: Veg indicator + Bestseller badge */}
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10 pointer-events-none">
+                      {item.isVeg !== undefined && (
+                        <div className="bg-white/95 backdrop-blur-xs p-1 rounded-md shadow-xs border border-stone-200/80 flex items-center justify-center">
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full ${item.isVeg ? "bg-emerald-600" : "bg-rose-600"
+                              }`}
+                          />
+                        </div>
+                      )}
+                      <span className="text-[10px] sm:text-[11px] font-bold text-[#C85A17]/95 bg-white backdrop-blur-xs px-2.5 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
+                        ★ Bestseller
+                      </span>
+                    </div>
+
+                    {/* Overlays on Image: Rating badge (only when genuine rating exists) */}
+                    {item.ratingSummary?.averageRating > 0 && (
+                      <div className="absolute top-2.5 right-2.5 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-md shadow-xs border border-stone-200/80 flex items-center gap-1 text-[11px] font-bold text-[#11261B] z-10 pointer-events-none">
+                        <span className="text-amber-500 text-xs leading-none">★</span>
+                        <span>{item.ratingSummary.averageRating}</span>
+                        {item.ratingSummary.reviewCount > 0 && (
+                          <span className="text-stone-400 font-normal text-[10px]">
+                            ({item.ratingSummary.reviewCount})
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
 
-                  <span className="text-[10px] font-bold text-[#C85A17] bg-[#FDF2EC] px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 flex-none">
-                    Bestseller
-                  </span>
+                  {/* Card Content */}
+                  <div className="w-full text-left">
+                    <h3
+                      className={`font-bold text-base sm:text-lg line-clamp-1 mb-1 transition-colors ${isActive ? "text-[#11261B]" : "text-stone-800 group-hover:text-[#11261B]"
+                        }`}
+                    >
+                      {item.name}
+                    </h3>
 
-                  <h3
-                    className={`font-bold text-xs sm:text-sm line-clamp-1 mb-1 text-center w-full transition-colors ${isActive ? "text-[#11261B]" : "text-stone-800"
-                      }`}
-                  >
-                    {item.name}
-                  </h3>
-
-                  <div className="inline-flex items-center gap-1 text-[11px] mb-1 flex-none">
-                    {item.ratingSummary?.reviewCount > 0 ? (
-                      <>
-                        <span className="text-amber-500">★</span>
-                        <span className="font-bold text-[#11261B]">{item.ratingSummary.averageRating}</span>
-                        <span className="text-stone-400">· {item.ratingSummary.reviewCount}</span>
-                      </>
-                    ) : (
-                      <span className="text-stone-400 flex items-center gap-1 text-[10px]">
-                        <span className="text-stone-300">★</span> New
-                      </span>
-                    )}
+                    <p className="text-stone-500 text-xs sm:text-[13px] line-clamp-2 leading-relaxed mb-2.5 min-h-[2.5rem]">
+                      {item.description}
+                    </p>
                   </div>
-
-                  <p className="text-stone-500 text-[11px] sm:text-xs line-clamp-2 leading-snug mb-2 text-center min-h-[2rem]">
-                    {item.description}
-                  </p>
 
                   {/* Half / Full Variant Selector */}
                   {isHalfFull && (
-                    <div className="flex items-center gap-1.5 mb-2.5 flex-none">
+                    <div className="flex items-center gap-2 mb-3 w-full">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setItemVariant(item._id, "half");
                         }}
-                        className={`px-2 py-0.5 text-[10px] font-bold rounded-md border transition-all ${
-                          currentVariant === "half"
-                            ? "bg-[#1B3B2B] text-white border-[#1B3B2B]"
-                            : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
-                        }`}
+                        className={`px-2.5 py-1 text-md font-semibold rounded-lg border transition-all cursor-pointer ${currentVariant === "half"
+                          ? "bg-[#1B3B2B] text-white border-[#1B3B2B]"
+                          : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
+                          }`}
                       >
-                        Half: {currency}{item.halfPrice}
+                        Half
                       </button>
                       <button
                         type="button"
@@ -366,34 +369,35 @@ const BestsellerSection = () => {
                           e.stopPropagation();
                           setItemVariant(item._id, "full");
                         }}
-                        className={`px-2 py-0.5 text-[10px] font-bold rounded-md border transition-all ${
-                          currentVariant === "full"
-                            ? "bg-[#1B3B2B] text-white border-[#1B3B2B]"
-                            : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
-                        }`}
+                        className={`px-2.5 py-1 text-md font-semibold rounded-lg border transition-all cursor-pointer ${currentVariant === "full"
+                          ? "bg-[#1B3B2B] text-white border-[#1B3B2B]"
+                          : "bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100"
+                          }`}
                       >
-                        Full: {currency}{item.fullPrice}
+                        Full
                       </button>
                     </div>
                   )}
 
-                  <div className="w-full flex items-center justify-between pt-2 border-t border-stone-100 mt-auto">
-                    <span className="text-sm font-extrabold text-[#1B3B2B]">
+                  {/* Price & Add to Cart Footer */}
+                  <div className="w-full flex items-center justify-between pt-2.5 border-t border-stone-100 mt-auto">
+                    <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
                       {currency}{displayPrice}
                     </span>
                     {isAvailable ? (
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           addToCart(item._id, currentVariant);
                         }}
-                        className="px-3 py-1 rounded-full bg-[#1B3B2B] hover:bg-[#11261B] text-white text-[11px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-2xs flex items-center gap-1"
+                        className="px-4 py-2 rounded-xl bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs sm:text-[13px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
                       >
                         <span>ADD</span>
-                        <span>+</span>
+                        <span className="text-sm leading-none">+</span>
                       </button>
                     ) : (
-                      <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100">
                         Unavailable
                       </span>
                     )}

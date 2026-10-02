@@ -52,7 +52,6 @@ function ProfilePage() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PageHeader"], {
-                eyebrow: "Your account",
                 title: "Admin Profile",
                 description: "Authenticated administrator account details."
             }, void 0, false, {
@@ -74,7 +73,7 @@ function ProfilePage() {
                                         children: initials
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/profile/page.js",
-                                        lineNumber: 41,
+                                        lineNumber: 40,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -83,7 +82,7 @@ function ProfilePage() {
                                                 children: name
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/profile/page.js",
-                                                lineNumber: 43,
+                                                lineNumber: 42,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -93,19 +92,19 @@ function ProfilePage() {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/profile/page.js",
-                                                lineNumber: 44,
+                                                lineNumber: 43,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/profile/page.js",
-                                        lineNumber: 42,
+                                        lineNumber: 41,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/profile/page.js",
-                                lineNumber: 40,
+                                lineNumber: 39,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -118,7 +117,7 @@ function ProfilePage() {
                                         value: name
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/profile/page.js",
-                                        lineNumber: 49,
+                                        lineNumber: 48,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoRow, {
@@ -126,7 +125,7 @@ function ProfilePage() {
                                         value: email
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/profile/page.js",
-                                        lineNumber: 50,
+                                        lineNumber: 49,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoRow, {
@@ -134,7 +133,7 @@ function ProfilePage() {
                                         value: role
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/profile/page.js",
-                                        lineNumber: 51,
+                                        lineNumber: 50,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(InfoRow, {
@@ -142,19 +141,19 @@ function ProfilePage() {
                                         value: "HttpOnly Cookie Secured"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/profile/page.js",
-                                        lineNumber: 52,
+                                        lineNumber: 51,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/profile/page.js",
-                                lineNumber: 48,
+                                lineNumber: 47,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/profile/page.js",
-                        lineNumber: 39,
+                        lineNumber: 38,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -164,7 +163,7 @@ function ProfilePage() {
                                 children: "Credentials & Access Control"
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/profile/page.js",
-                                lineNumber: 58,
+                                lineNumber: 57,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -182,7 +181,7 @@ function ProfilePage() {
                                         children: "Administrator credentials are encrypted with bcrypt and verified against server environment configurations."
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/profile/page.js",
-                                        lineNumber: 60,
+                                        lineNumber: 59,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -199,32 +198,32 @@ function ProfilePage() {
                                                 children: "Security Note:"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/profile/page.js",
-                                                lineNumber: 73,
+                                                lineNumber: 72,
                                                 columnNumber: 15
                                             }, this),
                                             " Admin passwords and session tokens cannot be modified from the public browser client. Password rotations must be initiated through server environment variables or authenticated CLI management."
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/profile/page.js",
-                                        lineNumber: 63,
+                                        lineNumber: 62,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/profile/page.js",
-                                lineNumber: 59,
+                                lineNumber: 58,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/profile/page.js",
-                        lineNumber: 57,
+                        lineNumber: 56,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/dashboard/profile/page.js",
-                lineNumber: 37,
+                lineNumber: 36,
                 columnNumber: 7
             }, this)
         ]

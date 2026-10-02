@@ -1029,7 +1029,15 @@ async function getAdminMessages(params = {}) {
     const qs = query.toString();
     const endpoint = `/admin/messages${qs ? `?${qs}` : ""}`;
     const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$client$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiRequest"])(endpoint);
-    return res?.data || [];
+    const data = res?.data;
+    if (!data) return [];
+    const messagesList = Array.isArray(data) ? data : data.messages || [];
+    messagesList.total = data.total ?? messagesList.length;
+    messagesList.page = data.page ?? 1;
+    messagesList.limit = data.limit ?? messagesList.length;
+    messagesList.totalPages = data.totalPages ?? 1;
+    messagesList.messages = messagesList;
+    return messagesList;
 }
 async function getAdminMessageById(id) {
     const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$client$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiRequest"])(`/admin/messages/${id}`);

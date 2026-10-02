@@ -10,7 +10,15 @@ export async function getAdminReviews(params = {}) {
   const queryString = query.toString();
   const endpoint = `/admin/reviews${queryString ? `?${queryString}` : ""}`;
   const res = await apiRequest(endpoint);
-  return res?.data?.reviews || [];
+  const data = res?.data;
+  if (!data) return [];
+  const reviewsList = Array.isArray(data) ? data : (data.reviews || []);
+  reviewsList.total = data.total ?? data.pagination?.totalReviews ?? reviewsList.length;
+  reviewsList.page = data.page ?? data.pagination?.page ?? 1;
+  reviewsList.limit = data.limit ?? data.pagination?.limit ?? reviewsList.length;
+  reviewsList.totalPages = data.pagination?.totalPages ?? 1;
+  reviewsList.reviews = reviewsList;
+  return reviewsList;
 }
 
 export async function deleteAdminReview(id) {

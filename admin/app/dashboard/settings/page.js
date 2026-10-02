@@ -43,7 +43,7 @@ export default function SettingsPage() {
       .then((sub) => {
         setIsSubscribed(!!sub);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleEnablePush = async () => {
@@ -107,7 +107,6 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Workspace"
         title="Settings"
         description="Authoritative restaurant configuration and operational parameters."
       />

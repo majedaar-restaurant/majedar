@@ -298,6 +298,8 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 "use strict";
 
 __turbopack_context__.s([
+    "assignAdminOrderRider",
+    ()=>assignAdminOrderRider,
     "getAdminOrderById",
     ()=>getAdminOrderById,
     "getAdminOrders",
@@ -317,7 +319,15 @@ async function getAdminOrders(params = {}) {
     const queryString = query.toString();
     const endpoint = `/admin/orders${queryString ? `?${queryString}` : ""}`;
     const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$client$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiRequest"])(endpoint);
-    return res?.data?.orders || [];
+    const data = res?.data;
+    if (!data) return [];
+    const ordersList = Array.isArray(data) ? data : data.orders || [];
+    ordersList.total = data.total ?? ordersList.length;
+    ordersList.page = data.page ?? 1;
+    ordersList.limit = data.limit ?? ordersList.length;
+    ordersList.totalPages = data.totalPages ?? 1;
+    ordersList.orders = ordersList;
+    return ordersList;
 }
 async function getAdminOrderById(id) {
     const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$client$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiRequest"])(`/admin/orders/${id}`);
@@ -327,6 +337,15 @@ async function updateAdminOrderStatus(id, updates = {}) {
     const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$client$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiRequest"])(`/admin/orders/${id}/status`, {
         method: "PATCH",
         body: updates
+    });
+    return res?.data?.order;
+}
+async function assignAdminOrderRider(id, riderId) {
+    const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$client$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiRequest"])(`/admin/orders/${id}/rider`, {
+        method: "PATCH",
+        body: {
+            riderId
+        }
     });
     return res?.data?.order;
 }

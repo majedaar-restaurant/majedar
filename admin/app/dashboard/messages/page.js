@@ -4,6 +4,12 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { PageHeader, StatusBadge, Modal, EmptyState, useToast, Button } from "@/components/ui";
 import { getAdminMessages, updateAdminMessageStatus } from "@/lib/api/messages";
+import {
+  DateFilterControl,
+  FilterSelectControl,
+  ActiveFilterChips,
+  AdminPagination,
+} from "@/components/ui/admin-filters";
 
 export default function MessagesPage() {
   const [messages, setMessages] = useState([]);
@@ -11,6 +17,14 @@ export default function MessagesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [datePreset, setDatePreset] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalMessages, setTotalMessages] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 20;
+
   const [activeMessage, setActiveMessage] = useState(null);
   const [updating, setUpdating] = useState(false);
 
@@ -19,14 +33,28 @@ export default function MessagesPage() {
   const loadMessages = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getAdminMessages();
-      setMessages(Array.isArray(data) ? data : []);
+      const params = {
+        page: currentPage,
+        limit: pageSize,
+      };
+      if (search.trim()) params.search = search.trim();
+      if (datePreset) params.datePreset = datePreset;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+      if (statusFilter !== "all") params.status = statusFilter;
+      if (typeFilter !== "all") params.type = typeFilter;
+
+      const data = await getAdminMessages(params);
+      const list = Array.isArray(data) ? data : (data?.messages || []);
+      setMessages(list);
+      setTotalMessages(data.total ?? list.length);
+      setTotalPages(data.totalPages ?? Math.max(1, Math.ceil((data.total ?? list.length) / pageSize)));
     } catch (err) {
       toast(err.message || "Failed to load customer messages", "danger");
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [currentPage, pageSize, search, datePreset, dateFrom, dateTo, statusFilter, typeFilter, toast]);
 
   useEffect(() => {
     loadMessages();
@@ -50,22 +78,96 @@ export default function MessagesPage() {
     }
   };
 
-  const filteredMessages = useMemo(() => {
-    return messages.filter((msg) => {
-      if (statusFilter !== "all" && msg.status !== statusFilter) return false;
-      if (typeFilter !== "all" && msg.type !== typeFilter) return false;
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        const matchName = msg.name?.toLowerCase().includes(q);
-        const matchEmail = msg.email?.toLowerCase().includes(q);
-        const matchPhone = msg.phone?.toLowerCase().includes(q);
-        const matchMsg = msg.message?.toLowerCase().includes(q);
-        const matchOrder = msg.orderNumber?.toLowerCase().includes(q);
-        if (!matchName && !matchEmail && !matchPhone && !matchMsg && !matchOrder) return false;
-      }
-      return true;
+  const TYPE_LABELS = {
+    complaint: "Complaint",
+    suggestion: "Suggestion",
+    query: "Query & Help",
+    order_issue: "Order Issue",
+  };
+
+  const STATUS_LABEL_MAP = {
+    new: "New",
+    read: "Read",
+    resolved: "Resolved",
+  };
+
+  const activeChips = [];
+  if (search.trim()) {
+    activeChips.push({
+      id: "search",
+      label: "Search",
+      value: `"${search.trim()}"`,
+      onRemove: () => {
+        setSearch("");
+        setCurrentPage(1);
+      },
     });
-  }, [messages, statusFilter, typeFilter, search]);
+  }
+  if (datePreset === "today") {
+    activeChips.push({
+      id: "date",
+      label: "Date",
+      value: "Today",
+      onRemove: () => {
+        setDatePreset("");
+        setCurrentPage(1);
+      },
+    });
+  } else if (datePreset === "this-week") {
+    activeChips.push({
+      id: "date",
+      label: "Date",
+      value: "This Week",
+      onRemove: () => {
+        setDatePreset("");
+        setCurrentPage(1);
+      },
+    });
+  } else if (dateFrom || dateTo) {
+    activeChips.push({
+      id: "date",
+      label: "Date",
+      value: `${dateFrom || "Start"} to ${dateTo || "End"}`,
+      onRemove: () => {
+        setDatePreset("");
+        setDateFrom("");
+        setDateTo("");
+        setCurrentPage(1);
+      },
+    });
+  }
+  if (statusFilter !== "all") {
+    activeChips.push({
+      id: "status",
+      label: "Status",
+      value: STATUS_LABEL_MAP[statusFilter] || statusFilter,
+      onRemove: () => {
+        setStatusFilter("all");
+        setCurrentPage(1);
+      },
+    });
+  }
+  if (typeFilter !== "all") {
+    activeChips.push({
+      id: "type",
+      label: "Type",
+      value: TYPE_LABELS[typeFilter] || typeFilter,
+      onRemove: () => {
+        setTypeFilter("all");
+        setCurrentPage(1);
+      },
+    });
+  }
+
+  const handleClearAllFilters = () => {
+    setSearch("");
+    setDatePreset("");
+    setDateFrom("");
+    setDateTo("");
+    setStatusFilter("all");
+    setTypeFilter("all");
+    setCurrentPage(1);
+  };
 
   const typeBadgeColors = {
     complaint: { bg: "#FEE2E2", text: "#991B1B", label: "Complaint" },
@@ -83,7 +185,6 @@ export default function MessagesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Operations"
         title="Customer Messages"
         description="Customer complaints, suggestions, and support queries."
         action={
@@ -93,51 +194,105 @@ export default function MessagesPage() {
         }
       />
 
-      {/* Filter Bar */}
-      <div className="filter-bar" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
-        <label className="search-input" style={{ flex: "1 1 240px", minWidth: 200 }}>
-          <svg
-            width={14}
-            height={14}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="search"
-            placeholder="Search messages by name, contact, text..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </label>
+      {/* Prominent Filter Toolbar */}
+      <div className="admin-filter-bar">
+        <div className="filter-item-wrapper" style={{ flex: "1 1 240px", minWidth: "200px" }}>
+          <span className="filter-item-label">Search Messages</span>
+          <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <input
+              type="search"
+              placeholder="Search messages by name, contact, text..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              style={{
+                width: "100%",
+                height: "32px",
+                padding: "0 10px 0 28px",
+                border: "1px solid #d1d5db",
+                borderRadius: "5px",
+                fontSize: "12px",
+                color: "var(--ink)",
+                outline: "none",
+                background: "#ffffff",
+              }}
+            />
+            <svg
+              width={14}
+              height={14}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ position: "absolute", left: "8px", color: "var(--muted)", pointerEvents: "none" }}
+              aria-hidden="true"
+            >
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
 
-        <label className="filter-select">
-          <span>Status</span>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="all">All Statuses</option>
-            <option value="new">New</option>
-            <option value="read">Read</option>
-            <option value="resolved">Resolved</option>
-          </select>
-        </label>
+        <DateFilterControl
+          datePreset={datePreset}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onChangePreset={(preset) => {
+            setDatePreset(preset);
+            setDateFrom("");
+            setDateTo("");
+            setCurrentPage(1);
+          }}
+          onApplyCustom={(from, to) => {
+            setDatePreset("custom");
+            setDateFrom(from);
+            setDateTo(to);
+            setCurrentPage(1);
+          }}
+          onClearDate={() => {
+            setDatePreset("");
+            setDateFrom("");
+            setDateTo("");
+            setCurrentPage(1);
+          }}
+        />
 
-        <label className="filter-select">
-          <span>Type</span>
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-            <option value="all">All Types</option>
-            <option value="complaint">Complaints</option>
-            <option value="suggestion">Suggestions</option>
-            <option value="query">Queries</option>
-            <option value="order_issue">Order Issues</option>
-          </select>
-        </label>
+        <FilterSelectControl
+          label="Message Type"
+          value={typeFilter}
+          onChange={(e) => {
+            setTypeFilter(e.target.value);
+            setCurrentPage(1);
+          }}
+          options={[
+            { value: "all", label: "All Types" },
+            { value: "complaint", label: "Complaint" },
+            { value: "suggestion", label: "Suggestion" },
+            { value: "query", label: "Query & Help" },
+            { value: "order_issue", label: "Order Issue" },
+          ]}
+        />
+
+        <FilterSelectControl
+          label="Message Status"
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setCurrentPage(1);
+          }}
+          options={[
+            { value: "all", label: "All Statuses" },
+            { value: "new", label: "New" },
+            { value: "read", label: "Read" },
+            { value: "resolved", label: "Resolved" },
+          ]}
+        />
       </div>
+
+      <ActiveFilterChips chips={activeChips} onClearAll={handleClearAllFilters} />
 
       {/* Messages Table */}
       <section className="surface table-surface">
@@ -159,8 +314,8 @@ export default function MessagesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredMessages.length ? (
-                  filteredMessages.map((item) => {
+                {messages.length ? (
+                  messages.map((item) => {
                     const badge = typeBadgeColors[item.type] || typeBadgeColors.query;
                     const dateFormatted = new Date(item.createdAt).toLocaleDateString("en-IN", {
                       day: "numeric",
@@ -251,8 +406,16 @@ export default function MessagesPage() {
                   <tr>
                     <td colSpan={6}>
                       <EmptyState
-                        title="No messages found"
-                        description="Customer inquiries and complaints will appear here."
+                        title={
+                          activeChips.length > 0
+                            ? "No messages found for this date/status combination"
+                            : "No messages found"
+                        }
+                        description={
+                          activeChips.length > 0
+                            ? "Try adjusting your date range, type, or status filters."
+                            : "Customer inquiries and complaints will appear here."
+                        }
                         compact
                       />
                     </td>
@@ -262,6 +425,14 @@ export default function MessagesPage() {
             </table>
           </div>
         )}
+
+        <AdminPagination
+          page={currentPage}
+          total={totalMessages}
+          limit={pageSize}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </section>
 
       {/* Message Details Modal */}

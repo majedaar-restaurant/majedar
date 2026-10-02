@@ -7,35 +7,34 @@ import {
   StatusBadge,
   Table,
   EmptyState,
-  SearchInput,
   Button,
   Modal,
   useToast,
 } from "@/components/ui";
 import { getAdminPayments, initiateRefund } from "@/lib/api/payments";
-
-const STATUS_LABELS = {
-  created: "Created",
-  pending: "Pending",
-  paid: "Paid",
-  failed: "Failed",
-  refunded: "Refunded",
-};
-
-const STATUS_TONES = {
-  paid: "paid",
-  failed: "cancelled",
-  refunded: "refunded",
-  pending: "pending",
-  created: "neutral",
-};
+import { connectAdminSocket } from "@/lib/socket";
+import {
+  DateFilterControl,
+  FilterSelectControl,
+  ActiveFilterChips,
+  AdminPagination,
+} from "@/components/ui/admin-filters";
 
 export default function PaymentsPage() {
-  const [result, setResult] = useState({ attempts: [], total: 0, page: 1, limit: 50 });
+  const [result, setResult] = useState({
+    records: [],
+    attempts: [],
+    summary: { totalPaid: 0, cashTotal: 0, onlineTotal: 0, count: 0 },
+    total: 0,
+    page: 1,
+    limit: 50,
+  });
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [datePreset, setDatePreset] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 50;
 
@@ -57,60 +56,93 @@ export default function PaymentsPage() {
         page: currentPage,
         limit: pageSize,
       };
-      if (statusFilter !== "all") {
-        params.status = statusFilter;
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+      if (datePreset) {
+        params.datePreset = datePreset;
+      }
+      if (dateFrom) {
+        params.dateFrom = dateFrom;
+      }
+      if (dateTo) {
+        params.dateTo = dateTo;
       }
       if (methodFilter !== "all") {
+        params.paymentMethod = methodFilter;
         params.method = methodFilter;
       }
 
       const data = await getAdminPayments(params);
-      setResult(data || { attempts: [], total: 0, page: 1, limit: pageSize });
+      setResult(
+        data || {
+          records: [],
+          attempts: [],
+          summary: { totalPaid: 0, cashTotal: 0, onlineTotal: 0, count: 0 },
+          total: 0,
+          page: 1,
+          limit: pageSize,
+        }
+      );
     } catch (err) {
       toast(err?.message || "Failed to load payment records", "danger");
     } finally {
       setLoading(false);
     }
-  }, [currentPage, statusFilter, methodFilter, toast]);
+  }, [currentPage, pageSize, searchQuery, datePreset, dateFrom, dateTo, methodFilter, toast]);
 
   useEffect(() => {
     loadPayments();
   }, [loadPayments]);
 
-  const attempts = useMemo(() => result.attempts || [], [result.attempts]);
+  // Real-time synchronization for new/updated payments
+  useEffect(() => {
+    const socket = connectAdminSocket();
+    if (!socket) return;
 
-  // Client-side search filtering across order #, customer, IDs
-  const filteredAttempts = useMemo(() => {
-    if (!searchQuery.trim()) return attempts;
-    const q = searchQuery.trim().toLowerCase();
-    return attempts.filter((a) => {
-      const orderNum = (a.order?.orderNumber || "").toLowerCase();
-      const custName = (a.customer?.name || "").toLowerCase();
-      const custEmail = (a.customer?.email || "").toLowerCase();
-      const custPhone = (a.customer?.phone || "").toLowerCase();
-      const rzpPayId = (a.razorpayPaymentId || "").toLowerCase();
-      const rzpOrdId = (a.razorpayOrderId || "").toLowerCase();
-      const payId = (a._id || "").toLowerCase();
+    socket.emit("join:admin");
 
-      return (
-        orderNum.includes(q) ||
-        custName.includes(q) ||
-        custEmail.includes(q) ||
-        custPhone.includes(q) ||
-        rzpPayId.includes(q) ||
-        rzpOrdId.includes(q) ||
-        payId.includes(q)
-      );
+    const handleRealtimePayment = () => {
+      loadPayments();
+    };
+
+    socket.on("payment:success", handleRealtimePayment);
+    socket.on("order:status_changed", handleRealtimePayment);
+    socket.on("order:confirmed", handleRealtimePayment);
+    socket.on("connect", () => {
+      socket.emit("join:admin");
+      loadPayments();
     });
-  }, [attempts, searchQuery]);
+
+    return () => {
+      socket.off("payment:success", handleRealtimePayment);
+      socket.off("order:status_changed", handleRealtimePayment);
+      socket.off("order:confirmed", handleRealtimePayment);
+    };
+  }, [loadPayments]);
+
+  const payments = useMemo(() => {
+    return result.records || result.attempts || [];
+  }, [result]);
+
+  const summary = useMemo(() => {
+    return (
+      result.summary || {
+        totalPaid: 0,
+        cashTotal: 0,
+        onlineTotal: 0,
+        count: 0,
+      }
+    );
+  }, [result.summary]);
 
   const totalPages = Math.ceil((result.total || 0) / pageSize) || 1;
 
   // Open Details Modal
-  const handleOpenDetails = (attempt) => {
-    setSelectedPayment(attempt);
+  const handleOpenDetails = (payment) => {
+    setSelectedPayment(payment);
     setShowRefundForm(false);
-    setRefundAmountRupees(attempt.amount ? (attempt.amount / 100).toFixed(2) : "");
+    setRefundAmountRupees(payment.amount ? String(payment.amount) : "");
     setRefundReason("");
   };
 
@@ -125,7 +157,7 @@ export default function PaymentsPage() {
       return;
     }
 
-    const maxRupees = selectedPayment.amount / 100;
+    const maxRupees = selectedPayment.amount;
     if (amountInRupees > maxRupees) {
       toast(`Refund amount cannot exceed original payment (₹${maxRupees.toFixed(2)})`, "danger");
       return;
@@ -147,169 +179,326 @@ export default function PaymentsPage() {
     }
   };
 
+  const activeChips = [];
+  if (searchQuery.trim()) {
+    activeChips.push({
+      id: "search",
+      label: "Search",
+      value: `"${searchQuery.trim()}"`,
+      onRemove: () => {
+        setSearchQuery("");
+        setCurrentPage(1);
+      },
+    });
+  }
+  if (datePreset === "today") {
+    activeChips.push({
+      id: "date",
+      label: "Date",
+      value: "Today",
+      onRemove: () => {
+        setDatePreset("");
+        setCurrentPage(1);
+      },
+    });
+  } else if (datePreset === "this-week") {
+    activeChips.push({
+      id: "date",
+      label: "Date",
+      value: "This Week",
+      onRemove: () => {
+        setDatePreset("");
+        setCurrentPage(1);
+      },
+    });
+  } else if (dateFrom || dateTo) {
+    activeChips.push({
+      id: "date",
+      label: "Date",
+      value: `${dateFrom || "Start"} to ${dateTo || "End"}`,
+      onRemove: () => {
+        setDatePreset("");
+        setDateFrom("");
+        setDateTo("");
+        setCurrentPage(1);
+      },
+    });
+  }
+  if (methodFilter !== "all") {
+    activeChips.push({
+      id: "method",
+      label: "Method",
+      value: methodFilter === "cod" ? "Cash / COD" : "Online",
+      onRemove: () => {
+        setMethodFilter("all");
+        setCurrentPage(1);
+      },
+    });
+  }
+
+  const handleClearAllFilters = () => {
+    setSearchQuery("");
+    setDatePreset("");
+    setDateFrom("");
+    setDateTo("");
+    setMethodFilter("all");
+    setCurrentPage(1);
+  };
+
+  const getEmptyMessage = () => {
+    if (datePreset === "today" && methodFilter === "cod") {
+      return "No paid cash payments found for today.";
+    }
+    if (datePreset === "today" && methodFilter === "razorpay") {
+      return "No paid online payments found for today.";
+    }
+    if (datePreset === "today") {
+      return "No paid payments recorded for today.";
+    }
+    if (activeChips.length > 0) {
+      return "No paid payments found for this filter combination.";
+    }
+    return "No paid payments found.";
+  };
+
   return (
     <>
       <PageHeader
-        eyebrow="Operations"
         title="Payments"
-        description={`Authoritative transaction attempts and payment history. Each row is an individual payment attempt. Total records: ${result.total}`}
+        description="Authoritative ledger of actual successful payments. Shows verified Cash/COD collections and Online payments."
       />
 
-      {/* Filter and Search Bar */}
-      <div className="filter-bar" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ flex: "1 1 240px", maxWidth: "340px" }}>
-          <SearchInput
-            placeholder="Search Order #, Customer, Rzp ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      {/* Authoritative Financial Summary Cards (MongoDB Aggregation) */}
+      <section className="summary-grid" style={{ marginBottom: "20px" }}>
+        <article className="summary-card">
+          <p>Total Paid</p>
+          <div className="summary-number" style={{ color: "var(--forest-dark, #11261B)" }}>
+            {loading ? "..." : `₹${Math.round(summary.totalPaid).toLocaleString("en-IN")}`}
+          </div>
+          <div className="summary-note">
+            {summary.count} paid transaction{summary.count === 1 ? "" : "s"} across selected filter
+          </div>
+        </article>
+
+        <article className="summary-card">
+          <p>Cash / COD</p>
+          <div className="summary-number" style={{ color: "#b45309" }}>
+            {loading ? "..." : `₹${Math.round(summary.cashTotal).toLocaleString("en-IN")}`}
+          </div>
+          <div className="summary-note">Collected and confirmed cash on delivery</div>
+        </article>
+
+        <article className="summary-card">
+          <p>Online</p>
+          <div className="summary-number" style={{ color: "#1d4ed8" }}>
+            {loading ? "..." : `₹${Math.round(summary.onlineTotal).toLocaleString("en-IN")}`}
+          </div>
+          <div className="summary-note">Backend verified Razorpay transactions</div>
+        </article>
+      </section>
+
+      {/* Prominent Filter Toolbar */}
+      <div className="admin-filter-bar">
+        <div className="filter-item-wrapper" style={{ flex: "1 1 240px", minWidth: "220px" }}>
+          <span className="filter-item-label">Search Payments</span>
+          <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <input
+              type="search"
+              placeholder="Search Order #, Customer, Rzp ID..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              style={{
+                width: "100%",
+                height: "32px",
+                padding: "0 10px 0 28px",
+                border: "1px solid #d1d5db",
+                borderRadius: "5px",
+                fontSize: "12px",
+                color: "var(--ink)",
+                outline: "none",
+                background: "#ffffff",
+              }}
+            />
+            <svg
+              width={14}
+              height={14}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ position: "absolute", left: "8px", color: "var(--muted)", pointerEvents: "none" }}
+              aria-hidden="true"
+            >
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
         </div>
 
-        <label className="filter-select">
-          <span>Status</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="all">All Statuses</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-            <option value="created">Created</option>
-            <option value="refunded">Refunded</option>
-          </select>
-        </label>
+        <DateFilterControl
+          datePreset={datePreset}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onChangePreset={(preset) => {
+            setDatePreset(preset);
+            setDateFrom("");
+            setDateTo("");
+            setCurrentPage(1);
+          }}
+          onApplyCustom={(from, to) => {
+            setDatePreset("custom");
+            setDateFrom(from);
+            setDateTo(to);
+            setCurrentPage(1);
+          }}
+          onClearDate={() => {
+            setDatePreset("");
+            setDateFrom("");
+            setDateTo("");
+            setCurrentPage(1);
+          }}
+        />
 
-        <label className="filter-select">
-          <span>Method</span>
-          <select
-            value={methodFilter}
-            onChange={(e) => {
-              setMethodFilter(e.target.value);
-              setCurrentPage(1);
+        <FilterSelectControl
+          label="Payment Method"
+          value={methodFilter}
+          onChange={(e) => {
+            setMethodFilter(e.target.value);
+            setCurrentPage(1);
+          }}
+          options={[
+            { value: "all", label: "All Payment Methods" },
+            { value: "cod", label: "Cash / COD" },
+            { value: "razorpay", label: "Online" },
+          ]}
+        />
+
+        {/* Status Indicator (Authoritatively Paid Only) */}
+        <div className="filter-item-wrapper" style={{ minWidth: "130px" }}>
+          <span className="filter-item-label">Payment Scope</span>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              height: "32px",
+              padding: "0 10px",
+              background: "#f0fdf4",
+              border: "1px solid #bbf7d0",
+              borderRadius: "5px",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "#166534",
             }}
           >
-            <option value="all">All Methods</option>
-            <option value="upi">UPI</option>
-            <option value="card">Card</option>
-            <option value="netbanking">Net Banking</option>
-            <option value="wallet">Wallet</option>
-          </select>
-        </label>
+            <span>✓</span> Paid Only
+          </div>
+        </div>
       </div>
+
+      <ActiveFilterChips chips={activeChips} onClearAll={handleClearAllFilters} />
 
       {/* Main Table Surface */}
       <section className="surface data-surface">
         {loading ? (
           <div style={{ padding: "40px", textAlign: "center", color: "var(--muted)" }}>
-            Loading payment records from backend...
+            Loading paid payments from backend...
           </div>
-        ) : filteredAttempts.length === 0 ? (
+        ) : payments.length === 0 ? (
           <EmptyState
-            title="No payment records found"
-            description="Payment attempt records will appear here as customers place and process orders."
+            title={getEmptyMessage()}
+            description={
+              activeChips.length > 0
+                ? "Try adjusting your date range, payment method, or search query."
+                : "Paid payments will appear here as cash orders are collected or online payments are completed."
+            }
           />
         ) : (
           <Table
             columns={[
-              "Payment / Razorpay ID",
+              "Payment / Transaction ID",
               "Order #",
               "Customer",
+              "Payment Method",
               "Amount",
-              "Method",
+              "Paid At",
               "Status",
-              "Date & Time",
               "Actions",
             ]}
-            rows={filteredAttempts}
-            renderRow={(attempt) => {
-              const customerName = attempt.customer?.name || "Customer";
-              const orderNumber = attempt.order?.orderNumber || "—";
-              const orderId = attempt.order?._id || attempt.order;
-              const amountRupees = attempt.amount ? (attempt.amount / 100).toFixed(2) : "0.00";
+            rows={payments}
+            renderRow={(payment) => {
+              const customerName = payment.customer?.name || "Customer";
+              const orderNumber = payment.orderNumber || payment.order?.orderNumber || "—";
+              const orderId = payment.orderId || payment.order?._id || payment.order;
+              const isOnline = payment.paymentMethod === "razorpay";
+              const amountRupees = Number(payment.amount || 0).toFixed(2);
 
-              const formattedDate = attempt.createdAt
-                ? new Date(attempt.createdAt).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+              const formattedDate = payment.paidAt || payment.createdAt
+                ? new Date(payment.paidAt || payment.createdAt).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
                 : "—";
 
-              const statusTone = STATUS_TONES[attempt.status] || "neutral";
-
               return (
-                <tr key={attempt._id}>
+                <tr key={payment._id}>
                   <td>
                     <code style={{ fontSize: "11.5px", fontWeight: 600 }}>
-                      {attempt.razorpayPaymentId || attempt._id?.slice(-8) || "—"}
+                      {payment.transactionId || payment.razorpayPaymentId || "—"}
                     </code>
-                    {attempt.razorpayOrderId && (
+                    {payment.razorpayOrderId && (
                       <small className="muted" style={{ display: "block", fontSize: "10.5px" }}>
-                        Order: {attempt.razorpayOrderId}
+                        Rzp Order: {payment.razorpayOrderId}
                       </small>
                     )}
                   </td>
                   <td>
                     <strong>{orderNumber}</strong>
-                    {attempt.refundId && (
+                    {payment.refundId && (
                       <small className="muted" style={{ display: "block", fontSize: "10px", color: "var(--purple, #7c3aed)" }}>
-                        Refund: {attempt.refundId}
+                        Refund: {payment.refundId}
                       </small>
                     )}
                   </td>
                   <td>
                     <strong>{customerName}</strong>
-                    {attempt.customer?.phone && (
+                    {payment.customer?.phone && (
                       <small className="muted" style={{ display: "block", fontSize: "11px" }}>
-                        {attempt.customer.phone}
-                      </small>
-                    )}
-                  </td>
-                  <td>
-                    <strong style={{ fontSize: "13px" }}>₹{amountRupees}</strong>
-                    {attempt.refundAmount && (
-                      <small className="muted" style={{ display: "block", fontSize: "10px", color: "var(--purple, #7c3aed)" }}>
-                        Refunded: ₹{(attempt.refundAmount / 100).toFixed(2)}
+                        {payment.customer.phone}
                       </small>
                     )}
                   </td>
                   <td>
                     <span
                       style={{
-                        textTransform: "uppercase",
-                        fontWeight: 600,
+                        display: "inline-block",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        fontWeight: 700,
                         fontSize: "11px",
-                        letterSpacing: "0.5px",
+                        letterSpacing: "0.4px",
+                        background: isOnline ? "#eff6ff" : "#fef3c7",
+                        color: isOnline ? "#1e40af" : "#92400e",
+                        border: isOnline ? "1px solid #bfdbfe" : "1px solid #fde68a",
                       }}
                     >
-                      {attempt.method || "ONLINE"}
+                      {isOnline ? "Online" : "Cash / COD"}
                     </span>
                   </td>
                   <td>
-                    <StatusBadge tone={statusTone}>
-                      {STATUS_LABELS[attempt.status] || attempt.status}
-                    </StatusBadge>
-                    {attempt.failureReason && (
-                      <small
-                        style={{
-                          display: "block",
-                          color: "var(--danger, #dc2626)",
-                          fontSize: "10px",
-                          marginTop: "2px",
-                          maxWidth: "140px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                        title={attempt.failureReason}
-                      >
-                        {attempt.failureReason}
+                    <strong style={{ fontSize: "13.5px", color: "var(--forest-dark, #11261B)" }}>
+                      ₹{amountRupees}
+                    </strong>
+                    {payment.refundAmount && (
+                      <small className="muted" style={{ display: "block", fontSize: "10px", color: "var(--purple, #7c3aed)" }}>
+                        Refunded: ₹{(payment.refundAmount / 100).toFixed(2)}
                       </small>
                     )}
                   </td>
@@ -317,11 +506,16 @@ export default function PaymentsPage() {
                     {formattedDate}
                   </td>
                   <td>
+                    <StatusBadge tone="paid">
+                      Paid
+                    </StatusBadge>
+                  </td>
+                  <td>
                     <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                       <button
                         type="button"
                         className="row-action"
-                        onClick={() => handleOpenDetails(attempt)}
+                        onClick={() => handleOpenDetails(payment)}
                         style={{ cursor: "pointer" }}
                       >
                         Details
@@ -339,92 +533,19 @@ export default function PaymentsPage() {
           />
         )}
 
-        {/* Pagination bar */}
-        {!loading && totalPages > 1 && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "12px 18px",
-              borderTop: "1px solid var(--line-soft)",
-              fontSize: "12px",
-              color: "var(--muted)",
-            }}
-          >
-            <span>
-              Showing Page {currentPage} of {totalPages} ({result.total} total records)
-            </span>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                type="button"
-                className="button button-secondary"
-                disabled={currentPage <= 1}
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                style={{ padding: "4px 12px", fontSize: "11px" }}
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                className="button button-secondary"
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                style={{ padding: "4px 12px", fontSize: "11px" }}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminPagination
+          page={currentPage}
+          total={result.total}
+          limit={pageSize}
+          totalPages={totalPages}
+          onPageChange={(p) => setCurrentPage(p)}
+        />
       </section>
-
-      {/* Summary Stats Footer */}
-      {!loading && attempts.length > 0 && (
-        <section className="surface" style={{ marginTop: "16px" }}>
-          <div style={{ padding: "16px 20px", display: "flex", gap: "28px", flexWrap: "wrap" }}>
-            <div>
-              <div style={{ fontSize: "11px", color: "var(--muted)", marginBottom: "2px" }}>
-                Total Records
-              </div>
-              <strong>{result.total}</strong>
-            </div>
-            <div>
-              <div style={{ fontSize: "11px", color: "var(--muted)", marginBottom: "2px" }}>
-                Paid Attempts
-              </div>
-              <strong style={{ color: "var(--forest-mid, #16a34a)" }}>
-                {attempts.filter((a) => a.status === "paid").length}
-              </strong>
-            </div>
-            <div>
-              <div style={{ fontSize: "11px", color: "var(--muted)", marginBottom: "2px" }}>
-                Failed Attempts
-              </div>
-              <strong style={{ color: "var(--danger, #dc2626)" }}>
-                {attempts.filter((a) => a.status === "failed").length}
-              </strong>
-            </div>
-            <div>
-              <div style={{ fontSize: "11px", color: "var(--muted)", marginBottom: "2px" }}>
-                Verified Paid Revenue (This Page)
-              </div>
-              <strong style={{ color: "var(--forest-mid, #16a34a)" }}>
-                ₹{(
-                  attempts
-                    .filter((a) => a.status === "paid")
-                    .reduce((sum, a) => sum + (a.amount || 0), 0) / 100
-                ).toFixed(2)}
-              </strong>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Payment Details Modal */}
       {selectedPayment && (
         <Modal
-          title={`Payment Attempt Details`}
+          title="Paid Transaction Details"
           onClose={() => {
             setSelectedPayment(null);
             setShowRefundForm(false);
@@ -448,11 +569,11 @@ export default function PaymentsPage() {
                   Restaurant Order
                 </span>
                 <p style={{ margin: 0, fontWeight: 700, fontSize: "13px" }}>
-                  {selectedPayment.order?.orderNumber || "—"}
+                  {selectedPayment.orderNumber || selectedPayment.order?.orderNumber || "—"}
                 </p>
-                {selectedPayment.order?._id && (
+                {(selectedPayment.orderId || selectedPayment.order?._id) && (
                   <Link
-                    href={`/dashboard/orders/${selectedPayment.order._id}`}
+                    href={`/dashboard/orders/${selectedPayment.orderId || selectedPayment.order?._id}`}
                     style={{ fontSize: "11px", color: "var(--forest-mid)", textDecoration: "underline" }}
                   >
                     Open Order Details →
@@ -461,11 +582,11 @@ export default function PaymentsPage() {
               </div>
               <div>
                 <span className="detail-label" style={{ fontSize: "11px", color: "var(--muted)" }}>
-                  Payment Status
+                  Status
                 </span>
                 <div>
-                  <StatusBadge tone={STATUS_TONES[selectedPayment.status] || "neutral"}>
-                    {STATUS_LABELS[selectedPayment.status] || selectedPayment.status}
+                  <StatusBadge tone="paid">
+                    Paid
                   </StatusBadge>
                 </div>
               </div>
@@ -474,17 +595,17 @@ export default function PaymentsPage() {
             {/* Technical Identifiers */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               <div className="delivery-field">
-                <span style={{ fontSize: "11px", color: "var(--muted)" }}>Razorpay Payment ID</span>
-                <code style={{ fontSize: "12px" }}>{selectedPayment.razorpayPaymentId || "Not initiated / Pending"}</code>
+                <span style={{ fontSize: "11px", color: "var(--muted)" }}>Transaction Reference</span>
+                <code style={{ fontSize: "12px" }}>
+                  {selectedPayment.transactionId || selectedPayment.razorpayPaymentId || `COD-${selectedPayment.orderNumber}`}
+                </code>
               </div>
-              <div className="delivery-field">
-                <span style={{ fontSize: "11px", color: "var(--muted)" }}>Razorpay Order ID</span>
-                <code style={{ fontSize: "12px" }}>{selectedPayment.razorpayOrderId || "—"}</code>
-              </div>
-              <div className="delivery-field">
-                <span style={{ fontSize: "11px", color: "var(--muted)" }}>Attempt Internal ID</span>
-                <code style={{ fontSize: "11px" }}>{selectedPayment._id}</code>
-              </div>
+              {selectedPayment.razorpayOrderId && (
+                <div className="delivery-field">
+                  <span style={{ fontSize: "11px", color: "var(--muted)" }}>Razorpay Order ID</span>
+                  <code style={{ fontSize: "12px" }}>{selectedPayment.razorpayOrderId}</code>
+                </div>
+              )}
             </div>
 
             {/* Customer & Amount */}
@@ -514,35 +635,16 @@ export default function PaymentsPage() {
 
               <div>
                 <span className="detail-label" style={{ fontSize: "11px", color: "var(--muted)" }}>
-                  Authoritative Amount
+                  Paid Amount
                 </span>
                 <p style={{ margin: 0, fontWeight: 700, fontSize: "16px", color: "var(--forest-dark)" }}>
-                  ₹{selectedPayment.amount ? (selectedPayment.amount / 100).toFixed(2) : "0.00"}{" "}
-                  <span style={{ fontSize: "11px", fontWeight: 400, color: "var(--muted)" }}>
-                    ({selectedPayment.currency || "INR"})
-                  </span>
+                  ₹{Number(selectedPayment.amount || 0).toFixed(2)}
                 </p>
                 <small className="muted" style={{ display: "block", fontSize: "11px", textTransform: "uppercase" }}>
-                  Method: {selectedPayment.method || "Online"}
+                  Method: {selectedPayment.methodDisplay || (selectedPayment.paymentMethod === "razorpay" ? "Online" : "Cash / COD")}
                 </small>
               </div>
             </div>
-
-            {/* Failure Reason if any */}
-            {selectedPayment.failureReason && (
-              <div
-                style={{
-                  padding: "10px",
-                  background: "var(--danger-subtle, #fef2f2)",
-                  border: "1px solid var(--danger-border, #fecaca)",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  color: "var(--danger, #dc2626)",
-                }}
-              >
-                <strong>Failure Reason: </strong> {selectedPayment.failureReason}
-              </div>
-            )}
 
             {/* Timestamps */}
             <div
@@ -557,20 +659,20 @@ export default function PaymentsPage() {
               }}
             >
               <div>
-                <span>Created: </span>
+                <span>Order Placed: </span>
                 <strong>
                   {selectedPayment.createdAt ? new Date(selectedPayment.createdAt).toLocaleString("en-IN") : "—"}
                 </strong>
               </div>
               <div>
-                <span>Updated: </span>
+                <span>Paid At: </span>
                 <strong>
-                  {selectedPayment.updatedAt ? new Date(selectedPayment.updatedAt).toLocaleString("en-IN") : "—"}
+                  {selectedPayment.paidAt ? new Date(selectedPayment.paidAt).toLocaleString("en-IN") : "—"}
                 </strong>
               </div>
             </div>
 
-            {/* Refund Information */}
+            {/* Refund Information if Razorpay online */}
             {selectedPayment.refundId ? (
               <div
                 style={{
@@ -590,8 +692,7 @@ export default function PaymentsPage() {
                 </div>
                 <div>Status: <span style={{ textTransform: "capitalize" }}>{selectedPayment.refundStatus || "processed"}</span></div>
               </div>
-            ) : selectedPayment.status === "paid" ? (
-              /* Initiate Refund section */
+            ) : selectedPayment.paymentMethod === "razorpay" && selectedPayment.razorpayPaymentId ? (
               <div style={{ borderTop: "1px solid var(--line-soft)", paddingTop: "12px" }}>
                 {!showRefundForm ? (
                   <Button
@@ -612,7 +713,7 @@ export default function PaymentsPage() {
                       <input
                         type="number"
                         step="0.01"
-                        max={selectedPayment.amount / 100}
+                        max={selectedPayment.amount}
                         min="1"
                         value={refundAmountRupees}
                         onChange={(e) => setRefundAmountRupees(e.target.value)}

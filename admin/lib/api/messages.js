@@ -10,7 +10,15 @@ export async function getAdminMessages(params = {}) {
   const qs = query.toString();
   const endpoint = `/admin/messages${qs ? `?${qs}` : ""}`;
   const res = await apiRequest(endpoint);
-  return res?.data || [];
+  const data = res?.data;
+  if (!data) return [];
+  const messagesList = Array.isArray(data) ? data : (data.messages || []);
+  messagesList.total = data.total ?? messagesList.length;
+  messagesList.page = data.page ?? 1;
+  messagesList.limit = data.limit ?? messagesList.length;
+  messagesList.totalPages = data.totalPages ?? 1;
+  messagesList.messages = messagesList;
+  return messagesList;
 }
 
 export async function getAdminMessageById(id) {

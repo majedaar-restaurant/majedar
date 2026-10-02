@@ -97,7 +97,6 @@ export default function CustomersPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Operations"
         title="Customers"
         description="Verified customer profiles and lifetime activity aggregated from real store orders."
       />
@@ -150,12 +149,12 @@ export default function CustomersPage() {
             renderRow={(c) => {
               const lastStr = c.lastOrder
                 ? c.lastOrder.toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
                 : "—";
 
               return (

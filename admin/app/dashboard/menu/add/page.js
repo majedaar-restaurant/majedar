@@ -137,7 +137,6 @@ export default function AddMenuItemPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Menu Management"
         title="Add Menu Item"
         description="Add a new dish to the Majedaar menu with authoritative pricing."
       />

@@ -29,7 +29,6 @@ export default function ProfilePage() {
   return (
     <>
       <PageHeader
-        eyebrow="Your account"
         title="Admin Profile"
         description="Authenticated administrator account details."
       />

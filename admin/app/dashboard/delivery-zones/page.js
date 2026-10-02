@@ -125,7 +125,6 @@ export default function DeliveryZonesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Operations"
         title="Delivery Zones"
         description="Manage serviceable areas and authoritative tiered delivery rates (0–3 KM → ₹15, 3–5 KM → ₹30)."
         action={<Button onClick={openAdd}>+ Add Service Area</Button>}
@@ -273,8 +272,8 @@ export default function DeliveryZonesPage() {
                 {submitting
                   ? "Saving..."
                   : editTarget
-                  ? "Save Changes"
-                  : "Add Area"}
+                    ? "Save Changes"
+                    : "Add Area"}
               </Button>
             </div>
           </form>

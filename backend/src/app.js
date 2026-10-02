@@ -25,6 +25,7 @@ import adminPaymentRoutes from './routes/admin-payment.routes.js';
 import adminReviewRoutes from './routes/admin-review.routes.js';
 import adminMessageRoutes from './routes/admin-message.routes.js';
 import adminPushRoutes from './routes/admin-push.routes.js';
+import adminRiderRoutes from './routes/admin-rider.routes.js';
 
 import { notFoundHandler } from './middleware/not-found.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
@@ -70,6 +71,7 @@ app.use('/api/admin/payments', adminPaymentRoutes);
 app.use('/api/admin/reviews', adminReviewRoutes);
 app.use('/api/admin/messages', adminMessageRoutes);
 app.use('/api/admin/push', adminPushRoutes);
+app.use('/api/admin/riders', adminRiderRoutes);
 
 // Fallback 404 handler for unmatched endpoints
 app.use(notFoundHandler);

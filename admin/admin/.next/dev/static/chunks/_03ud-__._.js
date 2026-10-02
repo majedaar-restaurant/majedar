@@ -123,7 +123,6 @@ function CategoriesPage() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PageHeader"], {
-                eyebrow: "Menu Management",
                 title: "Categories",
                 description: "Organise the menu so guests can find their favourites.",
                 action: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -131,7 +130,7 @@ function CategoriesPage() {
                     children: "+ Add Category"
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/categories/page.js",
-                    lineNumber: 130,
+                    lineNumber: 129,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
@@ -148,14 +147,14 @@ function CategoriesPage() {
                 children: "Loading categories..."
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/categories/page.js",
-                lineNumber: 134,
+                lineNumber: 133,
                 columnNumber: 9
             }, this) : categories.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["EmptyState"], {
                 title: "No categories found",
                 description: "Click '+ Add Category' to create your first category."
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/categories/page.js",
-                lineNumber: 138,
+                lineNumber: 137,
                 columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "category-grid",
@@ -182,19 +181,19 @@ function CategoriesPage() {
                                     unoptimized: true
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 157,
+                                    lineNumber: 156,
                                     columnNumber: 19
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                lineNumber: 147,
+                                lineNumber: 146,
                                 columnNumber: 17
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 className: "category-image",
                                 children: category.name.slice(0, 2).toUpperCase()
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                lineNumber: 167,
+                                lineNumber: 166,
                                 columnNumber: 17
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -203,7 +202,7 @@ function CategoriesPage() {
                                         children: category.name
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/categories/page.js",
-                                        lineNumber: 172,
+                                        lineNumber: 171,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
@@ -214,18 +213,18 @@ function CategoriesPage() {
                                             children: category.isActive ? "Active" : "Inactive"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/categories/page.js",
-                                            lineNumber: 174,
+                                            lineNumber: 173,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/categories/page.js",
-                                        lineNumber: 173,
+                                        lineNumber: 172,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                lineNumber: 171,
+                                lineNumber: 170,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -254,17 +253,17 @@ function CategoriesPage() {
                                                 d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                                lineNumber: 197,
+                                                lineNumber: 196,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/categories/page.js",
-                                            lineNumber: 186,
+                                            lineNumber: 185,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/categories/page.js",
-                                        lineNumber: 180,
+                                        lineNumber: 179,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -289,34 +288,34 @@ function CategoriesPage() {
                                                 d: "M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                                lineNumber: 218,
+                                                lineNumber: 217,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/categories/page.js",
-                                            lineNumber: 207,
+                                            lineNumber: 206,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/categories/page.js",
-                                        lineNumber: 200,
+                                        lineNumber: 199,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                lineNumber: 179,
+                                lineNumber: 178,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, category._id, true, {
                         fileName: "[project]/app/dashboard/categories/page.js",
-                        lineNumber: 145,
+                        lineNumber: 144,
                         columnNumber: 13
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/categories/page.js",
-                lineNumber: 143,
+                lineNumber: 142,
                 columnNumber: 9
             }, this),
             modalOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Modal"], {
@@ -333,7 +332,7 @@ function CategoriesPage() {
                                     children: "Category Name"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 234,
+                                    lineNumber: 233,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -344,13 +343,13 @@ function CategoriesPage() {
                                     disabled: submitting
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 235,
+                                    lineNumber: 234,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/categories/page.js",
-                            lineNumber: 233,
+                            lineNumber: 232,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -365,20 +364,20 @@ function CategoriesPage() {
                                             children: "Active Status"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/categories/page.js",
-                                            lineNumber: 246,
+                                            lineNumber: 245,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                             children: "Allow customers to see dishes in this category."
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/categories/page.js",
-                                            lineNumber: 247,
+                                            lineNumber: 246,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 245,
+                                    lineNumber: 244,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Toggle"], {
@@ -387,13 +386,13 @@ function CategoriesPage() {
                                     label: "Toggle category active status"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 249,
+                                    lineNumber: 248,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/categories/page.js",
-                            lineNumber: 244,
+                            lineNumber: 243,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -410,7 +409,7 @@ function CategoriesPage() {
                                     children: "Category Image"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 257,
+                                    lineNumber: 256,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -423,7 +422,7 @@ function CategoriesPage() {
                                     onChange: handleFileChange
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 260,
+                                    lineNumber: 259,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -457,25 +456,25 @@ function CategoriesPage() {
                                                     unoptimized: true
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                                    lineNumber: 284,
+                                                    lineNumber: 283,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                                lineNumber: 274,
+                                                lineNumber: 273,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 children: "Click to choose another image"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                                lineNumber: 293,
+                                                lineNumber: 292,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/categories/page.js",
-                                        lineNumber: 273,
+                                        lineNumber: 272,
                                         columnNumber: 19
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                                         children: [
@@ -495,48 +494,48 @@ function CategoriesPage() {
                                                         d: "M4 16l4-4m0 0l4 4m-4-4v12M20 16V8a2 2 0 00-2-2H6a2 2 0 00-2 2v2"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/categories/page.js",
-                                                        lineNumber: 309,
+                                                        lineNumber: 308,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                                    lineNumber: 298,
+                                                    lineNumber: 297,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                                lineNumber: 297,
+                                                lineNumber: 296,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                                 children: "Choose a category image"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                                lineNumber: 312,
+                                                lineNumber: 311,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
                                                 children: "JPG, PNG or WEBP · max 5 MB"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/categories/page.js",
-                                                lineNumber: 313,
+                                                lineNumber: 312,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/categories/page.js",
-                                        lineNumber: 296,
+                                        lineNumber: 295,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 267,
+                                    lineNumber: 266,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/categories/page.js",
-                            lineNumber: 256,
+                            lineNumber: 255,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -552,7 +551,7 @@ function CategoriesPage() {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 320,
+                                    lineNumber: 319,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -561,24 +560,24 @@ function CategoriesPage() {
                                     children: submitting ? "Saving..." : editTarget ? "Save Changes" : "Add Category"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/categories/page.js",
-                                    lineNumber: 327,
+                                    lineNumber: 326,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/categories/page.js",
-                            lineNumber: 319,
+                            lineNumber: 318,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/dashboard/categories/page.js",
-                    lineNumber: 232,
+                    lineNumber: 231,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/categories/page.js",
-                lineNumber: 228,
+                lineNumber: 227,
                 columnNumber: 9
             }, this)
         ]

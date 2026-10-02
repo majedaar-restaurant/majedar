@@ -10,7 +10,15 @@ export async function getAdminOrders(params = {}) {
   const queryString = query.toString();
   const endpoint = `/admin/orders${queryString ? `?${queryString}` : ""}`;
   const res = await apiRequest(endpoint);
-  return res?.data?.orders || [];
+  const data = res?.data;
+  if (!data) return [];
+  const ordersList = Array.isArray(data) ? data : (data.orders || []);
+  ordersList.total = data.total ?? ordersList.length;
+  ordersList.page = data.page ?? 1;
+  ordersList.limit = data.limit ?? ordersList.length;
+  ordersList.totalPages = data.totalPages ?? 1;
+  ordersList.orders = ordersList;
+  return ordersList;
 }
 
 export async function getAdminOrderById(id) {
@@ -22,6 +30,14 @@ export async function updateAdminOrderStatus(id, updates = {}) {
   const res = await apiRequest(`/admin/orders/${id}/status`, {
     method: "PATCH",
     body: updates,
+  });
+  return res?.data?.order;
+}
+
+export async function assignAdminOrderRider(id, riderId) {
+  const res = await apiRequest(`/admin/orders/${id}/rider`, {
+    method: "PATCH",
+    body: { riderId },
   });
   return res?.data?.order;
 }

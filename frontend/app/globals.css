@@ -66,8 +66,9 @@
 }
 
 .hero-category-ticker__thumb {
-  width: 3.5rem; /* ~56px desktop */
-  height: 3.5rem;
+  width: 5rem;
+  /* ~80px desktop - prominent, appetizing circular dish visual */
+  height: 5rem;
   border-radius: 9999px;
   overflow: hidden;
   flex-shrink: 0;
@@ -118,25 +119,53 @@
 @media (max-width: 640px) {
   .hero-category-ticker {
     width: 100%;
-    margin: 0 auto 1.5rem;
-    padding: 0.5rem 0;
-    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    margin: 0 auto 1.75rem;
+    padding: 0.75rem 0;
+    mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    overflow: hidden;
   }
 
   .hero-category-ticker__track {
-    gap: 1.5rem;
+    gap: 1.75rem;
+  }
+
+  .hero-category-ticker__item {
+    min-width: 5.75rem;
   }
 
   .hero-category-ticker__content {
-    font-size: 0.6875rem;
-    gap: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    gap: 0.5rem;
   }
 
   .hero-category-ticker__thumb {
-    width: 2.875rem; /* ~46px mobile */
-    height: 2.875rem;
-    border-width: 1.5px;
+    width: 4.75rem;
+    /* ~76px mobile - noticeably larger, appetizing circular dish */
+    height: 4.75rem;
+    border-width: 2.5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-category-ticker__track {
+    gap: 1.25rem;
+  }
+
+  .hero-category-ticker__item {
+    min-width: 4.875rem;
+  }
+
+  .hero-category-ticker__thumb {
+    width: 4.125rem;
+    /* ~66px on very small screens to fit ~3 items */
+    height: 4.125rem;
+  }
+
+  .hero-category-ticker__content {
+    font-size: 0.75rem;
   }
 }
 
@@ -166,7 +195,9 @@ html {
   box-sizing: border-box;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: inherit;
 }
 
@@ -181,6 +212,7 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -229,23 +261,28 @@ body {
   .bg-warm-bg {
     background-color: #FAF8F5;
   }
+
   .bg-sage-bg {
     background-color: #F2F7F4;
   }
+
   .text-forest {
     color: #1B3B2B;
   }
+
   .bg-forest {
     background-color: #1B3B2B;
   }
+
   .border-forest {
     border-color: #1B3B2B;
   }
+
   .text-accent {
     color: #C85A17;
   }
+
   .bg-accent {
     background-color: #C85A17;
   }
 }
-

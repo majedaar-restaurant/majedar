@@ -3,6 +3,7 @@ import {
     getAdminOrders,
     getAdminOrderById,
     updateOrderStatus,
+    assignRider,
 } from '../controllers/order.controller.js';
 import { authenticateAdmin } from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../middleware/admin.middleware.js';
@@ -10,6 +11,7 @@ import { validate } from '../middleware/validation.middleware.js';
 import {
     orderIdParamSchema,
     updateOrderStatusSchema,
+    assignOrderRiderSchema,
     orderQuerySchema,
 } from '../validators/order.validator.js';
 
@@ -26,6 +28,12 @@ router.patch(
     validate(orderIdParamSchema, 'params'),
     validate(updateOrderStatusSchema, 'body'),
     updateOrderStatus
+);
+router.patch(
+    '/:id/rider',
+    validate(orderIdParamSchema, 'params'),
+    validate(assignOrderRiderSchema, 'body'),
+    assignRider
 );
 
 export default router;

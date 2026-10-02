@@ -115,19 +115,49 @@ export const createOrderSchema = z
     })
     .strip();
 
+export const ORDER_STATUSES = [
+    'placed',
+    'confirmed',
+    'preparing',
+    'ready_for_pickup',
+    'out_for_delivery',
+    'completed',
+    'cancelled',
+    'expired',
+];
+
 export const updateOrderStatusSchema = z
     .object({
-        orderStatus: z.enum(['placed', 'preparing', 'completed', 'cancelled'], {
+        orderStatus: z.enum(ORDER_STATUSES, {
             required_error: 'Order status is required',
         }),
         paymentStatus: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
     })
     .strip();
 
+export const assignOrderRiderSchema = z
+    .object({
+        riderId: z
+            .string({ required_error: 'Rider ID is required' })
+            .regex(objectIdRegex, 'Invalid rider ID format')
+            .nullable(),
+    })
+    .strip();
+
 export const orderQuerySchema = z
     .object({
-        orderStatus: z.enum(['placed', 'preparing', 'completed', 'cancelled']).optional(),
+        orderStatus: z.enum(ORDER_STATUSES).optional(),
         paymentStatus: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
+        search: z.string().trim().optional(),
+        datePreset: z.enum(['today', 'this-week', 'this_week', 'custom']).optional(),
+        dateFrom: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/, 'dateFrom must be in YYYY-MM-DD format')
+            .optional(),
+        dateTo: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/, 'dateTo must be in YYYY-MM-DD format')
+            .optional(),
         page: z
             .union([
                 z.number().int().min(1),
@@ -141,6 +171,18 @@ export const orderQuerySchema = z
             ])
             .optional(),
     })
+    .refine(
+        (data) => {
+            if (data.dateFrom && data.dateTo) {
+                return data.dateFrom <= data.dateTo;
+            }
+            return true;
+        },
+        {
+            message: 'dateFrom cannot be after dateTo',
+            path: ['dateFrom'],
+        }
+    )
     .strip();
 
 export const reportOrderIssueSchema = z

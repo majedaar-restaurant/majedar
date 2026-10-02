@@ -7,7 +7,6 @@ export default function BookingsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Front of House"
         title="Table Bookings"
         description="Dine-in table reservation system."
       />
