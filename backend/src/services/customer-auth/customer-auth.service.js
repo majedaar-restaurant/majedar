@@ -286,6 +286,21 @@ export const updateCustomerAddress = async (customerId, addressId, addressData) 
         });
     }
 
+    // Fix stale coordinates: If street address text changed and no new coordinates are provided,
+    // clear the old location coordinates to prevent associating Address A coords with Address B.
+    const addressChanged = addressData.address && addressData.address.trim() !== addr.address;
+    const hasNewLocation = addressData.location && typeof addressData.location.latitude === 'number' && typeof addressData.location.longitude === 'number';
+
+    if (addressChanged && !hasNewLocation) {
+        addr.location = {
+            latitude: null,
+            longitude: null,
+            placeId: null,
+            formattedAddress: null,
+            source: 'manual',
+        };
+    }
+
     Object.assign(addr, addressData);
     await customer.save();
     return customer.addresses;

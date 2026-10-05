@@ -46,6 +46,52 @@ const orderItemSnapshotSchema = new mongoose.Schema(
     { _id: false }
 );
 
+const locationSchema = new mongoose.Schema(
+    {
+        latitude: {
+            type: Number,
+            min: [-90, 'Latitude must be between -90 and 90'],
+            max: [90, 'Latitude must be between -90 and 90'],
+            default: null,
+        },
+        longitude: {
+            type: Number,
+            min: [-180, 'Longitude must be between -180 and 180'],
+            max: [180, 'Longitude must be between -180 and 180'],
+            default: null,
+        },
+        placeId: {
+            type: String,
+            trim: true,
+            default: null,
+        },
+        formattedAddress: {
+            type: String,
+            trim: true,
+            default: null,
+        },
+        source: {
+            type: String,
+            enum: ['google_places', 'current_location', 'manual'],
+            default: 'manual',
+        },
+        distanceMeters: {
+            type: Number,
+            default: null,
+        },
+        distanceKm: {
+            type: Number,
+            default: null,
+        },
+        formattedDistance: {
+            type: String,
+            trim: true,
+            default: null,
+        },
+    },
+    { _id: false }
+);
+
 const deliveryAddressSchema = new mongoose.Schema(
     {
         firstName: {
@@ -97,6 +143,10 @@ const deliveryAddressSchema = new mongoose.Schema(
         deliveryInstructionOther: {
             type: String,
             trim: true,
+            default: null,
+        },
+        location: {
+            type: locationSchema,
             default: null,
         },
     },

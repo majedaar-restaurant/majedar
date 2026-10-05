@@ -1812,6 +1812,14 @@ function formatOrderForWhatsApp(order) {
     if (landmark) {
         deliveryLines.push(`Landmark: ${landmark}`);
     }
+    // Optional Customer Location link if valid coordinates exist
+    const loc = order.deliveryAddress?.location || order.location;
+    const lat = loc?.latitude ?? order.deliveryAddress?.latitude;
+    const lng = loc?.longitude ?? order.deliveryAddress?.longitude;
+    const isValidCoord = (n, min, max)=>typeof n === "number" && !isNaN(n) && n >= min && n <= max;
+    if (isValidCoord(lat, -90, 90) && isValidCoord(lng, -180, 180)) {
+        deliveryLines.push(`Customer Location:\nhttps://www.google.com/maps?q=${lat},${lng}`);
+    }
     if (finalInstructions) {
         deliveryLines.push(`Delivery: ${finalInstructions}`);
     }

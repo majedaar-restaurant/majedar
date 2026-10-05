@@ -29,6 +29,7 @@ import {
     emitOrderCancelled,
     emitRiderAssigned,
 } from '../../socket/socket.server.js';
+import { calculateRouteDistance } from '../delivery/distance.service.js';
 
 export const createOrder = async (customerId, orderData) => {
 
@@ -139,9 +140,64 @@ export const createOrder = async (customerId, orderData) => {
     const deliveryAddress = orderData.deliveryAddress ? { ...orderData.deliveryAddress } : {};
     const zoneId = orderData.deliveryZoneId || deliveryAddress.deliveryZoneId;
 
+    // Validate and sanitize location if provided
+    let hasValidCoords = false;
+    let validLat = null;
+    let validLng = null;
+
+    if (deliveryAddress.location) {
+        const lat = deliveryAddress.location.latitude;
+        const lng = deliveryAddress.location.longitude;
+        if (
+            typeof lat === 'number' &&
+            typeof lng === 'number' &&
+            !isNaN(lat) &&
+            !isNaN(lng) &&
+            lat >= -90 &&
+            lat <= 90 &&
+            lng >= -180 &&
+            lng <= 180
+        ) {
+            hasValidCoords = true;
+            validLat = lat;
+            validLng = lng;
+        }
+    }
+
     if (orderType === 'delivery') {
-        if (zoneId) {
-            // Find DeliveryZone in database
+        if (hasValidCoords) {
+            // Authoritatively calculate and verify driving-route distance using Google Routes API
+            const routeResult = await calculateRouteDistance(validLat, validLng);
+
+            if (!routeResult.isEligible) {
+                throw new BadRequestError(
+                    routeResult.message || 'Sorry, we currently deliver only within 7 km of our restaurant. Please choose another delivery address.'
+                );
+            }
+
+            deliveryFee = routeResult.fee;
+
+            deliveryAddress.location = {
+                latitude: validLat,
+                longitude: validLng,
+                placeId: deliveryAddress.location.placeId || null,
+                formattedAddress: deliveryAddress.location.formattedAddress || null,
+                source: deliveryAddress.location.source || 'google_places',
+                distanceMeters: routeResult.distanceMeters,
+                distanceKm: routeResult.distanceKm,
+                formattedDistance: routeResult.formattedDistance,
+            };
+
+            // If a zone is also associated, snapshot area name
+            if (zoneId) {
+                const zone = await DeliveryZone.findById(zoneId);
+                if (zone) {
+                    deliveryAddress.area = zone.name;
+                    deliveryAddress.deliveryZoneId = zone._id;
+                }
+            }
+        } else if (zoneId) {
+            // Fallback for manual addresses without coordinates using selected delivery zone
             const zone = await DeliveryZone.findById(zoneId);
             if (!zone) {
                 throw new NotFoundError('Selected delivery zone not found');
@@ -150,24 +206,25 @@ export const createOrder = async (customerId, orderData) => {
                 throw new BadRequestError('Selected delivery zone is currently inactive');
             }
 
-            // Strictly read deliveryFee from database - ignore client-sent fees
             deliveryFee = zone.deliveryFee;
-
-            // Snapshot area and zone ID onto the delivery address
             deliveryAddress.area = zone.name;
             deliveryAddress.deliveryZoneId = zone._id;
-
-            // Authoritative 5% GST strictly on items subtotal (not delivery fee)
-            gst = Math.round(subtotal * 0.05 * 100) / 100;
+            deliveryAddress.location = null;
         } else {
-            // Fallback for legacy orders without zone selection
+            // Fallback for legacy orders
             deliveryFee = calculateDeliveryFee({
                 orderType,
                 subtotal,
                 address: deliveryAddress,
                 selectedDeliveryFee: orderData.deliveryFee,
             });
+            deliveryAddress.location = null;
         }
+
+        // Authoritative 5% GST strictly on items subtotal (not delivery fee)
+        gst = Math.round(subtotal * 0.05 * 100) / 100;
+    } else {
+        deliveryAddress.location = null;
     }
 
     const total = Math.round((subtotal + gst + deliveryFee) * 100) / 100;

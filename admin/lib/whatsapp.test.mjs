@@ -205,4 +205,64 @@ console.log("Starting WhatsApp Order Sharing Test Suite (Clean & Emoji-free)...\
   console.log("✓ Test 8 Passed: cleanString utility functions properly");
 }
 
-console.log("\nAll 8 WhatsApp tests passed successfully! Clean & Emoji-Free verified.\n");
+// ── Test 9: Order with valid Google Maps coordinates ─────────────────────────
+{
+  const orderWithCoords = {
+    orderNumber: "MD-900",
+    customer: { name: "Ananya Verma", phone: "9876501234" },
+    deliveryAddress: {
+      address: "Flat 101, Green Meadows",
+      area: "Civil Lines",
+      landmark: "Opp. City Hospital",
+      deliveryInstructions: "Call on arrival",
+      location: {
+        latitude: 26.782142,
+        longitude: 82.145678,
+        placeId: "ChIJ12345",
+        source: "google_places",
+      },
+    },
+    total: 580.0,
+    paymentMethod: "cod",
+    paymentStatus: "pending",
+  };
+
+  const msg = formatOrderForWhatsApp(orderWithCoords);
+  assert.ok(
+    msg.includes("Customer Location:\nhttps://www.google.com/maps?q=26.782142,82.145678"),
+    "Message must contain exact Google Maps URL pointing to customer delivery coordinates"
+  );
+
+  const shareUrl = getWhatsAppShareUrl(orderWithCoords);
+  assert.ok(
+    shareUrl.includes("https%3A%2F%2Fwww.google.com%2Fmaps%3Fq%3D26.782142%2C82.145678"),
+    "Share URL must contain properly encoded Google Maps coordinates URL"
+  );
+  console.log("✓ Test 9 Passed: Google Maps location link formatted and encoded correctly");
+}
+
+// ── Test 10: Order with invalid or incomplete coordinates does not fabricate link ─
+{
+  const orderWithBadCoords = {
+    orderNumber: "MD-901",
+    customer: { name: "Rahul Kumar", phone: "9876500000" },
+    deliveryAddress: {
+      address: "Near Water Tank, Ayodhya",
+      location: {
+        latitude: 999.0, // Invalid latitude out of range
+        longitude: 82.14,
+      },
+    },
+    total: 300,
+    paymentMethod: "cod",
+    paymentStatus: "pending",
+  };
+
+  const msg = formatOrderForWhatsApp(orderWithBadCoords);
+  assert.ok(!msg.includes("Customer Location"), "Must not include Customer Location for invalid coordinates");
+  assert.ok(!msg.includes("google.com/maps"), "Must not include Google Maps link when coordinates are invalid");
+  console.log("✓ Test 10 Passed: Invalid coordinates safely omitted without fabricating links");
+}
+
+console.log("\nAll 10 WhatsApp tests passed successfully! Clean, Emoji-Free & Google Maps verified.\n");
+

@@ -59,6 +59,17 @@ const customerAddressSchema = new mongoose.Schema(
             trim: true,
             default: null,
         },
+        location: {
+            latitude: { type: Number, default: null },
+            longitude: { type: Number, default: null },
+            placeId: { type: String, default: null },
+            formattedAddress: { type: String, default: null },
+            source: {
+                type: String,
+                enum: ['google_places', 'current_location', 'manual'],
+                default: 'manual',
+            },
+        },
         isDefault: {
             type: Boolean,
             default: false,

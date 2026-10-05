@@ -932,6 +932,36 @@ export default function OrderDetailsPage() {
                             ` (${order.deliveryAddress.deliveryInstructionOther})`}
                         </p>
                       )}
+                      {(() => {
+                        const loc = order.deliveryAddress?.location;
+                        const lat = loc?.latitude ?? order.deliveryAddress?.latitude;
+                        const lng = loc?.longitude ?? order.deliveryAddress?.longitude;
+                        const hasValidCoords =
+                          typeof lat === "number" &&
+                          typeof lng === "number" &&
+                          !isNaN(lat) &&
+                          !isNaN(lng) &&
+                          lat >= -90 &&
+                          lat <= 90 &&
+                          lng >= -180 &&
+                          lng <= 180;
+
+                        if (!hasValidCoords) return null;
+
+                        return (
+                          <div className="pt-2.5">
+                            <a
+                              href={`https://www.google.com/maps?q=${lat},${lng}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E3EFE8]/70 hover:bg-[#E3EFE8] text-[#1B3B2B] text-xs font-bold transition-all border border-[#1B3B2B]/20"
+                            >
+                              <span>📍 View Delivery Pin on Google Maps</span>
+                              <span className="text-[10px]">↗</span>
+                            </a>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 ) : (

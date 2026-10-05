@@ -8,6 +8,7 @@ export const zoneIdParamSchema = z.object({
 const ZONE_FEE_MAP = {
     '0-3km': 15,
     '3-5km': 30,
+    '3-7km': 30,
 };
 
 export const createDeliveryZoneSchema = z
@@ -17,8 +18,8 @@ export const createDeliveryZoneSchema = z
             .trim()
             .min(2, 'Area name must be at least 2 characters long')
             .max(100, 'Area name cannot exceed 100 characters'),
-        type: z.enum(['0-3km', '3-5km'], {
-            required_error: 'Zone type is required (0-3km or 3-5km)',
+        type: z.enum(['0-3km', '3-5km', '3-7km'], {
+            required_error: 'Zone type is required (0-3km or 3-7km)',
         }),
         deliveryFee: z
             .union([
@@ -43,7 +44,7 @@ export const createDeliveryZoneSchema = z
             return true;
         },
         {
-            message: 'Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-5km',
+            message: 'Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-7km',
             path: ['deliveryFee'],
         }
     )
@@ -60,7 +61,7 @@ export const updateDeliveryZoneSchema = z
             .min(2, 'Area name must be at least 2 characters long')
             .max(100, 'Area name cannot exceed 100 characters')
             .optional(),
-        type: z.enum(['0-3km', '3-5km']).optional(),
+        type: z.enum(['0-3km', '3-5km', '3-7km']).optional(),
         deliveryFee: z
             .union([
                 z.number(),
@@ -83,7 +84,7 @@ export const updateDeliveryZoneSchema = z
             return true;
         },
         {
-            message: 'Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-5km',
+            message: 'Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-7km',
             path: ['deliveryFee'],
         }
     )

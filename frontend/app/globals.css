@@ -286,3 +286,57 @@ body {
     background-color: #C85A17;
   }
 }
+
+/* ==========================================================================
+   Google Places Autocomplete Dropdown Styling & High Z-Index
+   Ensures suggestions appear above all cards, modals, and sticky components.
+   ========================================================================== */
+.pac-container {
+  z-index: 99999 !important;
+  border-radius: 1rem !important;
+  border: 1px solid #e7e5e4 !important;
+  box-shadow: 0 10px 25px -5px rgba(27, 59, 43, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+  font-family: var(--font-sans) !important;
+  margin-top: 6px !important;
+  background-color: #ffffff !important;
+  pointer-events: auto !important;
+  overflow: hidden !important;
+}
+
+.pac-item {
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  border-top: 1px solid #f5f5f4 !important;
+  color: #292524 !important;
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1.4 !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.pac-item:first-child {
+  border-top: none !important;
+}
+
+.pac-item:hover,
+.pac-item-selected {
+  background-color: #f2f7f4 !important;
+}
+
+.pac-item-query {
+  font-size: 13px !important;
+  color: #1b3b2b !important;
+  font-weight: 600 !important;
+  padding-right: 4px !important;
+}
+
+.pac-matched {
+  color: #c85a17 !important;
+  font-weight: 700 !important;
+}
+
+.pac-icon {
+  margin-top: 0 !important;
+  margin-right: 10px !important;
+}

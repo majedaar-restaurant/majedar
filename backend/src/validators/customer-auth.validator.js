@@ -104,6 +104,16 @@ export const customerAddressInputSchema = z
         landmark: z.string().trim().optional().nullable(),
         deliveryInstructions: z.enum(['Call on arrival', 'Leave at the gate', "Don't ring the bell", 'Other']).optional().nullable(),
         deliveryInstructionOther: z.string().trim().optional().nullable(),
+        location: z
+            .object({
+                latitude: z.number().min(-90).max(90).nullable().optional(),
+                longitude: z.number().min(-180).max(180).nullable().optional(),
+                placeId: z.string().trim().max(300).optional().nullable(),
+                formattedAddress: z.string().trim().max(500).optional().nullable(),
+                source: z.enum(['google_places', 'current_location', 'manual']).optional().default('manual'),
+            })
+            .optional()
+            .nullable(),
         isDefault: z.boolean().optional().default(false),
     })
     .strip();

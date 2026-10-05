@@ -9,6 +9,7 @@ import {
 const ZONE_FEE_MAP = {
     '0-3km': 15,
     '3-5km': 30,
+    '3-7km': 30,
 };
 
 /**
@@ -29,7 +30,7 @@ export const createZone = async ({ name, type, deliveryFee, isActive = true, sor
     const fee = deliveryFee ?? ZONE_FEE_MAP[type];
     if (fee !== ZONE_FEE_MAP[type]) {
         throw new BadRequestError(
-            `Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-5km`
+            `Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-7km`
         );
     }
 
@@ -102,7 +103,7 @@ export const updateZone = async (id, updates) => {
     } else if (updates.deliveryFee !== undefined) {
         if (updates.deliveryFee !== ZONE_FEE_MAP[zone.type]) {
             throw new BadRequestError(
-                `Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-5km`
+                `Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-7km`
             );
         }
         zone.deliveryFee = updates.deliveryFee;

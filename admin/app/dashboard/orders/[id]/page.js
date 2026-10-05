@@ -741,6 +741,140 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                     Selected Area: {order.deliveryAddress.area}
                   </p>
                 )}
+
+                {/* Google Maps Location Coordinates & Direct Map Link */}
+                {(() => {
+                  const loc = order.deliveryAddress?.location;
+                  const lat = loc?.latitude ?? order.deliveryAddress?.latitude;
+                  const lng = loc?.longitude ?? order.deliveryAddress?.longitude;
+                  const hasValidCoords =
+                    typeof lat === "number" &&
+                    typeof lng === "number" &&
+                    !isNaN(lat) &&
+                    !isNaN(lng) &&
+                    lat >= -90 &&
+                    lat <= 90 &&
+                    lng >= -180 &&
+                    lng <= 180;
+
+                  if (hasValidCoords) {
+                    const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                    const sourceText =
+                      loc?.source === "google_places"
+                        ? "Google Places Selection"
+                        : loc?.source === "current_location"
+                        ? "Device Geolocation / Current Location"
+                        : "Verified Location";
+
+                    return (
+                      <div
+                        style={{
+                          marginTop: "12px",
+                          padding: "10px 12px",
+                          background: "var(--forest-soft, #f0fdf4)",
+                          borderRadius: "8px",
+                          border: "1px solid #86efac",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              color: "#166534",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.5px",
+                            }}
+                          >
+                            📍 Customer Location ({sourceText})
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontFamily: "monospace",
+                              color: "#166534",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {lat.toFixed(6)}, {lng.toFixed(6)}
+                          </span>
+                        </div>
+                        {loc?.formattedAddress && loc.formattedAddress !== order.deliveryAddress?.address && (
+                          <p style={{ fontSize: "11px", color: "#14532d", margin: 0 }}>
+                            <span style={{ fontWeight: 600 }}>Google Formatted:</span> {loc.formattedAddress}
+                          </p>
+                        )}
+                        <div>
+                          <a
+                            href={mapUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              color: "#ffffff",
+                              background: "#16a34a",
+                              padding: "6px 12px",
+                              borderRadius: "6px",
+                              textDecoration: "none",
+                              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                            }}
+                          >
+                            🗺️ Open in Google Maps ↗
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Missing coordinates - display clear text and search option
+                  const addressText = order.deliveryAddress?.address;
+                  const searchUrl = addressText
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        `${addressText}${order.deliveryAddress?.area ? `, ${order.deliveryAddress.area}` : ""}`
+                      )}`
+                    : null;
+
+                  return (
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        padding: "8px 12px",
+                        background: "var(--bg-subtle, #faf8f5)",
+                        borderRadius: "8px",
+                        border: "1px dashed var(--line-soft, #e7e5e4)",
+                        fontSize: "11.5px",
+                      }}
+                    >
+                      <span style={{ color: "var(--muted, #78716c)", display: "block" }}>
+                        ℹ️ Precise coordinates not available (Manual address entry)
+                      </span>
+                      {searchUrl && (
+                        <a
+                          href={searchUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: "inline-block",
+                            marginTop: "4px",
+                            fontSize: "11px",
+                            color: "var(--crimson, #b91c1c)",
+                            textDecoration: "underline",
+                            fontWeight: 500,
+                          }}
+                        >
+                          Search text address on Google Maps ↗
+                        </a>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               {order.deliveryAddress?.deliveryInstructions && (
                 <div className="delivery-field">

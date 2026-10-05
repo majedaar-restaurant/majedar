@@ -6,17 +6,32 @@ import { BadRequestError } from '../utils/errors.js';
  */
 export const restaurantConfig = {
     isOpen: process.env.RESTAURANT_IS_OPEN !== 'false',
+    // Verified location from Google Maps listing: https://maps.app.goo.gl/SbpB8kBUHZnyjfku9
+    location: {
+        latitude: parseFloat(process.env.RESTAURANT_LATITUDE) || 26.7828564,
+        longitude: parseFloat(process.env.RESTAURANT_LONGITUDE) || 82.1624034,
+        name: 'Majedaar Restaurant & Cafe',
+        address: 'Majedaar Restaurant & Cafe, Ayodhya, Uttar Pradesh',
+    },
+    maxDeliveryDistanceMetres: 7000,
+    maxDeliveryDistanceKm: 7,
+    delivery: {
+        maxDeliveryDistanceMetres: 7000,
+        maxDeliveryDistanceKm: 7,
+    },
     deliveryTiers: {
         tier1: {
             id: 'tier1',
             label: '0–3 km',
             maxDistanceKm: 3,
+            maxDistanceMetres: 3000,
             fee: parseInt(process.env.DELIVERY_FEE_TIER1, 10) || 15,
         },
         tier2: {
             id: 'tier2',
-            label: '3–5 km',
-            maxDistanceKm: 5,
+            label: '3–7 km',
+            maxDistanceKm: 7,
+            maxDistanceMetres: 7000,
             fee: parseInt(process.env.DELIVERY_FEE_TIER2, 10) || 30,
         },
     },
@@ -24,6 +39,8 @@ export const restaurantConfig = {
     city: 'Ayodhya',
     onlinePaymentEnabled: process.env.ONLINE_PAYMENT_ENABLED === 'true',
 };
+
+export const RESTAURANT_CONFIG = restaurantConfig;
 
 export const isOnlinePaymentEnabled = () => {
     return Boolean(restaurantConfig.onlinePaymentEnabled);
@@ -53,7 +70,7 @@ export const getAllowedDeliveryFees = () => {
 
 /**
  * Calculate or validate the delivery fee.
- * Easily upgradable to automatic distance calculation later.
+ * Authoritative enforcement for 0–3 km (₹15), 3–7 km (₹30), and rejection above 7 km.
  */
 export const calculateDeliveryFee = ({
     orderType = 'delivery',
@@ -61,12 +78,24 @@ export const calculateDeliveryFee = ({
     address = null,
     selectedDeliveryFee = null,
     distanceKm = null,
+    distanceMetres = null,
 } = {}) => {
     if (orderType === 'pickup' || orderType === 'dine_in') {
         return 0;
     }
 
-    // Upgradable hook: If distance is provided (future automatic calculation)
+    // Authoritative check based on route distance in metres
+    if (typeof distanceMetres === 'number') {
+        if (distanceMetres <= restaurantConfig.deliveryTiers.tier1.maxDistanceMetres) {
+            return restaurantConfig.deliveryTiers.tier1.fee;
+        }
+        if (distanceMetres <= restaurantConfig.deliveryTiers.tier2.maxDistanceMetres) {
+            return restaurantConfig.deliveryTiers.tier2.fee;
+        }
+        throw new BadRequestError('Delivery address is beyond our 7 km delivery service radius.');
+    }
+
+    // Fallback distance in kilometres
     if (typeof distanceKm === 'number') {
         if (distanceKm <= restaurantConfig.deliveryTiers.tier1.maxDistanceKm) {
             return restaurantConfig.deliveryTiers.tier1.fee;
@@ -74,7 +103,7 @@ export const calculateDeliveryFee = ({
         if (distanceKm <= restaurantConfig.deliveryTiers.tier2.maxDistanceKm) {
             return restaurantConfig.deliveryTiers.tier2.fee;
         }
-        throw new BadRequestError('Delivery address is beyond our 5 km delivery service radius.');
+        throw new BadRequestError('Delivery address is beyond our 7 km delivery service radius.');
     }
 
     const allowedFees = getAllowedDeliveryFees();
@@ -84,7 +113,7 @@ export const calculateDeliveryFee = ({
         const feeNum = Number(selectedDeliveryFee);
         if (!allowedFees.includes(feeNum)) {
             throw new BadRequestError(
-                `Invalid delivery fee. Allowed fees are ₹${allowedFees.join(' (0–3 km) and ₹')} (3–5 km).`
+                `Invalid delivery fee. Allowed fees are ₹${allowedFees.join(' (0–3 km) and ₹')} (3–7 km).`
             );
         }
         return feeNum;

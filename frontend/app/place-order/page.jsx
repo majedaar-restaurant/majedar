@@ -14,6 +14,8 @@ import {
 } from "../../lib/api";
 import { useRazorpay } from "../../hooks/useRazorpay";
 import CartTotal from "../../components/CartTotal";
+import AddressAutocomplete from "../../components/AddressAutocomplete";
+import { checkDeliveryRoute } from "../../lib/google-maps";
 import { toast } from "react-toastify";
 
 const PREDEFINED_INSTRUCTIONS = [
@@ -53,8 +55,39 @@ export default function PlaceOrder() {
     deliveryInstructionOther: "",
   });
 
+  const [deliveryLocation, setDeliveryLocation] = useState(null);
+  const [isLocationVerified, setIsLocationVerified] = useState(false);
+  const [serviceability, setServiceability] = useState(null);
+
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
+
+  const handleLocationSelect = useCallback(
+    ({ address, latitude, longitude, placeId, formattedAddress, source, matchedZoneId }) => {
+      setFormData((prev) => ({
+        ...prev,
+        address,
+      }));
+      setDeliveryLocation({
+        latitude,
+        longitude,
+        placeId,
+        formattedAddress,
+        source,
+      });
+      setIsLocationVerified(true);
+      if (matchedZoneId) {
+        setSelectedZoneId(matchedZoneId);
+      }
+    },
+    []
+  );
+
+  const handleClearLocation = useCallback(() => {
+    setDeliveryLocation(null);
+    setIsLocationVerified(false);
+    setServiceability(null);
+  }, []);
 
   const applySavedAddress = useCallback((addr) => {
     if (!addr) return;
@@ -70,6 +103,44 @@ export default function PlaceOrder() {
       deliveryInstructions: addr.deliveryInstructions || "Call on arrival",
       deliveryInstructionOther: addr.deliveryInstructionOther || "",
     }));
+    if (addr.location?.latitude && addr.location?.longitude) {
+      setDeliveryLocation(addr.location);
+      setIsLocationVerified(true);
+      // Recalculate route distance under new 7 km rules
+      setServiceability({
+        loading: true,
+        isEligible: null,
+        distanceMeters: null,
+        distanceKm: null,
+        formattedDistance: null,
+        fee: null,
+        tier: null,
+        error: "",
+      });
+      checkDeliveryRoute({
+        latitude: addr.location.latitude,
+        longitude: addr.location.longitude,
+      })
+        .then((routeData) => {
+          setServiceability({
+            loading: false,
+            isEligible: routeData.isEligible,
+            distanceMeters: routeData.distanceMeters,
+            distanceKm: routeData.distanceKm,
+            formattedDistance: routeData.formattedDistance,
+            fee: routeData.fee,
+            tier: routeData.tier,
+            error: routeData.isEligible ? "" : routeData.message || "Address is outside our 7 km service radius.",
+          });
+        })
+        .catch(() => {
+          setServiceability(null);
+        });
+    } else {
+      setDeliveryLocation(null);
+      setIsLocationVerified(false);
+      setServiceability(null);
+    }
     if (addr.deliveryZoneId) {
       setSelectedZoneId(addr.deliveryZoneId);
     }
@@ -132,7 +203,7 @@ export default function PlaceOrder() {
     };
   }, []);
 
-  // Group zones by distance tier: 0-3km and 3-5km
+  // Group zones by distance tier: 0-3km (₹15) and 3-7km (₹30)
   const groupedZones = useMemo(() => {
     const tier1 = [];
     const tier2 = [];
@@ -150,7 +221,9 @@ export default function PlaceOrder() {
     return zones.find((z) => z._id === selectedZoneId) || null;
   }, [zones, selectedZoneId]);
 
-  const currentDeliveryFee = selectedZone?.deliveryFee ?? 15;
+  // Authoritative driving route fee takes priority when verified
+  const currentDeliveryFee =
+    serviceability?.fee != null ? serviceability.fee : 15;
 
   const orderItems = useMemo(() => {
     const items = [];
@@ -188,8 +261,16 @@ export default function PlaceOrder() {
       return;
     }
 
-    if (!selectedZoneId) {
-      setOrderError("Please select a delivery area.");
+    if (!formData.address.trim()) {
+      setOrderError("Please enter your delivery street address.");
+      return;
+    }
+
+    if (!deliveryLocation?.latitude || !deliveryLocation?.longitude) {
+      const errMsg =
+        "Please select your address from suggestions or click 'Use My Current Location' to verify your delivery distance.";
+      setOrderError(errMsg);
+      toast.warn(errMsg);
       return;
     }
 
@@ -201,29 +282,74 @@ export default function PlaceOrder() {
       return;
     }
 
+    // 7 km delivery boundary enforcement
+    if (
+      serviceability?.isEligible === false ||
+      (typeof serviceability?.distanceMeters === "number" && serviceability.distanceMeters > 7000)
+    ) {
+      const errMsg =
+        "Sorry, we currently deliver only within 7 km of our restaurant. Please choose another delivery address.";
+      setOrderError(errMsg);
+      toast.error(errMsg);
+      return;
+    }
+
+    if (serviceability?.loading) {
+      const errMsg = "Please wait while we verify your delivery route distance.";
+      setOrderError(errMsg);
+      toast.warn(errMsg);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
+      const deliveryAddressPayload = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        address: formData.address.trim(),
+        landmark: formData.landmark.trim() || undefined,
+        area: selectedZone?.name || undefined,
+        deliveryZoneId: selectedZoneId,
+        deliveryInstructions: formData.deliveryInstructions,
+        deliveryInstructionOther:
+          formData.deliveryInstructions === "Other"
+            ? formData.deliveryInstructionOther.trim()
+            : undefined,
+      };
+
+      if (
+        deliveryLocation &&
+        typeof deliveryLocation.latitude === "number" &&
+        typeof deliveryLocation.longitude === "number" &&
+        !isNaN(deliveryLocation.latitude) &&
+        !isNaN(deliveryLocation.longitude) &&
+        deliveryLocation.latitude >= -90 &&
+        deliveryLocation.latitude <= 90 &&
+        deliveryLocation.longitude >= -180 &&
+        deliveryLocation.longitude <= 180
+      ) {
+        deliveryAddressPayload.location = {
+          latitude: deliveryLocation.latitude,
+          longitude: deliveryLocation.longitude,
+          placeId: deliveryLocation.placeId || undefined,
+          formattedAddress: deliveryLocation.formattedAddress || undefined,
+          source: deliveryLocation.source || (isLocationVerified ? "google_places" : "manual"),
+        };
+      } else {
+        deliveryAddressPayload.location = {
+          source: "manual",
+        };
+      }
+
       const payload = {
         items: orderItems,
         deliveryZoneId: selectedZoneId,
         orderType: "delivery",
         paymentMethod: paymentMethod, // "razorpay" | "cod"
-        deliveryAddress: {
-          firstName: formData.firstName.trim(),
-          lastName: formData.lastName.trim(),
-          phone: formData.phone.trim(),
-          email: formData.email.trim(),
-          address: formData.address.trim(),
-          landmark: formData.landmark.trim() || undefined,
-          area: selectedZone?.name || undefined,
-          deliveryZoneId: selectedZoneId,
-          deliveryInstructions: formData.deliveryInstructions,
-          deliveryInstructionOther:
-            formData.deliveryInstructions === "Other"
-              ? formData.deliveryInstructionOther.trim()
-              : undefined,
-        },
+        deliveryAddress: deliveryAddressPayload,
       };
 
       const created = await createOrder(payload);
@@ -395,6 +521,8 @@ export default function PlaceOrder() {
                     type="button"
                     onClick={() => {
                       setSelectedAddressId("");
+                      setDeliveryLocation(null);
+                      setIsLocationVerified(false);
                       setFormData((p) => ({
                         ...p,
                         address: "",
@@ -477,65 +605,22 @@ export default function PlaceOrder() {
                 </div>
               </div>
 
-              {/* Delivery Area Dropdown grouped by 0-3km and 3-5km */}
-              <div>
-                <label className="block text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1.5">
-                  Delivery Area (Faizabad / Ayodhya) *
-                </label>
-                {loadingZones ? (
-                  <div className="py-2.5 px-4 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-400">
-                    Loading delivery zones...
-                  </div>
-                ) : (
-                  <select
-                    value={selectedZoneId}
-                    onChange={(e) => setSelectedZoneId(e.target.value)}
-                    required
-                    className={`${inputClass} cursor-pointer`}
-                  >
-                    <option value="" disabled>
-                      Select your delivery area
-                    </option>
-                    {groupedZones.tier1.length > 0 && (
-                      <optgroup label="0–3 KM Zone (₹15 Delivery Fee)">
-                        {groupedZones.tier1.map((zone) => (
-                          <option key={zone._id} value={zone._id}>
-                            {zone.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                    {groupedZones.tier2.length > 0 && (
-                      <optgroup label="3–5 KM Zone (₹30 Delivery Fee)">
-                        {groupedZones.tier2.map((zone) => (
-                          <option key={zone._id} value={zone._id}>
-                            {zone.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                  </select>
-                )}
-                <p className="text-[11px] text-stone-400 mt-1">
-                  Delivery fee is automatically determined by your selected area.
-                </p>
-              </div>
 
-              {/* Street Address */}
-              <div>
-                <label className="block text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1.5">
-                  House / Flat / Street Address *
-                </label>
-                <input
-                  onChange={handleChange}
-                  name="address"
-                  value={formData.address}
-                  className={inputClass}
-                  type="text"
-                  placeholder="House/Flat No., Building, Street Name"
-                  required
-                />
-              </div>
+
+              {/* Street Address with Google Places Autocomplete & Current Location GPS */}
+              <AddressAutocomplete
+                value={formData.address}
+                onChange={handleChange}
+                onLocationSelect={handleLocationSelect}
+                onClearLocation={handleClearLocation}
+                location={deliveryLocation}
+                isLocationVerified={isLocationVerified}
+                serviceability={serviceability}
+                setServiceability={setServiceability}
+                zones={zones}
+                inputClass={inputClass}
+                required
+              />
 
               {/* Landmark */}
               <div>
@@ -688,9 +773,9 @@ export default function PlaceOrder() {
               </div>
 
               <button
-                disabled={isCartEmpty || submitting}
+                disabled={isCartEmpty || submitting || serviceability?.loading || serviceability?.isEligible === false}
                 type="submit"
-                className={`w-full py-4 rounded-full text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2 ${isCartEmpty || submitting
+                className={`w-full py-4 rounded-full text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2 ${isCartEmpty || submitting || serviceability?.loading || serviceability?.isEligible === false
                   ? "bg-stone-300 cursor-not-allowed"
                   : "bg-[#1B3B2B] hover:bg-[#11261B] active:scale-95"
                   }`}

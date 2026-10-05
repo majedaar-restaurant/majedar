@@ -14,8 +14,8 @@ const deliveryZoneSchema = new mongoose.Schema(
             type: String,
             required: [true, 'Zone type is required'],
             enum: {
-                values: ['0-3km', '3-5km'],
-                message: '{VALUE} is not a valid delivery zone type. Allowed: 0-3km, 3-5km',
+                values: ['0-3km', '3-5km', '3-7km'],
+                message: '{VALUE} is not a valid delivery zone type. Allowed: 0-3km, 3-7km',
             },
             index: true,
         },
@@ -24,7 +24,7 @@ const deliveryZoneSchema = new mongoose.Schema(
             required: [true, 'Delivery fee is required'],
             enum: {
                 values: [15, 30],
-                message: 'Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-5km',
+                message: 'Delivery fee must correspond to zone type: ₹15 for 0-3km, ₹30 for 3-7km',
             },
         },
         isActive: {

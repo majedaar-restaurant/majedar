@@ -26,6 +26,38 @@ const orderItemInputSchema = z.object({
         ]),
 });
 
+export const locationInputSchema = z
+    .object({
+        latitude: z
+            .number({ invalid_type_error: 'Latitude must be a valid number' })
+            .min(-90, 'Latitude must be between -90 and 90')
+            .max(90, 'Latitude must be between -90 and 90')
+            .nullable()
+            .optional(),
+        longitude: z
+            .number({ invalid_type_error: 'Longitude must be a valid number' })
+            .min(-180, 'Longitude must be between -180 and 180')
+            .max(180, 'Longitude must be between -180 and 180')
+            .nullable()
+            .optional(),
+        placeId: z.string().trim().max(300).optional().nullable(),
+        formattedAddress: z.string().trim().max(500).optional().nullable(),
+        source: z.enum(['google_places', 'current_location', 'manual']).optional().default('manual'),
+    })
+    .refine(
+        (data) => {
+            const hasLat = data.latitude !== undefined && data.latitude !== null;
+            const hasLng = data.longitude !== undefined && data.longitude !== null;
+            return (hasLat && hasLng) || (!hasLat && !hasLng);
+        },
+        {
+            message: 'Latitude and longitude must either both be present or both be absent',
+            path: ['latitude'],
+        }
+    )
+    .optional()
+    .nullable();
+
 const deliveryAddressInputSchema = z
     .object({
         firstName: z
@@ -77,6 +109,7 @@ const deliveryAddressInputSchema = z
             .max(200, 'Instructions cannot exceed 200 characters')
             .optional()
             .nullable(),
+        location: locationInputSchema,
     })
     .refine(
         (data) => {

@@ -197,6 +197,8 @@ export default function MyProfile() {
       deliveryInstructions: addr.deliveryInstructions || "Call on arrival",
       deliveryInstructionOther: addr.deliveryInstructionOther || "",
       isDefault: Boolean(addr.isDefault),
+      location: addr.location || null,
+      originalAddress: addr.address || "",
     });
     setEditingAddressId(addr._id);
     setShowAddressModal(true);
@@ -227,6 +229,11 @@ export default function MyProfile() {
 
     setSavingAddress(true);
     try {
+      const addressChanged =
+        editingAddressId &&
+        addressForm.originalAddress &&
+        addressForm.address.trim() !== addressForm.originalAddress.trim();
+
       const payload = {
         label: addressForm.label.trim() || "Home",
         firstName: addressForm.firstName.trim(),
@@ -243,6 +250,7 @@ export default function MyProfile() {
             ? addressForm.deliveryInstructionOther.trim()
             : null,
         isDefault: Boolean(addressForm.isDefault),
+        location: addressChanged ? null : addressForm.location || null,
       };
 
       let updatedList;
