@@ -30,7 +30,7 @@ export const DELIVERY_RULES = {
 let googleMapsPromise = null;
 
 export function getGoogleMapsApiKey() {
-  return process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  return process.env.GOOGLE_MAPS_THREE_API_KEY || "";
 }
 
 /**
@@ -55,7 +55,7 @@ export function loadGoogleMaps() {
   const apiKey = getGoogleMapsApiKey();
   if (!apiKey) {
     console.warn(
-      "[Google Maps] NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not configured in frontend/.env. Google Places Autocomplete will run in fallback manual mode."
+      "[Google Maps] GOOGLE_MAPS_THREE_API_KEY is not configured in frontend/.env. Google Places Autocomplete will run in fallback manual mode."
     );
     return Promise.reject(new Error("GOOGLE_MAPS_API_KEY_MISSING"));
   }

@@ -505,8 +505,8 @@ export default function AddressAutocomplete({
           disabled={disabled || isDetectingLocation}
           title="Detect device GPS location and verify delivery distance"
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer border ${isDetectingLocation
-              ? "bg-stone-100 text-stone-400 border-stone-200 cursor-wait"
-              : "bg-[#E3EFE8] text-[#1B3B2B] border-[#1B3B2B]/20 hover:bg-[#1B3B2B] hover:text-white hover:border-[#1B3B2B] shadow-2xs"
+            ? "bg-stone-100 text-stone-400 border-stone-200 cursor-wait"
+            : "bg-[#E3EFE8] text-[#1B3B2B] border-[#1B3B2B]/20 hover:bg-[#1B3B2B] hover:text-white hover:border-[#1B3B2B] shadow-2xs"
             }`}
         >
           {isDetectingLocation ? (
@@ -529,10 +529,10 @@ export default function AddressAutocomplete({
           <div
             ref={containerRef}
             className={`min-h-[44px] w-full rounded-xl transition-all ${isLocationVerified && serviceability?.isEligible
-                ? "ring-2 ring-[#16a34a]/30"
-                : serviceability?.isEligible === false
-                  ? "ring-2 ring-rose-400"
-                  : ""
+              ? "ring-2 ring-[#16a34a]/30"
+              : serviceability?.isEligible === false
+                ? "ring-2 ring-rose-400"
+                : ""
               }`}
           />
         )}
@@ -547,10 +547,10 @@ export default function AddressAutocomplete({
             value={value}
             onChange={handleFallbackChange}
             className={`${inputClass} ${isLocationVerified && serviceability?.isEligible
-                ? "border-[#16a34a] focus:border-[#16a34a] focus:ring-[#16a34a]/30 pr-10"
-                : serviceability?.isEligible === false
-                  ? "border-rose-400 bg-rose-50/40 focus:border-rose-500 focus:ring-rose-200"
-                  : ""
+              ? "border-[#16a34a] focus:border-[#16a34a] focus:ring-[#16a34a]/30 pr-10"
+              : serviceability?.isEligible === false
+                ? "border-rose-400 bg-rose-50/40 focus:border-rose-500 focus:ring-rose-200"
+                : ""
               }`}
             placeholder={placeholder}
             required={required}
@@ -664,7 +664,7 @@ export default function AddressAutocomplete({
       {/* Helpful developer/setup notice if Google Maps API key is not configured */}
       {!hasApiKey && (
         <div className="text-[11px] p-2 rounded-xl bg-stone-50 border border-dashed border-stone-300 text-stone-500">
-          ℹ️ Google Maps suggestions &amp; distance calculation require <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> in <code>frontend/.env</code>. Manual address entry is currently active.
+          ℹ️ Google Maps suggestions &amp; distance calculation require <code>GOOGLE_MAPS_THREE_API_KEY</code> in <code>frontend/.env</code>. Manual address entry is currently active.
         </div>
       )}
     </div>
