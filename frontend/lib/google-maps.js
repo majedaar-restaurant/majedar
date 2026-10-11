@@ -1,10 +1,3 @@
-/**
- * Google Maps JavaScript API Loader & Utilities for Majedaar Restaurant
- * Authoritative location, Places Autocomplete (New), and Driving Route Distance.
- */
-
-// Authoritative Majedaar Restaurant location from verified Google Maps listing:
-// https://maps.app.goo.gl/SbpB8kBUHZnyjfku9
 export const RESTAURANT_LOCATION = {
   latitude: 26.7828564,
   longitude: 82.1624034,
@@ -30,13 +23,9 @@ export const DELIVERY_RULES = {
 let googleMapsPromise = null;
 
 export function getGoogleMapsApiKey() {
-  return process.env.GOOGLE_MAPS_THREE_API_KEY || "";
+  return process.env.NEXT_PUBLIC_GOOGLE_MAPS_THREE_API_KEY || "";
 }
 
-/**
- * Loads the Google Maps JavaScript API using the modern async pattern
- * with Places (New) and Geocoding libraries.
- */
 export function loadGoogleMaps() {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Google Maps can only be loaded in the browser."));
@@ -55,7 +44,7 @@ export function loadGoogleMaps() {
   const apiKey = getGoogleMapsApiKey();
   if (!apiKey) {
     console.warn(
-      "[Google Maps] GOOGLE_MAPS_THREE_API_KEY is not configured in frontend/.env. Google Places Autocomplete will run in fallback manual mode."
+      "[Google Maps] is not configured in frontend/.env. Google Places Autocomplete will run in fallback manual mode."
     );
     return Promise.reject(new Error("GOOGLE_MAPS_API_KEY_MISSING"));
   }

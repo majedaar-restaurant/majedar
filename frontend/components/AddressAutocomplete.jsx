@@ -660,13 +660,6 @@ export default function AddressAutocomplete({
           📍 Device GPS location detected. Please type your building, flat, or street name above to complete your delivery details.
         </div>
       )}
-
-      {/* Helpful developer/setup notice if Google Maps API key is not configured */}
-      {!hasApiKey && (
-        <div className="text-[11px] p-2 rounded-xl bg-stone-50 border border-dashed border-stone-300 text-stone-500">
-          ℹ️ Google Maps suggestions &amp; distance calculation require <code>GOOGLE_MAPS_THREE_API_KEY</code> in <code>frontend/.env</code>. Manual address entry is currently active.
-        </div>
-      )}
     </div>
   );
 }
