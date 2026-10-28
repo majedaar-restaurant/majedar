@@ -16,6 +16,10 @@ export default function Cart() {
     updateQuantity,
     clearCart,
     navigate,
+    getCartAmount,
+    canAcceptOrders,
+    restrictionMessage,
+    minimumOrderAmount = 100,
   } = useContext(ShopContext);
 
   const [cartList, setCartList] = useState([]);
@@ -233,34 +237,88 @@ export default function Cart() {
         )}
 
         {/* Order Summary */}
-        {cartList.length > 0 && (
-          <div className="flex justify-end">
-            <div className="w-full sm:w-[420px] bg-white rounded-2xl p-6 border border-stone-200/90 shadow-2xs">
-              <CartTotal />
-              <div className="mt-6 pt-4 border-t border-stone-100">
-                <button
-                  onClick={() => navigate("/place-order")}
-                  className="w-full py-3.5 rounded-full bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs sm:text-sm font-bold uppercase tracking-wider active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2"
-                >
-                  <span>Proceed to Checkout</span>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M14 5l7 7m0 0l-7 7m7-7H3"
-                    />
-                  </svg>
-                </button>
+        {cartList.length > 0 && (() => {
+          const subtotal = getCartAmount();
+          const minOrder = minimumOrderAmount || 100;
+          const remainingAmount = Math.max(0, minOrder - subtotal);
+          const isBelowMinimum = subtotal < minOrder;
+
+          return (
+            <div className="flex justify-end">
+              <div className="w-full sm:w-[420px] bg-white rounded-2xl p-6 border border-stone-200/90 shadow-2xs">
+                <CartTotal />
+
+                {/* Minimum Order Notice Banner */}
+                {isBelowMinimum && (
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs">
+                    <div className="flex items-start gap-2">
+                      <span className="text-amber-600 font-bold text-sm">ℹ</span>
+                      <div>
+                        <p className="font-bold">
+                          Minimum order amount is {currency}{minOrder}.
+                        </p>
+                        <p className="mt-0.5 text-amber-800">
+                          Add {currency}{remainingAmount} more to place your order.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Shop Availability Restriction Notice */}
+                {!canAcceptOrders && (
+                  <div className="mt-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 text-xs">
+                    <p className="font-bold">Ordering currently unavailable</p>
+                    <p className="mt-0.5 text-rose-700">
+                      {restrictionMessage || "The restaurant is currently closed for new orders."}
+                    </p>
+                  </div>
+                )}
+
+                <div className="mt-6 pt-4 border-t border-stone-100 flex flex-col gap-2.5">
+                  {isBelowMinimum ? (
+                    <button
+                      onClick={() => navigate("/orderanddine")}
+                      className="w-full py-3.5 rounded-full bg-[#C85A17] hover:bg-[#B04B0F] text-white text-xs sm:text-sm font-bold uppercase tracking-wider active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2"
+                    >
+                      <span>Add ₹{remainingAmount} More Dishes</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </button>
+                  ) : !canAcceptOrders ? (
+                    <button
+                      disabled
+                      className="w-full py-3.5 rounded-full bg-stone-200 text-stone-400 text-xs sm:text-sm font-bold uppercase tracking-wider cursor-not-allowed text-center"
+                    >
+                      Shop Currently Unavailable
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate("/place-order")}
+                      className="w-full py-3.5 rounded-full bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs sm:text-sm font-bold uppercase tracking-wider active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2"
+                    >
+                      <span>Proceed to Checkout</span>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14 5l7 7m0 0l-7 7m7-7H3"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

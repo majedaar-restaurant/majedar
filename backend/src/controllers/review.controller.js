@@ -66,3 +66,19 @@ export const deleteReviewHandler = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * Customer: Get reviews submitted by customer for a specific order.
+ */
+export const getOrderReviewsHandler = async (req, res, next) => {
+    try {
+        const reviews = await reviewService.getOrderReviews(req.customer._id, req.params.orderId);
+        return sendSuccess(res, {
+            statusCode: 200,
+            message: 'Order reviews retrieved successfully',
+            data: { reviews },
+        });
+    } catch (error) {
+        next(error);
+    }
+};

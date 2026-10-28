@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
     createReviewHandler,
     getMenuItemReviewsHandler,
+    getOrderReviewsHandler,
 } from '../controllers/review.controller.js';
 import { authenticateCustomer } from '../middleware/customer-auth.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
@@ -19,6 +20,13 @@ router.post(
     authenticateCustomer,
     validate(createReviewSchema, 'body'),
     createReviewHandler
+);
+
+// Customer: Get reviews submitted by customer for a specific order
+router.get(
+    '/order/:orderId',
+    authenticateCustomer,
+    getOrderReviewsHandler
 );
 
 // Public: Get reviews for a menu item

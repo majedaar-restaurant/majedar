@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Order } from '../../models/Order.js';
 import { MenuItem } from '../../models/MenuItem.js';
+import { Review } from '../../models/Review.js';
 import { DeliveryZone } from '../../models/DeliveryZone.js';
 import { PaymentAttempt } from '../../models/Payment.js';
 import { Message } from '../../models/Message.js';
@@ -30,12 +31,24 @@ import {
     emitRiderAssigned,
 } from '../../socket/socket.server.js';
 import { calculateRouteDistance } from '../delivery/distance.service.js';
+import { getPublicSettings } from '../settings/settings.service.js';
 
 export const createOrder = async (customerId, orderData) => {
 
-    // 1. Restaurant operational check
-    if (!isRestaurantOpen()) {
-        throw new BadRequestError('The restaurant is currently closed and not accepting orders.');
+    // 1. Restaurant operational and over-order dynamic check
+    try {
+        const shopStatus = await getPublicSettings();
+        if (shopStatus && !shopStatus.canAcceptOrders) {
+            throw new BadRequestError(
+                shopStatus.restrictionMessage || 'The restaurant is currently closed and not accepting orders.'
+            );
+        }
+    } catch (err) {
+        if (err instanceof BadRequestError) throw err;
+        // Fallback to static check if setting model lookup is mocked/unavailable
+        if (!isRestaurantOpen()) {
+            throw new BadRequestError('The restaurant is currently closed and not accepting orders.');
+        }
     }
 
     // 1b. Online payment availability check
@@ -344,7 +357,7 @@ export const expireOverduePlacedOrders = async () => {
             ord.expiredAt = now;
             ord.expiryReason = 'admin_acceptance_timeout';
             emitOrderExpired(ord);
-        } catch (_) {}
+        } catch (_) { }
     }
 
     return result?.modifiedCount || 0;
@@ -379,7 +392,7 @@ export const checkAndExpireOrder = async (order) => {
         if (expired) {
             try {
                 emitOrderExpired(expired);
-            } catch (_) {}
+            } catch (_) { }
             return expired;
         }
         return order;
@@ -478,10 +491,23 @@ export const getCustomerOrderById = async (customerId, orderId) => {
     if (order && typeof order.populate === 'function') {
         try {
             await order.populate('rider', 'name phone');
-        } catch (_) {}
+        } catch (_) { }
     }
 
-    return sanitizeCustomerOrder(order);
+    const doc = sanitizeCustomerOrder(order);
+
+    // Attach existing reviews for this order so the frontend can pre-populate ratings on refresh
+    try {
+        const reviews = await Review.find({
+            customer: customerId,
+            order: orderId,
+        }).lean();
+        doc.reviews = reviews || [];
+    } catch (_) {
+        doc.reviews = [];
+    }
+
+    return doc;
 };
 
 export const getAdminOrders = async (queryFilters = {}) => {
@@ -516,7 +542,7 @@ export const getAdminOrders = async (queryFilters = {}) => {
                 $or: [{ name: regex }, { email: regex }, { phone: regex }],
             }).select('_id').lean();
             matchingCustomerIds = matchingCustomers.map((c) => c._id);
-        } catch (_) {}
+        } catch (_) { }
 
         filter.$and = filter.$and || [];
         filter.$and.push({
@@ -625,7 +651,7 @@ export const updateOrderStatus = async (orderId, updateData) => {
         order.expiryReason = 'admin_acceptance_timeout';
         try {
             emitOrderExpired(order);
-        } catch (_) {}
+        } catch (_) { }
     }
 
     // Terminal states cannot be changed
@@ -684,7 +710,7 @@ export const updateOrderStatus = async (orderId, updateData) => {
                 if (typeof confirmedOrder.populate === 'function') {
                     try {
                         await confirmedOrder.populate('rider', 'name phone isActive');
-                    } catch (_) {}
+                    } catch (_) { }
                 }
                 try {
                     emitOrderConfirmed(confirmedOrder);
@@ -732,7 +758,7 @@ export const updateOrderStatus = async (orderId, updateData) => {
     if (typeof order.populate === 'function') {
         try {
             await order.populate('rider', 'name phone isActive');
-        } catch (_) {}
+        } catch (_) { }
     }
 
     try {

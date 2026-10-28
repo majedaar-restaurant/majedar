@@ -1,3 +1,5 @@
+import NewsLetter from "../../components/NewsLetter";
+
 const CONTACT_OPTIONS = [
   {
     id: "call",
@@ -112,6 +114,11 @@ export default function Help() {
               </a>
             ))}
           </div>
+        </div>
+
+        {/* Complaints, Suggestions & Queries */}
+        <div className="mb-8">
+          <NewsLetter />
         </div>
 
         {/* Support Card */}

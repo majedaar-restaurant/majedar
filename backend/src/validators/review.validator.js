@@ -12,8 +12,9 @@ export const menuItemIdParamSchema = z.object({
 export const createReviewSchema = z
     .object({
         orderId: z
-            .string({ required_error: 'Order ID is required' })
-            .regex(objectIdRegex, 'Invalid order ID format'),
+            .string()
+            .regex(objectIdRegex, 'Invalid order ID format')
+            .optional(),
         menuItemId: z
             .string({ required_error: 'Menu item ID is required' })
             .regex(objectIdRegex, 'Invalid menu item ID format'),
@@ -24,6 +25,13 @@ export const createReviewSchema = z
                     message: 'Rating must be an integer between 1 and 5',
                 }),
             ]),
+        comment: z
+            .string()
+            .max(1000, 'Comment cannot exceed 1000 characters')
+            .trim()
+            .optional()
+            .default(''),
+        allowUpdate: z.boolean().optional().default(false),
     })
     .strip();
 

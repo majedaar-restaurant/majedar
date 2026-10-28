@@ -15,6 +15,7 @@ import deliveryZoneRoutes from './routes/delivery-zone.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import contactRoutes from './routes/contact.routes.js';
+import settingsRoutes from './routes/settings.routes.js';
 
 // Admin feature routes
 import adminCategoryRoutes from './routes/admin-category.routes.js';
@@ -26,6 +27,7 @@ import adminReviewRoutes from './routes/admin-review.routes.js';
 import adminMessageRoutes from './routes/admin-message.routes.js';
 import adminPushRoutes from './routes/admin-push.routes.js';
 import adminRiderRoutes from './routes/admin-rider.routes.js';
+import adminSettingsRoutes from './routes/admin-settings.routes.js';
 
 import { notFoundHandler } from './middleware/not-found.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
@@ -61,6 +63,7 @@ app.use('/api/delivery-zones', deliveryZoneRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Admin endpoints
 app.use('/api/admin/categories', adminCategoryRoutes);
@@ -72,6 +75,7 @@ app.use('/api/admin/reviews', adminReviewRoutes);
 app.use('/api/admin/messages', adminMessageRoutes);
 app.use('/api/admin/push', adminPushRoutes);
 app.use('/api/admin/riders', adminRiderRoutes);
+app.use('/api/admin/settings', adminSettingsRoutes);
 
 // Fallback 404 handler for unmatched endpoints
 app.use(notFoundHandler);

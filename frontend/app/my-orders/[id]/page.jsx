@@ -289,8 +289,12 @@ export default function OrderDetailsPage() {
   const [paymentError, setPaymentError] = useState("");
   const [retrying, setRetrying] = useState(false);
 
-  // Track ratings given per menu item in this order: { [menuItemId]: number }
+  // Track ratings and comments given per menu item in this order
   const [ratingsState, setRatingsState] = useState({});
+  const [commentsState, setCommentsState] = useState({});
+  const [commentDrafts, setCommentDrafts] = useState({});
+  const [ratingDrafts, setRatingDrafts] = useState({});
+  const [editingReview, setEditingReview] = useState({});
   const [ratingSubmitting, setRatingSubmitting] = useState({});
 
   // Order cancellation state
@@ -308,6 +312,21 @@ export default function OrderDetailsPage() {
     try {
       const data = await getMyOrderById(id);
       setOrder(data);
+
+      // Populate existing reviews and comments for this order so they persist on refresh
+      if (data?.reviews && Array.isArray(data.reviews)) {
+        const rMap = {};
+        const cMap = {};
+        data.reviews.forEach((r) => {
+          const mId = (r.menuItem?._id || r.menuItem)?.toString();
+          if (mId) {
+            rMap[mId] = r.rating;
+            if (r.comment) cMap[mId] = r.comment;
+          }
+        });
+        setRatingsState(rMap);
+        setCommentsState(cMap);
+      }
     } catch (err) {
       setErrorMsg(err?.message || "Unable to find order details.");
     } finally {
@@ -493,23 +512,47 @@ export default function OrderDetailsPage() {
     // Note: retrying stays true until a callback fires
   };
 
-  const handleRateItem = async (menuItemId, starValue) => {
-    if (ratingsState[menuItemId] || ratingSubmitting[menuItemId]) return;
+  const handleSelectStar = (menuItemId, starValue) => {
+    setRatingDrafts((prev) => ({ ...prev, [menuItemId]: starValue }));
+  };
+
+  const handleSubmitReview = async (menuItemId) => {
+    if (!order?._id || !menuItemId || ratingSubmitting[menuItemId]) return;
+
+    const rating = ratingDrafts[menuItemId] || ratingsState[menuItemId];
+    if (!rating) {
+      toast.warn("Please select a star rating (1–5).");
+      return;
+    }
+
+    const comment = commentDrafts[menuItemId] !== undefined
+      ? commentDrafts[menuItemId]
+      : (commentsState[menuItemId] || "");
+
+    const isUpdate = Boolean(ratingsState[menuItemId]);
 
     setRatingSubmitting((prev) => ({ ...prev, [menuItemId]: true }));
     try {
       await submitRating({
         orderId: order._id,
         menuItemId,
-        rating: starValue,
+        rating,
+        comment: comment.trim(),
+        allowUpdate: isUpdate,
       });
 
-      setRatingsState((prev) => ({ ...prev, [menuItemId]: starValue }));
-      toast.success(`Thank you for rating ${starValue} star${starValue > 1 ? "s" : ""}!`, {
-        autoClose: 2500,
-      });
+      setRatingsState((prev) => ({ ...prev, [menuItemId]: rating }));
+      setCommentsState((prev) => ({ ...prev, [menuItemId]: comment.trim() }));
+      setEditingReview((prev) => ({ ...prev, [menuItemId]: false }));
+
+      toast.success(
+        isUpdate
+          ? "Review updated successfully!"
+          : `Thank you for rating ${rating} star${rating > 1 ? "s" : ""}!`,
+        { autoClose: 2500 }
+      );
     } catch (err) {
-      const msg = err?.message || "Failed to submit rating. Please try again.";
+      const msg = err?.message || "Failed to submit review. Please try again.";
       toast.error(msg);
     } finally {
       setRatingSubmitting((prev) => ({ ...prev, [menuItemId]: false }));
@@ -822,69 +865,163 @@ export default function OrderDetailsPage() {
 
               <div className="divide-y divide-stone-100">
                 {order.items?.map((item, idx) => {
-                  const menuItemId = item.menuItem?._id || item.menuItem;
+                  const menuItemId = (item.menuItem?._id || item.menuItem)?.toString();
                   const currentRating = ratingsState[menuItemId];
+                  const currentComment = commentsState[menuItemId];
+                  const isEditing = editingReview[menuItemId];
                   const isSubmittingRating = ratingSubmitting[menuItemId];
+                  const selectedStar = ratingDrafts[menuItemId] || currentRating || 0;
 
                   return (
                     <div
                       key={idx}
-                      className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      className="py-4 flex flex-col gap-3"
                     >
-                      <div className="flex items-center gap-3.5">
-                        {item.image && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-14 h-14 rounded-xl object-cover border border-stone-100 flex-none"
-                          />
-                        )}
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-sm text-[#11261B]">
-                              {item.name}
-                            </h3>
-                            {item.variant && item.variant !== "single" && (
-                              <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-amber-50 text-amber-700 border border-amber-200">
-                                {item.variant}
-                              </span>
-                            )}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3.5">
+                          {item.image && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-14 h-14 rounded-xl object-cover border border-stone-100 flex-none"
+                            />
+                          )}
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-sm text-[#11261B]">
+                                {item.name}
+                              </h3>
+                              {item.variant && item.variant !== "single" && (
+                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+                                  {item.variant}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-stone-500 mt-0.5">
+                              Quantity: <span className="font-semibold">{item.quantity}</span> × ₹{item.unitPrice || item.price}
+                            </p>
                           </div>
-                          <p className="text-xs text-stone-500 mt-0.5">
-                            Quantity: <span className="font-semibold">{item.quantity}</span> × ₹{item.unitPrice || item.price}
-                          </p>
+                        </div>
+
+                        <div className="flex items-center sm:flex-col sm:items-end justify-between gap-2">
+                          <span className="font-extrabold text-sm text-[#1B3B2B]">
+                            ₹{item.subtotal || item.price * item.quantity}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex flex-col sm:items-end gap-2">
-                        <span className="font-extrabold text-sm text-[#1B3B2B]">
-                          ₹{item.subtotal || item.price * item.quantity}
-                        </span>
-
-                        {/* Star rating widget for completed orders */}
-                        {isCompleted && menuItemId && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-[11px] text-stone-500 font-medium mr-1">
-                              {currentRating ? "Your rating:" : "Rate:"}
-                            </span>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                disabled={Boolean(currentRating) || isSubmittingRating}
-                                onClick={() => handleRateItem(menuItemId, star)}
-                                className={`text-base transition-transform ${(currentRating || 0) >= star
-                                  ? "text-amber-500 scale-110"
-                                  : "text-stone-300 hover:text-amber-400 hover:scale-110"
-                                  } ${currentRating ? "cursor-default" : "cursor-pointer"}`}
-                                title={`Rate ${star} stars`}
-                              >
-                                ★
-                              </button>
-                            ))}
+                      {/* Review & Rating section for completed orders */}
+                      {isCompleted && menuItemId && (
+                        currentRating && !isEditing ? (
+                          <div className="mt-1 pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#FAF8F5]/90 px-3.5 py-2.5 rounded-xl border border-stone-200/60">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-1">
+                                <span className="text-[11px] font-bold text-stone-700 mr-1">Your Rating:</span>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <span
+                                    key={star}
+                                    className={`text-sm ${currentRating >= star ? "text-amber-500" : "text-stone-200"}`}
+                                  >
+                                    ★
+                                  </span>
+                                ))}
+                                <span className="text-xs font-semibold text-stone-600 ml-1">({currentRating}/5)</span>
+                              </div>
+                              {currentComment && (
+                                <span className="text-xs text-stone-600 sm:border-l sm:border-stone-300 sm:pl-2 italic">
+                                  &ldquo;{currentComment}&rdquo;
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRatingDrafts((prev) => ({ ...prev, [menuItemId]: currentRating }));
+                                setCommentDrafts((prev) => ({ ...prev, [menuItemId]: currentComment || "" }));
+                                setEditingReview((prev) => ({ ...prev, [menuItemId]: true }));
+                              }}
+                              className="text-[11px] font-semibold text-[#1B3B2B] hover:text-[#C85A17] hover:underline self-start sm:self-auto cursor-pointer"
+                            >
+                              Edit Review
+                            </button>
                           </div>
-                        )}
-                      </div>
+                        ) : (
+                          <div className="mt-1 pt-2 bg-[#FAF8F5]/90 p-3 sm:p-3.5 rounded-xl border border-stone-200/60">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-stone-700 mr-1">
+                                  {currentRating ? "Update Rating:" : "Rate this dish:"}
+                                </span>
+                                {[1, 2, 3, 4, 5].map((star) => {
+                                  const isActive = selectedStar >= star;
+                                  return (
+                                    <button
+                                      key={star}
+                                      type="button"
+                                      disabled={isSubmittingRating}
+                                      onClick={() => handleSelectStar(menuItemId, star)}
+                                      className={`text-lg transition-transform hover:scale-125 cursor-pointer ${isActive ? "text-amber-500 scale-110" : "text-stone-300 hover:text-amber-400"
+                                        }`}
+                                      title={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                                    >
+                                      ★
+                                    </button>
+                                  );
+                                })}
+                                {selectedStar > 0 ? (
+                                  <span className="text-xs font-bold text-[#1B3B2B] ml-1">
+                                    {selectedStar}/5
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] text-stone-400 italic ml-1">
+                                    (Tap a star)
+                                  </span>
+                                )}
+                              </div>
+
+                              {isEditing && (
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingReview((prev) => ({ ...prev, [menuItemId]: false }))}
+                                  className="text-[11px] text-stone-500 hover:text-stone-700 underline cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Comment input field */}
+                            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                              <input
+                                type="text"
+                                value={commentDrafts[menuItemId] ?? (isEditing ? (currentComment || "") : "")}
+                                onChange={(e) =>
+                                  setCommentDrafts((prev) => ({ ...prev, [menuItemId]: e.target.value }))
+                                }
+                                placeholder="Write a comment about this dish (e.g. taste, quality, packaging)..."
+                                className="flex-1 text-xs px-3 py-2 bg-white text-stone-800 placeholder-stone-400 border border-stone-200 rounded-lg focus:outline-none focus:border-[#1B3B2B] focus:ring-1 focus:ring-[#1B3B2B] transition-all"
+                                maxLength={1000}
+                              />
+                              <button
+                                type="button"
+                                disabled={isSubmittingRating || selectedStar === 0}
+                                onClick={() => handleSubmitReview(menuItemId)}
+                                className="px-4 py-2 bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs font-bold rounded-lg transition-all shadow-2xs disabled:opacity-50 cursor-pointer flex-none flex items-center justify-center gap-1.5"
+                              >
+                                {isSubmittingRating ? (
+                                  <>
+                                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span>Submitting...</span>
+                                  </>
+                                ) : (
+                                  <span>{currentRating ? "Update Review" : "Submit Review"}</span>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      )}
                     </div>
                   );
                 })}

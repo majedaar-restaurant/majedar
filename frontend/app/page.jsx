@@ -5,6 +5,7 @@ import BestsellerSection from "../components/BestsellerSection";
 import CategoryNav from "../components/CategoryNav";
 import MenuPreview from "../components/MenuPreview";
 import RestaurantStory from "../components/RestaurantStory";
+import NewsLetter from "../components/NewsLetter";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -24,6 +25,7 @@ export default function Home() {
       <CategoryNav activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
       <MenuPreview selectedCategory={activeCategory} />
       <RestaurantStory />
+      <NewsLetter />
     </div>
   );
 }

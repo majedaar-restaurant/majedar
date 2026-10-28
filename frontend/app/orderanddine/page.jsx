@@ -272,14 +272,14 @@ function OrderAndDineContent() {
                         </span>
                       </h3>
                       <div className="flex items-center gap-1.5 text-xs sm:text-[13px] mb-1.5">
-                        {item.ratingSummary?.reviewCount > 0 ? (
+                        {(item.ratingSummary?.reviewCount > 0 || item.reviewCount > 0) ? (
                           <>
                             <span className="text-amber-500">★</span>
                             <span className="font-bold text-[#11261B]">
-                              {item.ratingSummary.averageRating}
+                              {item.ratingSummary?.averageRating || item.averageRating}
                             </span>
                             <span className="text-stone-400">
-                              · {item.ratingSummary.reviewCount}
+                              · {item.ratingSummary?.reviewCount || item.reviewCount}
                             </span>
                           </>
                         ) : (

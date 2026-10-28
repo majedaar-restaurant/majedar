@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useContext } from "react";
 import { ShopContext } from "../contexts/ShopContext";
 import { usePathname } from "next/navigation";
@@ -10,7 +10,19 @@ const StickyCartBar = () => {
   const cartCount = getCartCounts();
   const cartSubtotal = getCartAmount();
 
-  if (cartCount === 0 || pathname === "/cart" || pathname === "/place-order") {
+  const AUTH_ROUTES = [
+    "/login",
+    "/signup",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+  ];
+  const isAuthPage = AUTH_ROUTES.some(
+    (route) => pathname === route || pathname?.startsWith(`${route}/`)
+  );
+
+  if (cartCount === 0 || pathname === "/cart" || pathname === "/place-order" || isAuthPage) {
     return null;
   }
 

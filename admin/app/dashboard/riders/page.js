@@ -156,9 +156,10 @@ export default function RidersPage() {
                     href={`tel:${rider.phone}`}
                     style={{ color: "var(--crimson)", textDecoration: "none", fontWeight: 500 }}
                   >
-                    📞 +91 {rider.phone}
+                    +91 {rider.phone}
                   </a>
                 </td>
+
                 <td>
                   <span
                     style={{
@@ -169,8 +170,12 @@ export default function RidersPage() {
                       borderRadius: "12px",
                       fontSize: "12px",
                       fontWeight: 600,
-                      background: rider.isActive ? "var(--forest-soft)" : "var(--parchment-2)",
-                      color: rider.isActive ? "var(--forest-deep)" : "var(--muted)",
+                      background: rider.isActive
+                        ? "var(--forest-soft)"
+                        : "var(--parchment-2)",
+                      color: rider.isActive
+                        ? "var(--forest-deep)"
+                        : "var(--muted)",
                     }}
                   >
                     <span
@@ -178,40 +183,105 @@ export default function RidersPage() {
                         width: 7,
                         height: 7,
                         borderRadius: "50%",
-                        backgroundColor: rider.isActive ? "var(--forest-deep)" : "var(--muted)",
+                        backgroundColor: rider.isActive
+                          ? "var(--forest-deep)"
+                          : "var(--muted)",
                       }}
                     />
                     {rider.isActive ? "Active" : "Inactive"}
                   </span>
                 </td>
+
                 <td className="muted">
-                  {rider.createdAt ? new Date(rider.createdAt).toLocaleDateString() : "—"}
+                  {rider.createdAt
+                    ? new Date(rider.createdAt).toLocaleDateString()
+                    : "—"}
                 </td>
+
                 <td>
-                  <button
-                    type="button"
-                    className="row-action"
-                    onClick={() => openEdit(rider)}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                    }}
                   >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="row-action"
-                    style={{ marginLeft: 14 }}
-                    onClick={() => toggleActiveStatus(rider)}
-                  >
-                    {rider.isActive ? "Deactivate" : "Activate"}
-                  </button>
-                  <button
-                    type="button"
-                    className="row-action danger"
-                    style={{ marginLeft: 14 }}
-                    onClick={() => handleDelete(rider)}
-                  >
-                    Delete
-                  </button>
+                    {/* Edit Button */}
+                    <button
+                      type="button"
+                      onClick={() => openEdit(rider)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "5px 12px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        border: "none",
+                        background: "var(--forest-soft)",
+                        color: "var(--forest-deep)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Edit
+                    </button>
+
+                    {/* Activate / Deactivate Button */}
+                    <button
+                      type="button"
+                      onClick={() => toggleActiveStatus(rider)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        padding: "5px 12px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        border: "none",
+                        color: rider.isActive
+                          ? "var(--muted)"
+                          : "var(--forest-deep)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 7,
+                          height: 7,
+                          borderRadius: "50%",
+                          backgroundColor: "var(--forest-deep)",
+                        }}
+                      />
+                      {rider.isActive ? "Deactivate" : "Activate"}
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(rider)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "5px 12px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        border: "none",
+                        background: "#FCE8E6",
+                        color: "#B42318",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
+
               </tr>
             )}
           />

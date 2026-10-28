@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
 
-// ── Payment method badge icons ──────────────────────────────
-// Shown inline inside the "What payment methods do you accept?" answer
 const PAYMENT_METHODS = [
   {
     label: "UPI",
@@ -196,9 +194,8 @@ export default function FAQs() {
                           {item.q}
                         </span>
                         <svg
-                          className={`w-4 h-4 text-stone-400 flex-none mt-0.5 transition-transform duration-200 ${
-                            isOpen ? "rotate-180" : ""
-                          }`}
+                          className={`w-4 h-4 text-stone-400 flex-none mt-0.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                            }`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -261,7 +258,7 @@ export default function FAQs() {
         </div>
 
         {/* Still need help? */}
-        <div className="mt-10 text-center border border-stone-200 rounded-xl py-6 px-5 bg-white shadow-2xs">
+        <div className="mt-8 text-center border border-stone-200 rounded-xl py-6 px-5 bg-white shadow-2xs">
           <p className="text-sm font-semibold text-stone-700 mb-1">Still have a question?</p>
           <p className="text-xs text-stone-400 mb-4">
             Our team is always happy to help you with any questions or assistance.

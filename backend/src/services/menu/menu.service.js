@@ -1,5 +1,6 @@
 import { MenuItem } from '../../models/MenuItem.js';
 import { Category, slugify } from '../../models/Category.js';
+import { Review } from '../../models/Review.js';
 import { NotFoundError, BadRequestError } from '../../utils/errors.js';
 import { uploadImageBuffer, deleteCloudinaryImage } from '../uploads/image.service.js';
 import mongoose from 'mongoose';
@@ -130,11 +131,47 @@ export const getMenuItems = async ({
     const items = await query.exec();
 
     // If public, filter out any items whose category is inactive
-    if (isPublic) {
-        return items.filter((item) => item.category && item.category.isActive !== false);
-    }
+    let finalItems = isPublic
+        ? items.filter((item) => item.category && item.category.isActive !== false)
+        : items;
 
-    return items;
+    // Attach review ratings summary
+    try {
+        const itemIds = finalItems.map((i) => i._id);
+        const ratingAgg = await Review.aggregate([
+            { $match: { menuItem: { $in: itemIds } } },
+            {
+                $group: {
+                    _id: '$menuItem',
+                    averageRating: { $avg: '$rating' },
+                    reviewCount: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const ratingMap = new Map();
+        if (Array.isArray(ratingAgg)) {
+            ratingAgg.forEach((r) => {
+                const key = r._id ? r._id.toString() : '';
+                ratingMap.set(key, {
+                    averageRating: Math.round(r.averageRating * 10) / 10,
+                    reviewCount: r.reviewCount,
+                });
+            });
+        }
+
+        finalItems = finalItems.map((item) => {
+            const doc = item.toJSON ? item.toJSON() : { ...item };
+            const key = doc._id ? doc._id.toString() : '';
+            const summary = ratingMap.get(key) || { averageRating: 0, reviewCount: 0 };
+            doc.ratingSummary = summary;
+            doc.averageRating = summary.averageRating;
+            doc.reviewCount = summary.reviewCount;
+            return doc;
+        });
+    } catch (_) { }
+
+    return finalItems;
 };
 
 /**
@@ -150,7 +187,28 @@ export const getMenuItemById = async (id, { isPublic = false } = {}) => {
         throw new NotFoundError('Menu item is currently unavailable');
     }
 
-    return item;
+    try {
+        const stats = await Review.aggregate([
+            { $match: { menuItem: item._id } },
+            {
+                $group: {
+                    _id: '$menuItem',
+                    averageRating: { $avg: '$rating' },
+                    reviewCount: { $sum: 1 },
+                },
+            },
+        ]);
+        const summary = stats && stats[0]
+            ? { averageRating: Math.round(stats[0].averageRating * 10) / 10, reviewCount: stats[0].reviewCount }
+            : { averageRating: 0, reviewCount: 0 };
+        const doc = item.toJSON ? item.toJSON() : { ...item };
+        doc.ratingSummary = summary;
+        doc.averageRating = summary.averageRating;
+        doc.reviewCount = summary.reviewCount;
+        return doc;
+    } catch (_) { }
+
+    return item.toJSON ? item.toJSON() : item;
 };
 
 /**

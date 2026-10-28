@@ -7,30 +7,21 @@ import { ShopContext } from "../contexts/ShopContext";
 import { useAuth } from "../contexts/AuthContext";
 import Logo from "./Logo";
 
-const AUTHENTICATED_MENU = [
-  {
-    href: "/my-orders",
-    label: "My Orders",
-    icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
-  },
+// Strictly Profile-Related Options Only
+const PROFILE_AUTHENTICATED_MENU = [
   {
     href: "/my-profile",
     label: "My Profile",
     icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
   },
   {
-    href: "/help",
-    label: "Help & Support",
-    icon: "M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z",
-  },
-  {
-    href: "/faqs",
-    label: "FAQs",
-    icon: "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+    href: "/my-orders",
+    label: "My Orders",
+    icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
   },
 ];
 
-const GUEST_MENU = [
+const PROFILE_GUEST_MENU = [
   {
     href: "/login",
     label: "Sign In",
@@ -38,20 +29,22 @@ const GUEST_MENU = [
   },
   {
     href: "/signup",
-    label: "Create Account",
+    label: "Register / Create Account",
     icon: "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z",
   },
-  {
-    href: "/help",
-    label: "Help & Support",
-    icon: "M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z",
-  },
-  {
-    href: "/faqs",
-    label: "FAQs",
-    icon: "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-  },
 ];
+
+// Main Navigation Options (Available via Desktop Nav and Hamburger Menu)
+
+const MAIN_NAV_ITEMS = [
+  { href: "/", label: "Home" },
+  { href: "/orderanddine", label: "Order & Dine" },
+  { href: "/my-orders", label: "My Orders" },
+  { href: "/help", label: "Help & Support" },
+  { href: "/faqs", label: "FAQs" },
+  { href: "/contact", label: "Contact" },
+];
+
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
@@ -93,8 +86,8 @@ const Navbar = () => {
     setAccountOpen(false);
   }, [pathname]);
 
-  const activeMenuItems = isAuthenticated ? AUTHENTICATED_MENU : GUEST_MENU;
-  const isAccountSection = activeMenuItems.some((item) =>
+  const profileMenuItems = isAuthenticated ? PROFILE_AUTHENTICATED_MENU : PROFILE_GUEST_MENU;
+  const isAccountSection = profileMenuItems.some((item) =>
     pathname.startsWith(item.href)
   );
 
@@ -107,13 +100,27 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-stone-200/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between py-3.5">
-        {/* Left: Brand Logo */}
-        <Link href="/" className="flex items-center group py-1" aria-label="Majedaar Restaurant Home">
-          <Logo variant="full" className="h-10 sm:h-11 w-auto" />
-        </Link>
+        {/* Left: Brand Logo & 100% PURE VEG Badge */}
+        <div className="flex items-center gap-2 sm:gap-3.5">
+          <Link href="/" className="flex items-center group py-1" aria-label="Majedaar Restaurant Home">
+            <Logo variant="full" className="h-9 sm:h-11 w-auto" />
+          </Link>
 
-        {/* Center: Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-7 text-xs font-semibold uppercase tracking-wider text-stone-700">
+          {/* Clearly visible & professionally designed 100% PURE VEG label */}
+          <div
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-600/40 text-emerald-800 text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase shadow-2xs select-none"
+            title="Majedaar is a 100% Pure Vegetarian Restaurant"
+            aria-label="100% Pure Vegetarian"
+          >
+            <span className="w-3.5 h-3.5 rounded-xs border border-emerald-700 flex items-center justify-center bg-white p-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-700" />
+            </span>
+            <span className="whitespace-nowrap font-black">100% PURE VEG</span>
+          </div>
+        </div>
+
+        {/* Center: Desktop Navigation (Main links) */}
+        <nav className="hidden md:flex items-center gap-6 lg:gap-7 text-xs font-semibold uppercase tracking-wider text-stone-700">
           <Link href="/" className={navLinkClass("/")}>
             Home
           </Link>
@@ -123,10 +130,16 @@ const Navbar = () => {
           <Link href="/contact" className={navLinkClass("/contact")}>
             Contact
           </Link>
+          <Link href="/help" className={navLinkClass("/help")}>
+            Help
+          </Link>
+          <Link href="/faqs" className={navLinkClass("/faqs")}>
+            FAQs
+          </Link>
         </nav>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2.5 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Search */}
           <button
             onClick={() => {
@@ -173,15 +186,15 @@ const Navbar = () => {
             )}
           </Link>
 
-          {/* Account Dropdown */}
+          {/* Profile Icon & Strictly Profile-Related Dropdown */}
           <div className="relative" ref={accountRef}>
             <button
               onClick={() => setAccountOpen((prev) => !prev)}
               className={`p-2 rounded-full transition-colors flex items-center gap-1.5 ${isAccountSection || accountOpen
-                  ? "text-[#1B3B2B] bg-stone-200/60"
-                  : "text-stone-600 hover:text-[#1B3B2B] hover:bg-stone-200/60"
+                ? "text-[#1B3B2B] bg-stone-200/60"
+                : "text-stone-600 hover:text-[#1B3B2B] hover:bg-stone-200/60"
                 }`}
-              aria-label="Account menu"
+              aria-label="Profile and account menu"
               aria-expanded={accountOpen}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,10 +212,10 @@ const Navbar = () => {
               )}
             </button>
 
-            {/* Dropdown Panel */}
+            {/* Profile Dropdown Panel (Strictly Profile/Account Options Only) */}
             {accountOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 bg-[#FAF8F5] border border-stone-200 rounded-2xl shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-1">
-                <div className="px-4 pt-3.5 pb-2.5 border-b border-stone-100">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-[#FAF8F5] border border-stone-200 rounded-2xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1">
+                <div className="px-4 pt-3.5 pb-2.5 border-b border-stone-100 bg-stone-50/50">
                   {isAuthenticated ? (
                     <div>
                       <p className="text-xs font-bold text-[#1B3B2B] truncate">
@@ -225,13 +238,14 @@ const Navbar = () => {
                 </div>
 
                 <div className="py-1.5">
-                  {activeMenuItems.map(({ href, label, icon }) => (
+                  {profileMenuItems.map(({ href, label, icon }) => (
                     <Link
                       key={href}
                       href={href}
+                      onClick={() => setAccountOpen(false)}
                       className={`flex items-center gap-3 px-4 py-2.5 text-xs font-semibold transition-colors ${pathname === href
-                          ? "text-[#1B3B2B] bg-stone-100"
-                          : "text-stone-700 hover:text-[#1B3B2B] hover:bg-stone-100/80"
+                        ? "text-[#1B3B2B] bg-stone-100"
+                        : "text-stone-700 hover:text-[#1B3B2B] hover:bg-stone-100/80"
                         }`}
                     >
                       <svg
@@ -283,7 +297,7 @@ const Navbar = () => {
             Order Now
           </button>
 
-          {/* Mobile Hamburger */}
+          {/* Mobile Hamburger Menu Icon (Hosts All Main Navigation Options) */}
           <button
             onClick={() => setVisible(true)}
             className="p-2 rounded-lg md:hidden text-stone-600 hover:bg-stone-200/60 transition-colors"
@@ -295,16 +309,14 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Navigation Drawer (All Navigation Options) */}
         <div
-          className={`fixed z-50 top-0 right-0 h-full bg-[#FAF8F5] shadow-xl transition-all duration-300 ${visible ? "w-72 translate-x-0" : "w-0 translate-x-full"
-            } overflow-hidden`}
+          className={`fixed z-[9999] top-0 right-0 h-dvh w-80 max-w-[90vw] bg-[#FAF8F5] shadow-2xl transition-transform duration-300 ${visible ? "translate-x-0" : "translate-x-full"
+            }`}
         >
           <div className="flex flex-col h-full text-stone-800 p-5">
+            {/* Drawer Header */}
             <div className="flex items-center justify-between pb-4 border-b border-stone-200">
-              <div className="flex items-center gap-2">
-                <Logo variant="full" className="h-8 w-auto" />
-              </div>
               <button
                 onClick={() => setVisible(false)}
                 className="p-1 rounded-md text-stone-500 hover:text-stone-800"
@@ -316,66 +328,27 @@ const Navbar = () => {
               </button>
             </div>
 
-            <nav className="flex-1 pt-4 flex flex-col gap-1 text-sm font-medium overflow-y-auto">
-              {[
-                { href: "/", label: "Home" },
-                { href: "/orderanddine", label: "Order & Dine" },
-                { href: "/contact", label: "Contact" },
-              ].map(({ href, label }) => (
+            {/* Main Navigation Links */}
+            <nav className="flex-1 pt-2 flex flex-col gap-1 text-sm font-medium overflow-y-auto">
+              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-3 mb-1">
+                Navigation
+              </p>
+              {MAIN_NAV_ITEMS.map(({ href, label }) => (
                 <Link
                   key={href}
                   href={href}
                   onClick={() => setVisible(false)}
-                  className="py-2.5 px-3 rounded-lg hover:bg-stone-200/60 text-stone-700"
+                  className={`py-2.5 px-3 rounded-lg transition-colors ${pathname === href
+                    ? "bg-[#1B3B2B] text-white font-bold"
+                    : "text-stone-700 hover:bg-stone-200/60"
+                    }`}
                 >
                   {label}
                 </Link>
               ))}
-
-              {/* Account section in mobile drawer */}
-              <div className="mt-3 pt-3 border-t border-stone-200">
-                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-3 mb-1.5">
-                  Account {isAuthenticated && customer ? `(${customer.name.split(" ")[0]})` : ""}
-                </p>
-                {activeMenuItems.map(({ href, label, icon }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setVisible(false)}
-                    className={`flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${pathname === href
-                        ? "text-[#1B3B2B] bg-stone-100 font-semibold"
-                        : "text-stone-700 hover:bg-stone-200/60"
-                      }`}
-                  >
-                    <svg className="w-4 h-4 flex-none text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={icon} />
-                    </svg>
-                    <span>{label}</span>
-                  </Link>
-                ))}
-
-                {isAuthenticated && (
-                  <button
-                    onClick={() => {
-                      setVisible(false);
-                      handleLogout();
-                    }}
-                    className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-medium text-rose-700 hover:bg-rose-50 transition-colors mt-1"
-                  >
-                    <svg className="w-4 h-4 flex-none text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.75}
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                      />
-                    </svg>
-                    <span>Sign Out</span>
-                  </button>
-                )}
-              </div>
             </nav>
 
+            {/* Bottom Drawer CTA */}
             <div className="pt-4 border-t border-stone-200">
               <button
                 onClick={() => {

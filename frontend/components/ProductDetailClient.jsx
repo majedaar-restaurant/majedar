@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShopContext } from "../contexts/ShopContext";
 import { getPublicMenuItem } from "../lib/api";
 import RelatedProducts from "./RelatedProducts";
+import CustomerReviews from "./CustomerReviews";
 import ImageLightbox from "./ImageLightbox";
 
 const FALLBACK_IMG =
@@ -255,6 +256,16 @@ export default function ProductDetailClient({ initialProduct, productId }) {
           </div>
         </div>
       </div>
+
+      {/* Customer Ratings & Reviews */}
+      <CustomerReviews
+        menuItemId={productData._id}
+        productName={productData.name}
+        initialRatingSummary={productData.ratingSummary}
+        onRatingUpdated={(newSummary) => {
+          setProductData((prev) => (prev ? { ...prev, ratingSummary: newSummary } : prev));
+        }}
+      />
 
       <RelatedProducts
         category={productData.category}

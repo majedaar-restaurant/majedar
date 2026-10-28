@@ -6,16 +6,19 @@ const reviewSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Customer',
             required: [true, 'Customer is required'],
+            index: true,
         },
         menuItem: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'MenuItem',
             required: [true, 'Menu item is required'],
+            index: true,
         },
         order: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Order',
-            required: [true, 'Order is required'],
+            required: false,
+            default: null,
         },
         rating: {
             type: Number,
@@ -27,16 +30,20 @@ const reviewSchema = new mongoose.Schema(
                 message: 'Rating must be an integer between 1 and 5',
             },
         },
+        comment: {
+            type: String,
+            trim: true,
+            maxlength: [1000, 'Comment cannot exceed 1000 characters'],
+            default: '',
+        },
     },
     {
         timestamps: true,
     }
 );
 
-// Prevent the same customer from reviewing the same menu item for the same order more than once
-reviewSchema.index({ customer: 1, menuItem: 1, order: 1 }, { unique: true });
-
 // Optimize query performance for menu item review lookups & aggregations
 reviewSchema.index({ menuItem: 1, createdAt: -1 });
+reviewSchema.index({ customer: 1, menuItem: 1 });
 
 export const Review = mongoose.model('Review', reviewSchema);

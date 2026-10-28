@@ -447,3 +447,17 @@ export function emitPaymentSuccess({ orderId, orderNumber, amount }) {
         logger.error('[REALTIME] Failed to emit payment:success:', err.message);
     }
 }
+
+/**
+ * Emit shop availability and over-order status changes to all clients and admin.
+ * @param {Object} status
+ */
+export function emitShopStatusUpdated(status) {
+    if (!ioInstance) return;
+    try {
+        ioInstance.emit('shop:status_changed', status);
+        logger.info('[REALTIME] shop:status_changed broadcasted');
+    } catch (err) {
+        logger.error('[REALTIME] Failed to emit shop:status_changed:', err.message);
+    }
+}

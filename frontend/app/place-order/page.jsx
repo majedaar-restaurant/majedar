@@ -33,6 +33,9 @@ export default function PlaceOrder() {
     products,
     getCartAmount,
     clearCart,
+    canAcceptOrders,
+    restrictionMessage,
+    minimumOrderAmount = 100,
   } = useContext(ShopContext);
 
   const [zones, setZones] = useState([]);
@@ -258,6 +261,25 @@ export default function PlaceOrder() {
 
     if (isCartEmpty) {
       setOrderError("Your cart is empty. Please add dishes to order.");
+      return;
+    }
+
+    // Minimum order amount validation (₹100)
+    const subtotal = getCartAmount();
+    const minOrder = minimumOrderAmount || 100;
+    if (subtotal < minOrder) {
+      const remaining = minOrder - subtotal;
+      const errMsg = `Minimum order amount is ₹${minOrder}. Add ₹${remaining} more to place your order.`;
+      setOrderError(errMsg);
+      toast.error(errMsg);
+      return;
+    }
+
+    // Restaurant availability validation
+    if (!canAcceptOrders) {
+      const errMsg = restrictionMessage || "The restaurant is currently closed and not accepting orders.";
+      setOrderError(errMsg);
+      toast.error(errMsg);
       return;
     }
 

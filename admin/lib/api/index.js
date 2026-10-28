@@ -7,6 +7,7 @@ export * from "./orders";
 export * from "./reviews";
 export * from "./payments";
 export * from "./riders";
+export * from "./settings";
 
 import * as auth from "./auth";
 import * as categories from "./categories";
@@ -16,6 +17,7 @@ import * as orders from "./orders";
 import * as reviews from "./reviews";
 import * as payments from "./payments";
 import * as riders from "./riders";
+import * as settings from "./settings";
 
 export const adminApi = {
   auth,
@@ -26,6 +28,7 @@ export const adminApi = {
   reviews,
   payments,
   riders,
+  settings,
 };
 
 export default adminApi;

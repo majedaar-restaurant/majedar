@@ -1,13 +1,5 @@
 import Image from "next/image";
 
-/**
- * Official Majedaar Restaurant Brand Logo Component
- *
- * @param {"full" | "mark" | "wordmark"} variant - Visual variant (wordmark falls back to full logo)
- * @param {string} className - Optional Tailwind or CSS class names
- * @param {string} alt - Accessibility alt text
- * @param {boolean} priority - Next.js image priority hint
- */
 export default function Logo({
   variant = "full",
   className = "h-10 w-auto",

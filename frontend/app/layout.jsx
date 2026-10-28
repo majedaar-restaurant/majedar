@@ -10,6 +10,7 @@ import Searchbar from "../components/Searchbar";
 import StickyCartBar from "../components/StickyCartBar";
 import ScrollToTopHandler from "../components/ScrollToTopHandler";
 import BrandedLoader from "../components/BrandedLoader";
+import ShopStatusBanner from "../components/ShopStatusBanner";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -188,6 +189,7 @@ export default function RootLayout({ children }) {
             <ScrollToTopHandler />
             <ToastContainer position="bottom-right" />
             <div className="flex flex-col flex-1">
+              <ShopStatusBanner />
               <Navbar />
               <Searchbar />
               <main className="flex-1">{children}</main>

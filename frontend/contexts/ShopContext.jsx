@@ -3,7 +3,7 @@
 import { createContext, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { getPublicMenu, getCategories } from "../lib/api";
+import { getPublicMenu, getCategories, getPublicRestaurantSettings } from "../lib/api";
 
 export const ShopContext = createContext();
 
@@ -18,6 +18,7 @@ const ShopContextProvider = (props) => {
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [restaurantSettings, setRestaurantSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -31,17 +32,21 @@ const ShopContextProvider = (props) => {
   // Navigate helper — matches existing component usage
   const navigate = (path) => router.push(path);
 
-  // Fetch real menu and categories from backend
+  // Fetch real menu, categories, and restaurant availability settings
   const fetchShopData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [menuData, categoryData] = await Promise.all([
+      const [menuData, categoryData, settingsData] = await Promise.all([
         getPublicMenu(),
         getCategories(),
+        getPublicRestaurantSettings(),
       ]);
       setProducts(Array.isArray(menuData) ? menuData : []);
       setCategories(Array.isArray(categoryData) ? categoryData : []);
+      if (settingsData) {
+        setRestaurantSettings(settingsData);
+      }
     } catch (err) {
       setError("Failed to load menu. Please refresh the page.");
       toast.error("Unable to load latest menu items.");
@@ -50,9 +55,21 @@ const ShopContextProvider = (props) => {
     }
   }, []);
 
+  const refreshSettings = useCallback(async () => {
+    try {
+      const settingsData = await getPublicRestaurantSettings();
+      if (settingsData) {
+        setRestaurantSettings(settingsData);
+      }
+    } catch (_) {}
+  }, []);
+
   useEffect(() => {
     fetchShopData();
-  }, [fetchShopData]);
+    // Poll settings every 30s to update shop open/closed announcement and over-order timers
+    const timer = setInterval(refreshSettings, 30000);
+    return () => clearInterval(timer);
+  }, [fetchShopData, refreshSettings]);
 
   // Load and sanitize cart from localStorage on mount
   useEffect(() => {
@@ -219,6 +236,15 @@ const ShopContextProvider = (props) => {
     setCartItems: saveCart,
     clearCart,
     navigate,
+    restaurantSettings,
+    shopStatus: restaurantSettings,
+    isShopOpen: restaurantSettings ? restaurantSettings.isOpen : true,
+    isOverOrderActive: Boolean(restaurantSettings?.overOrder?.isActive),
+    canAcceptOrders: restaurantSettings ? restaurantSettings.canAcceptOrders : true,
+    restrictionReason: restaurantSettings?.restrictionReason || null,
+    restrictionMessage: restaurantSettings?.restrictionMessage || null,
+    minimumOrderAmount: restaurantSettings?.minimumOrderAmount || 100,
+    refreshSettings,
   };
 
   return (

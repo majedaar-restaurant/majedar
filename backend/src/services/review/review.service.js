@@ -11,70 +11,132 @@ import {
 import { getDateRangeFilter } from '../../utils/date-filter.js';
 
 /**
- * Create a new customer review for a menu item in a completed order.
+ * Create a new customer review for a menu item (either linked to a completed order or direct product review).
  */
-export const createReview = async (customerId, { orderId, menuItemId, rating }) => {
-    // 1. Fetch the order
-    const order = await Order.findById(orderId);
-    if (!order) {
-        throw new NotFoundError('Order not found');
+export const createReview = async (customerId, { orderId, menuItemId, rating, comment = '', allowUpdate = false }) => {
+    if (orderId) {
+        // 1. Fetch order
+        const order = await Order.findById(orderId);
+        if (!order) {
+            throw new NotFoundError('Order not found');
+        }
+
+        // 2. Verify order belongs to customer
+        if (order.customer.toString() !== customerId.toString()) {
+            throw new ForbiddenError('You can only review items from your own orders');
+        }
+
+        // 3. Verify order completed
+        if (order.orderStatus !== 'completed') {
+            throw new BadRequestError('You can only review items after your order is completed');
+        }
+
+        // 4. Verify menu item exists in database
+        const menuItem = await MenuItem.findById(menuItemId);
+        if (!menuItem) {
+            throw new NotFoundError('Menu item not found');
+        }
+
+        // 5. Verify menu item is present in order
+        const hasItem = order.items && order.items.some(
+            (item) => item.menuItem && item.menuItem.toString() === menuItemId.toString()
+        );
+        if (!hasItem) {
+            throw new BadRequestError('This menu item is not part of the specified order');
+        }
+
+        // 6. Check duplicate / update
+        const existingReview = await Review.findOne({
+            customer: customerId,
+            order: orderId,
+            menuItem: menuItemId,
+        });
+        if (existingReview) {
+            if (allowUpdate) {
+                existingReview.rating = Number(rating);
+                if (comment !== undefined) {
+                    existingReview.comment = comment ? comment.trim() : '';
+                }
+                await existingReview.save();
+                if (existingReview.populate) {
+                    await existingReview.populate([
+                        { path: 'customer', select: 'firstName lastName name avatar' },
+                        { path: 'menuItem', select: 'name price image' },
+                    ]);
+                }
+                return existingReview;
+            }
+            throw new BadRequestError('You have already reviewed this menu item for this order');
+        }
+
+        const review = new Review({
+            customer: customerId,
+            menuItem: menuItemId,
+            order: orderId,
+            rating: Number(rating),
+            comment: comment ? comment.trim() : '',
+        });
+
+        try {
+            await review.save();
+        } catch (err) {
+            if (err.code === 11000) {
+                throw new BadRequestError('You have already reviewed this menu item for this order');
+            }
+            throw err;
+        }
+
+        if (review.populate) {
+            await review.populate([
+                { path: 'customer', select: 'firstName lastName name avatar' },
+                { path: 'menuItem', select: 'name price image' },
+            ]);
+        }
+        return review;
     }
 
-    // 2. Verify order belongs to the authenticated customer
-    if (order.customer.toString() !== customerId.toString()) {
-        throw new ForbiddenError('You can only review items from your own orders');
-    }
-
-    // 3. Verify the order is completed / delivered
-    if (order.orderStatus !== 'completed') {
-        throw new BadRequestError('You can only review items after your order is completed');
-    }
-
-    // 4. Verify menu item exists in database
+    // Direct item review on product page without orderId
     const menuItem = await MenuItem.findById(menuItemId);
     if (!menuItem) {
         throw new NotFoundError('Menu item not found');
     }
 
-    // 5. Verify menu item is present in this specific order
-    const hasItem = order.items && order.items.some(
-        (item) => item.menuItem && item.menuItem.toString() === menuItemId.toString()
-    );
-    if (!hasItem) {
-        throw new BadRequestError('This menu item is not part of the specified order');
-    }
-
-    // 6. Check for existing duplicate review
     const existingReview = await Review.findOne({
         customer: customerId,
-        order: orderId,
         menuItem: menuItemId,
     });
-    if (existingReview) {
-        throw new BadRequestError('You have already reviewed this menu item for this order');
-    }
 
-    // 7. Persist review
-    const review = new Review({
-        customer: customerId,
-        menuItem: menuItemId,
-        order: orderId,
-        rating: Number(rating),
-    });
+    let review;
+    if (existingReview) {
+        existingReview.rating = Number(rating);
+        if (comment !== undefined) {
+            existingReview.comment = comment.trim();
+        }
+        review = existingReview;
+    } else {
+        review = new Review({
+            customer: customerId,
+            menuItem: menuItemId,
+            rating: Number(rating),
+            comment: comment ? comment.trim() : '',
+        });
+    }
 
     try {
         await review.save();
     } catch (err) {
         if (err.code === 11000) {
-            throw new BadRequestError('You have already reviewed this menu item for this order');
+            throw new BadRequestError('You have already reviewed this menu item');
         }
         throw err;
     }
 
-    await review.populate([
-        { path: 'customer', select: 'firstName lastName name avatar' },
-        { path: 'menuItem', select: 'name price image' },
-    ]);
+    if (review.populate) {
+        await review.populate([
+            { path: 'customer', select: 'firstName lastName name avatar' },
+            { path: 'menuItem', select: 'name price image' },
+        ]);
+    }
 
     return review;
 };
@@ -235,4 +297,14 @@ export const deleteReviewByAdmin = async (reviewId) => {
         throw new NotFoundError('Review not found');
     }
     return { id: review._id, message: 'Review deleted successfully' };
+};
+
+/**
+ * Customer: Get all reviews submitted for a specific order.
+ */
+export const getOrderReviews = async (customerId, orderId) => {
+    return Review.find({ customer: customerId, order: orderId })
+        .populate('menuItem', 'name price image')
+        .sort({ createdAt: -1 })
+        .lean();
 };

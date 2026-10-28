@@ -49,11 +49,6 @@ export const navItems = [
     ],
   },
   {
-    label: "Delivery Zones",
-    href: "/dashboard/delivery-zones",
-    icon: "delivery",
-  },
-  {
     label: "Reviews",
     href: "/dashboard/reviews",
     icon: "reviews",
@@ -64,7 +59,7 @@ export const navItems = [
     icon: "customers",
   },
   {
-    label: "Messages",
+    label: "Complaints/Suggestions",
     href: "/dashboard/messages",
     icon: "mail",
   },
