@@ -44,7 +44,15 @@ export async function toggleOverOrder(active, durationMinutes = 30) {
 /**
  * Fetch authoritative dashboard operational metrics calculated in local timezone.
  */
-export async function getDashboardStats() {
-  const res = await apiRequest("/admin/settings/dashboard-stats");
+export async function getDashboardStats(params = {}) {
+  const query = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== "" && v !== "all") {
+      query.set(k, String(v));
+    }
+  }
+  const queryString = query.toString();
+  const endpoint = `/admin/settings/dashboard-stats${queryString ? `?${queryString}` : ""}`;
+  const res = await apiRequest(endpoint);
   return res.data;
 }

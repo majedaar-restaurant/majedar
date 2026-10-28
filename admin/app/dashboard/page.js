@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { PageHeader, StatusBadge, Table, EmptyState, useToast } from "@/components/ui";
 import { getAdminOrders, updateAdminOrderStatus } from "@/lib/api/orders";
@@ -23,13 +23,36 @@ const STATUS_LABELS = {
   expired: "Expired",
 };
 
+const FILTER_PRESETS = [
+  { id: "today", label: "Today" },
+  { id: "this-week", label: "This Week" },
+  { id: "last-week", label: "Last Week" },
+  { id: "this-month", label: "This Month" },
+  { id: "last-month", label: "Last Month" },
+  { id: "this-year", label: "This Year" },
+  { id: "custom", label: "Custom Range" },
+];
+
 export default function DashboardPage() {
   const [orders, setOrders] = useState([]);
+  const [liveOrders, setLiveOrders] = useState([]);
   const [stats, setStats] = useState(null);
   const [shopSettings, setShopSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
+
+  // Date Filtering State (Today by default)
+  const [datePreset, setDatePreset] = useState("today");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [customPopoverOpen, setCustomPopoverOpen] = useState(false);
+  const [localCustomFrom, setLocalCustomFrom] = useState("");
+  const [localCustomTo, setLocalCustomTo] = useState("");
+  const customPopoverRef = useRef(null);
+
+  const filterRef = useRef({ preset: "today", from: "", to: "" });
+  filterRef.current = { preset: datePreset, from: dateFrom, to: dateTo };
 
   // Over Order Modal State
   const [showOverOrderModal, setShowOverOrderModal] = useState(false);
@@ -38,16 +61,30 @@ export default function DashboardPage() {
 
   const toast = useToast();
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (forcedPreset, forcedFrom, forcedTo) => {
+    const preset = forcedPreset !== undefined ? forcedPreset : filterRef.current.preset;
+    const from = forcedFrom !== undefined ? forcedFrom : filterRef.current.from;
+    const to = forcedTo !== undefined ? forcedTo : filterRef.current.to;
+
+    const filterParams = { datePreset: preset, limit: 100 };
+    if (preset === "custom" && from && to) {
+      filterParams.dateFrom = from;
+      filterParams.dateTo = to;
+    }
+
     try {
-      const [ordersData, statsData, settingsData] = await Promise.allSettled([
-        getAdminOrders(),
-        getDashboardStats(),
+      const [ordersData, statsData, settingsData, liveOrdersData] = await Promise.allSettled([
+        getAdminOrders(filterParams),
+        getDashboardStats(filterParams),
         getAdminSettings(),
+        getAdminOrders({ limit: 100 }), // live queue & awaiting confirmation
       ]);
 
       if (ordersData.status === "fulfilled") {
         setOrders(ordersData.value || []);
+      }
+      if (liveOrdersData.status === "fulfilled") {
+        setLiveOrders(liveOrdersData.value || []);
       }
       if (statsData.status === "fulfilled") {
         setStats(statsData.value);
@@ -68,9 +105,26 @@ export default function DashboardPage() {
   useEffect(() => {
     loadDashboardData();
     // Poll every 15 seconds to ensure operational sync even if tab loses websocket focus
-    const interval = setInterval(loadDashboardData, 15000);
+    const interval = setInterval(() => {
+      loadDashboardData();
+    }, 15000);
     return () => clearInterval(interval);
   }, [loadDashboardData]);
+
+  // Close custom popover on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (customPopoverRef.current && !customPopoverRef.current.contains(e.target)) {
+        setCustomPopoverOpen(false);
+      }
+    }
+    if (customPopoverOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [customPopoverOpen]);
 
   // Socket.IO Real-time Synchronization
   useEffect(() => {
@@ -108,6 +162,42 @@ export default function DashboardPage() {
       socket.off("shop:status_changed");
     };
   }, [loadDashboardData]);
+
+  // Filter change handlers
+  const handlePresetSelect = (presetId) => {
+    if (presetId === "custom") {
+      setCustomPopoverOpen((prev) => !prev);
+      return;
+    }
+    setCustomPopoverOpen(false);
+    setDatePreset(presetId);
+    setDateFrom("");
+    setDateTo("");
+    setLoading(true);
+    loadDashboardData(presetId, "", "");
+  };
+
+  const handleApplyCustomDate = (e) => {
+    e?.preventDefault();
+    if (!localCustomFrom || !localCustomTo) return;
+    setDatePreset("custom");
+    setDateFrom(localCustomFrom);
+    setDateTo(localCustomTo);
+    setCustomPopoverOpen(false);
+    setLoading(true);
+    loadDashboardData("custom", localCustomFrom, localCustomTo);
+  };
+
+  const handleResetToToday = () => {
+    setLocalCustomFrom("");
+    setLocalCustomTo("");
+    setDatePreset("today");
+    setDateFrom("");
+    setDateTo("");
+    setCustomPopoverOpen(false);
+    setLoading(true);
+    loadDashboardData("today", "", "");
+  };
 
   // Handlers for Shop Availability Toggles
   const handleToggleShop = async () => {
@@ -184,25 +274,30 @@ export default function DashboardPage() {
     }
   };
 
-  const activeOrders = orders.filter(
+  // Live queues derived from liveOrders
+  const activeOrders = liveOrders.filter(
     (o) => o.orderStatus === "placed" || o.orderStatus === "preparing" || o.orderStatus === "out_for_delivery"
   );
 
-  const awaitingOrders = orders.filter(
+  const awaitingOrders = liveOrders.filter(
     (o) => o.orderStatus === "placed" && o.acceptanceDeadline && new Date(o.acceptanceDeadline) > new Date()
   );
 
-  // Filter only today's orders (IST)
-  const todayISTStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
-  const todayOrders = orders.filter((o) => {
-    if (!o.createdAt) return false;
-    const orderISTStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date(o.createdAt));
-    return orderISTStr === todayISTStr;
-  });
+  // Friendly filter label
+  const PRESET_DISPLAY_NAMES = {
+    today: "Today",
+    "this-week": "This Week",
+    "last-week": "Last Week",
+    "this-month": "This Month",
+    "last-month": "Last Month",
+    "this-year": "This Year",
+    custom: dateFrom && dateTo ? `${dateFrom} → ${dateTo}` : "Custom Range",
+  };
+  const activeFilterLabel = PRESET_DISPLAY_NAMES[datePreset] || "Today";
 
-  // Derived today stats
-  const todayOrdersCount = stats?.todayOrdersCount ?? 0;
-  const todayRevenue = stats?.todayRevenue ?? 0;
+  // Filtered stats
+  const filteredOrdersCount = stats?.ordersCount ?? orders.length;
+  const filteredRevenue = stats?.revenue ?? 0;
   const statusBreakdown = stats?.statusBreakdown || {
     placed: 0,
     preparing: 0,
@@ -212,6 +307,7 @@ export default function DashboardPage() {
 
   const isShopOpen = shopSettings ? shopSettings.isOpen : true;
   const isOverOrderActive = shopSettings?.overOrder?.isActive;
+  const todayISTStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
 
   return (
     <>
@@ -333,27 +429,211 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ── Summary Cards Grid (Today's Orders, Revenue, Pending, Active) ── */}
+      {/* ── Operational / Analytics Filter Bar (Today by default, Week, Month, Year, Custom) ── */}
+      <section
+        style={{
+          background: "#ffffff",
+          border: "1px solid var(--border)",
+          borderRadius: "12px",
+          padding: "14px 18px",
+          marginBottom: "20px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "12px",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <strong style={{ fontSize: "13px", color: "var(--ink)" }}>Filter Analytics & Orders:</strong>
+          </div>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              background: "#ecfdf5",
+              color: "#065f46",
+              border: "1px solid #a7f3d0",
+              borderRadius: "20px",
+              padding: "2px 10px",
+              fontSize: "12px",
+              fontWeight: 700,
+            }}
+          >
+            Viewing: {activeFilterLabel}
+          </span>
+          {datePreset !== "today" && (
+            <button
+              type="button"
+              onClick={handleResetToToday}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#dc2626",
+                fontSize: "12px",
+                fontWeight: 600,
+                cursor: "pointer",
+                textDecoration: "underline",
+                padding: "2px 4px",
+              }}
+            >
+              Reset to Today
+            </button>
+          )}
+        </div>
+
+        {/* Filter buttons group & Custom popover */}
+        <div
+          ref={customPopoverRef}
+          style={{
+            position: "relative",
+            display: "inline-flex",
+            flexWrap: "wrap",
+            gap: "4px",
+            background: "#f3f4f6",
+            padding: "3px",
+            borderRadius: "8px",
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          {FILTER_PRESETS.map((preset) => {
+            const isActive = datePreset === preset.id;
+            const isCustom = preset.id === "custom";
+            const customActive = isCustom && (datePreset === "custom" || (dateFrom && dateTo));
+
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => handlePresetSelect(preset.id)}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: isActive || customActive ? 700 : 500,
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  backgroundColor: isActive || customActive ? "var(--forest, #14532d)" : "transparent",
+                  color: isActive || customActive ? "#ffffff" : "var(--ink-mid, #4b5563)",
+                  boxShadow: isActive || customActive ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <span>{preset.label}</span>
+                {isCustom && (
+                  <svg width={10} height={6} viewBox="0 0 10 6" fill="currentColor">
+                    <path d="M0 0l5 5 5-5z" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+
+          {/* Custom Date Range Popover */}
+          {customPopoverOpen && (
+            <div
+              className="date-custom-popover"
+              style={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                right: 0,
+                left: "auto",
+                zIndex: 200,
+                background: "#ffffff",
+                border: "1px solid var(--border, #d1d5db)",
+                borderRadius: "10px",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+                padding: "16px",
+                minWidth: "280px",
+              }}
+            >
+              <div className="date-custom-head" style={{ marginBottom: "12px" }}>
+                <strong style={{ fontSize: "13px", color: "var(--ink)" }}>Select Custom Dates</strong>
+                <button
+                  type="button"
+                  className="popover-close-btn"
+                  onClick={() => setCustomPopoverOpen(false)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleApplyCustomDate} className="date-custom-body" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <label className="date-input-field">
+                  <span>Start Date (From)</span>
+                  <input
+                    type="date"
+                    value={localCustomFrom}
+                    max={localCustomTo || todayISTStr}
+                    onChange={(e) => setLocalCustomFrom(e.target.value)}
+                    required
+                  />
+                </label>
+
+                <label className="date-input-field">
+                  <span>End Date (To)</span>
+                  <input
+                    type="date"
+                    value={localCustomTo}
+                    min={localCustomFrom || undefined}
+                    max={todayISTStr}
+                    onChange={(e) => setLocalCustomTo(e.target.value)}
+                    required
+                  />
+                </label>
+
+                <div className="date-custom-actions" style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "4px" }}>
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    style={{ height: 32, fontSize: 12, padding: "0 10px" }}
+                    onClick={handleResetToToday}
+                  >
+                    Reset to Today
+                  </button>
+                  <button
+                    type="submit"
+                    className="button button-primary"
+                    style={{ height: 32, fontSize: 12, padding: "0 14px", backgroundColor: "var(--forest, #14532d)" }}
+                  >
+                    Apply Filter
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Summary Cards Grid (Filtered Orders, Revenue, Pending, Active) ── */}
       <section className="summary-grid" style={{ marginBottom: "24px" }}>
-        {/* Card 1: Today's Orders */}
+        {/* Card 1: Orders (Filtered) */}
         <article className="summary-card">
-          <p>Today&apos;s Orders</p>
+          <p>{activeFilterLabel}&apos;s Orders</p>
           <div className="summary-number">
-            {loading ? "..." : todayOrdersCount}
+            {loading ? "..." : filteredOrdersCount}
           </div>
           <div style={{ marginTop: "6px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
             <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--ink-mid)" }}>
-              Placed: <strong style={{ color: "var(--ink)" }}>{statusBreakdown.placed}</strong>
+              Placed: <strong style={{ color: "var(--ink)" }}>{statusBreakdown.placed || 0}</strong>
             </span>
             <span style={{ fontSize: "11px", color: "var(--muted)" }}>·</span>
             <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--ink-mid)" }}>
-              Prep: <strong style={{ color: "var(--ink)" }}>{statusBreakdown.preparing}</strong>
+              Prep: <strong style={{ color: "var(--ink)" }}>{statusBreakdown.preparing || 0}</strong>
             </span>
             <span style={{ fontSize: "11px", color: "var(--muted)" }}>·</span>
             <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--ink-mid)" }}>
-              Done: <strong style={{ color: "#16a34a" }}>{statusBreakdown.completed}</strong>
+              Done: <strong style={{ color: "#16a34a" }}>{statusBreakdown.completed || 0}</strong>
             </span>
-            {statusBreakdown.cancelled > 0 && (
+            {(statusBreakdown.cancelled || 0) > 0 && (
               <>
                 <span style={{ fontSize: "11px", color: "var(--muted)" }}>·</span>
                 <span style={{ fontSize: "11px", fontWeight: 600, color: "#dc2626" }}>
@@ -364,11 +644,14 @@ export default function DashboardPage() {
           </div>
         </article>
 
-        {/* Card 2: Today's Revenue */}
+        {/* Card 2: Revenue (Filtered) */}
         <article className="summary-card">
-          <p>Today&apos;s Revenue</p>
+          <p>{activeFilterLabel}&apos;s Revenue</p>
           <div className="summary-number" style={{ color: "#16a34a" }}>
-            {loading ? "..." : `₹${Math.round(todayRevenue).toLocaleString("en-IN")}`}
+            {loading ? "..." : `₹${Math.round(filteredRevenue).toLocaleString("en-IN")}`}
+          </div>
+          <div style={{ marginTop: "6px", fontSize: "11px", color: "var(--muted)" }}>
+            From paid & completed orders
           </div>
         </article>
 
@@ -388,7 +671,7 @@ export default function DashboardPage() {
           >
             {(stats?.pendingOrdersCount || 0) > 0
               ? `${stats.pendingOrdersCount} orders awaiting action`
-              : ""}
+              : "No orders awaiting action"}
           </div>
         </article>
 
@@ -401,7 +684,7 @@ export default function DashboardPage() {
           <div className={`summary-note ${activeOrders.length > 0 ? "warn" : "neutral"}`}>
             {activeOrders.length > 0
               ? `${activeOrders.length} in kitchen & fulfillment queue`
-              : ""}
+              : "Kitchen queue clear"}
           </div>
         </article>
       </section>
@@ -554,32 +837,32 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* ── Content Grid: Recent Orders & Active Orders Queue ── */}
+      {/* ── Content Grid: Orders & Active Kitchen Queue ── */}
       <div className="content-grid">
-        {/* Today's Orders */}
+        {/* Filtered Orders List */}
         <section className="surface">
           <div className="surface-heading">
             <div>
-              <h2>Today&apos;s Orders</h2>
-              <p>Customer orders placed today ({todayOrders.length} total).</p>
+              <h2>{activeFilterLabel}&apos;s Orders</h2>
+              <p>Customer orders placed during {activeFilterLabel.toLowerCase()} ({orders.length} total).</p>
             </div>
             <Link href="/dashboard/orders">View all in Orders →</Link>
           </div>
 
           {loading ? (
             <div style={{ padding: "40px", textAlign: "center", color: "var(--muted)" }}>
-              Loading today&apos;s orders...
+              Loading orders...
             </div>
-          ) : todayOrders.length === 0 ? (
+          ) : orders.length === 0 ? (
             <EmptyState
-              title="No orders today"
-              description="Orders placed today will appear here in real time."
+              title={`No orders for ${activeFilterLabel.toLowerCase()}`}
+              description={`No orders were placed during this period (${activeFilterLabel}).`}
               compact
             />
           ) : (
             <Table
-              columns={["Order #", "Customer", "Amount", "Status", "Time", ""]}
-              rows={todayOrders}
+              columns={["Order #", "Customer", "Amount", "Status", "Date / Time", ""]}
+              rows={orders}
               renderRow={(order) => {
                 const customerName =
                   order.customer?.name ||
@@ -591,10 +874,17 @@ export default function DashboardPage() {
                   : "";
 
                 const timeStr = order.createdAt
-                  ? new Date(order.createdAt).toLocaleTimeString("en-IN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                  ? datePreset === "today"
+                    ? new Date(order.createdAt).toLocaleTimeString("en-IN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                    : new Date(order.createdAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                   : "—";
 
                 return (

@@ -207,7 +207,7 @@ const Hero = ({ onSelectCategory }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto flex flex-col items-center">
           {/* Main Title */}
-          <h1 className="font-hero font-bold text-[clamp(3rem,5.2vw,4.5rem)] text-[#11261B] tracking-wider uppercase leading-tight py-1.5 mb-3 text-center overflow-visible">
+          <h1 className="font-hero font-bold text-[clamp(1.65rem,6vw,4.5rem)] text-[#11261B] tracking-wider uppercase leading-tight py-1.5 mb-3 text-center break-words max-w-full">
             MAJEDAAR RESTAURANT
           </h1>
 

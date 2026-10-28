@@ -90,7 +90,7 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
               <div
                 key={item._id}
                 onClick={() => router.push(`/product/${item._id}`)}
-                className="bg-white rounded-2xl border border-stone-200/90 p-4 sm:p-5 hover:border-stone-300 transition-all flex items-center gap-4 sm:gap-5 justify-between min-h-[148px] sm:min-h-[164px] group shadow-2xs cursor-pointer"
+                className="bg-white rounded-2xl border border-stone-200/90 p-3 sm:p-5 hover:border-stone-300 transition-all flex items-center gap-3 sm:gap-5 justify-between min-h-[136px] sm:min-h-[164px] group shadow-2xs cursor-pointer"
               >
                 {/* Food Image - opens image lightbox only */}
                 <button
@@ -99,7 +99,7 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
                     e.stopPropagation();
                     setLightboxItem(item);
                   }}
-                  className="w-32 h-32 sm:w-36 sm:h-36 rounded-xl overflow-hidden flex-none bg-stone-100 border border-stone-100 relative shadow-2xs block cursor-zoom-in text-left focus:outline-none focus:ring-2 focus:ring-[#1B3B2B]/40"
+                  className="w-24 h-24 sm:w-36 sm:h-36 rounded-xl overflow-hidden flex-none bg-stone-100 border border-stone-100 relative shadow-2xs block cursor-zoom-in text-left focus:outline-none focus:ring-2 focus:ring-[#1B3B2B]/40"
                   aria-label={`Enlarge photo of ${item.name}`}
                   title="Click to view larger image"
                 >

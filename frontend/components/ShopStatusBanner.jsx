@@ -34,21 +34,21 @@ export default function ShopStatusBanner() {
 
     return (
       <div className="w-full bg-[#153424] text-white border-b border-emerald-900/50 shadow-xs transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 relative">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
+            <span className="flex h-2 w-2 relative shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="font-extrabold uppercase tracking-wider text-emerald-300 text-[11px]">
+            <span className="font-extrabold uppercase tracking-wider text-emerald-300 text-[11px] shrink-0">
               Open Today
             </span>
-            <span className="text-white/40">·</span>
-            <div className="flex items-center gap-1.5 font-semibold text-stone-100">
+            <span className="text-white/40 hidden sm:inline">·</span>
+            <div className="flex items-center gap-1.5 font-semibold text-stone-100 min-w-0 flex-wrap">
               <svg className="w-3.5 h-3.5 text-emerald-400 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>
+              <span className="break-words">
                 Timings: <strong className="text-white font-bold">{displayTimings} (IST)</strong>
               </span>
             </div>

@@ -224,7 +224,7 @@ function OrderAndDineContent() {
                 <div
                   key={item._id}
                   onClick={() => router.push(`/product/${item._id}`)}
-                  className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 hover:border-stone-300 transition-all flex gap-4 sm:gap-5 items-center justify-between shadow-2xs group min-h-[152px] sm:min-h-[172px] cursor-pointer"
+                  className="bg-white rounded-2xl border border-stone-200/80 p-3 sm:p-5 hover:border-stone-300 transition-all flex gap-3 sm:gap-5 items-center justify-between shadow-2xs group min-h-[136px] sm:min-h-[172px] cursor-pointer"
                 >
                   {/* Food image (Click to enlarge in clean lightbox only - stops navigation) */}
                   <button
@@ -233,7 +233,7 @@ function OrderAndDineContent() {
                       e.stopPropagation();
                       setLightboxItem(item);
                     }}
-                    className="w-32 h-32 sm:w-36 sm:h-36 rounded-xl overflow-hidden flex-none bg-stone-100 border border-stone-100 relative shadow-2xs block cursor-zoom-in text-left focus:outline-none focus:ring-2 focus:ring-[#1B3B2B]/40"
+                    className="w-24 h-24 sm:w-36 sm:h-36 rounded-xl overflow-hidden flex-none bg-stone-100 border border-stone-100 relative shadow-2xs block cursor-zoom-in text-left focus:outline-none focus:ring-2 focus:ring-[#1B3B2B]/40"
                     aria-label={`Enlarge photo of ${item.name}`}
                     title="Click to view larger image"
                   >

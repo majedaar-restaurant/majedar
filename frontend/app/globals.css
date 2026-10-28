@@ -193,6 +193,8 @@ html {
   color: var(--text-main);
   scroll-behavior: smooth;
   box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 *,
@@ -206,6 +208,8 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Hide scrollbar for horizontal category scroll while allowing scrolling */

@@ -1,6 +1,7 @@
 import * as settingsService from '../services/settings/settings.service.js';
 import { sendSuccess } from '../utils/response.js';
 import { Order } from '../models/Order.js';
+import { getDateRangeFilter, getCurrentISTDateString } from '../utils/date-filter.js';
 
 const TIMEZONE = 'Asia/Kolkata';
 
@@ -93,33 +94,25 @@ export const toggleOverOrder = async (req, res, next) => {
 
 /**
  * Admin: Get operational dashboard statistics in local timezone (Asia/Kolkata).
+ * Supports datePreset ('today' [default], 'this-week', 'last-week', 'this-month', 'last-month', 'this-year', 'custom')
+ * and dateFrom/dateTo.
  */
 export const getDashboardStats = async (req, res, next) => {
     try {
-        // Fetch all orders
-        const allOrders = await Order.find().sort({ createdAt: -1 }).lean();
+        const { datePreset = 'today', dateFrom, dateTo } = req.query;
 
-        // Get today's date in IST (YYYY-MM-DD)
-        const todayIST = new Intl.DateTimeFormat('en-CA', {
-            timeZone: TIMEZONE,
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-        }).format(new Date());
-
-        // Filter orders placed today in IST
-        const todayOrders = allOrders.filter((order) => {
-            if (!order.createdAt) return false;
-            const orderDateIST = new Intl.DateTimeFormat('en-CA', {
-                timeZone: TIMEZONE,
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-            }).format(new Date(order.createdAt));
-            return orderDateIST === todayIST;
+        // Apply date filter
+        const dateFilter = getDateRangeFilter({
+            datePreset,
+            dateFrom,
+            dateTo,
+            fieldName: 'createdAt',
         });
 
-        // Status breakdown for today
+        // Filtered orders for metrics
+        const filteredOrders = await Order.find(dateFilter).sort({ createdAt: -1 }).lean();
+
+        // Status breakdown for the filtered range
         const statusBreakdown = {
             placed: 0,
             preparing: 0,
@@ -129,9 +122,9 @@ export const getDashboardStats = async (req, res, next) => {
             expired: 0,
         };
 
-        let todayRevenue = 0;
+        let revenue = 0;
 
-        for (const o of todayOrders) {
+        for (const o of filteredOrders) {
             const st = o.orderStatus || 'placed';
             if (statusBreakdown[st] !== undefined) {
                 statusBreakdown[st]++;
@@ -142,30 +135,43 @@ export const getDashboardStats = async (req, res, next) => {
             // Calculate revenue: exclude cancelled / expired orders, include paid or completed
             if (st !== 'cancelled' && st !== 'expired') {
                 if (o.paymentStatus === 'paid' || st === 'completed') {
-                    todayRevenue += Number(o.total) || 0;
+                    revenue += Number(o.total) || 0;
                 }
             }
         }
 
-        // Live / active counts across all orders
-        const pendingOrders = allOrders.filter((o) => o.orderStatus === 'placed');
-        const activeOrders = allOrders.filter(
-            (o) => o.orderStatus === 'placed' || o.orderStatus === 'preparing' || o.orderStatus === 'out_for_delivery'
-        );
+        // Live / active counts across all orders (for live kitchen operational alerts)
+        const allLiveOrders = await Order.find({
+            orderStatus: { $in: ['placed', 'preparing', 'out_for_delivery'] },
+        }).lean();
+
+        const pendingOrdersCount = allLiveOrders.filter((o) => o.orderStatus === 'placed').length;
+        const activeOrdersCount = allLiveOrders.length;
+        const totalAllTimeOrders = await Order.countDocuments();
 
         const shopStatus = await settingsService.getPublicSettings();
+        const todayIST = getCurrentISTDateString();
+
+        const roundedRevenue = Math.round(revenue * 100) / 100;
 
         return sendSuccess(res, {
             statusCode: 200,
             message: 'Dashboard operational metrics retrieved successfully',
             data: {
+                datePreset,
+                dateFrom: dateFrom || null,
+                dateTo: dateTo || null,
                 todayDateIST: todayIST,
-                todayOrdersCount: todayOrders.length,
-                todayRevenue: Math.round(todayRevenue * 100) / 100,
+                // Filtered metric counts
+                ordersCount: filteredOrders.length,
+                todayOrdersCount: filteredOrders.length,
+                revenue: roundedRevenue,
+                todayRevenue: roundedRevenue,
                 statusBreakdown,
-                pendingOrdersCount: pendingOrders.length,
-                activeOrdersCount: activeOrders.length,
-                totalAllTimeOrders: allOrders.length,
+                // Live operational counts
+                pendingOrdersCount,
+                activeOrdersCount,
+                totalAllTimeOrders,
                 shopStatus,
             },
         });
