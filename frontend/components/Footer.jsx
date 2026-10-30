@@ -57,7 +57,31 @@ const Footer = () => {
           </div>
         </div>
 
+
         <div className="border-t border-stone-800/80 pt-6 text-center text-xs text-stone-500">
+          {/* Portfolio of Developer */}
+          <div className="pt-4 sm:pt-0">
+            <a
+              href="https://abuzar-hindi.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-3"
+            >
+              <img
+                src='./assets/abuzar.jpg'
+                alt="Abuzar Hindi"
+                className="w-9 h-9 rounded-full object-cover border border-gray-200"
+              />
+
+              <div className="flex flex-col items-start leading-tight">
+                <span className="text-xs text-white">Developed by</span>
+
+                <span className="text-sm font-semibold text-white group-hover:text-orange-400 transition-colors underline underline-offset-2">
+                  Abuzar Hindi
+                </span>
+              </div>
+            </a>
+          </div>
           &copy; {new Date().getFullYear()} MAJEDAAR RESTAURANT — All rights reserved.
         </div>
       </div>

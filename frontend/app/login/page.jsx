@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
 
@@ -11,13 +12,14 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "/orderanddine";
 
-  const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { login, googleLogin, isAuthenticated, loading: authLoading } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isUnverified, setIsUnverified] = useState(false);
 
@@ -71,6 +73,66 @@ function LoginForm() {
     }
   };
 
+  // Google Sign-In (LOGIN intent only)
+  // Rejects unregistered users and redirects them to Signup without creating an account
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const idToken = credentialResponse?.credential;
+    if (!idToken) {
+      setErrorMsg("Google sign-in failed. No credential received.");
+      return;
+    }
+
+    setGoogleLoading(true);
+    setErrorMsg("");
+    try {
+      const result = await googleLogin(idToken);
+
+      // If account is not registered yet:
+      if (result.notRegistered) {
+        // Securely preserve verified Google identity in short-lived session storage
+        try {
+          sessionStorage.setItem(
+            "majedaar_google_pending_signup",
+            JSON.stringify({
+              signupToken: result.signupToken,
+              email: result.email,
+              name: result.name,
+              idToken,
+            })
+          );
+        } catch {
+          // ignore storage quota error
+        }
+
+        toast.info(
+          "Your Google account is not registered yet. Please create an account to continue.",
+          { autoClose: 4000 }
+        );
+
+        router.push(
+          `/signup?from=google_login&email=${encodeURIComponent(
+            result.email || ""
+          )}&redirect=${encodeURIComponent(redirectPath)}`
+        );
+        return;
+      }
+
+      // Existing customer authenticated successfully
+      toast.success("Welcome back!", { autoClose: 2000 });
+      router.replace(redirectPath);
+    } catch (err) {
+      const message = err?.message || "Google sign-in failed. Please try again.";
+      setErrorMsg(message);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setErrorMsg("Google sign-in was cancelled or failed. Please try again.");
+    setGoogleLoading(false);
+  };
+
   const inputClass =
     "w-full bg-[#FAF8F5] border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:border-[#1B3B2B] focus:ring-1 focus:ring-[#1B3B2B] transition-all";
 
@@ -90,10 +152,11 @@ function LoginForm() {
         {/* Error Alert */}
         {errorMsg && (
           <div
-            className={`mb-6 p-4 rounded-2xl border text-xs leading-relaxed ${isUnverified
+            className={`mb-6 p-4 rounded-2xl border text-xs leading-relaxed ${
+              isUnverified
                 ? "bg-amber-50 border-amber-200 text-amber-900"
                 : "bg-rose-50 border-rose-200 text-rose-800"
-              }`}
+            }`}
           >
             <p className="font-semibold">{errorMsg}</p>
             {isUnverified && (
@@ -112,7 +175,48 @@ function LoginForm() {
           </div>
         )}
 
-        {/* Form */}
+        {/* Google Sign-In Button */}
+        <div className="mb-5">
+          {googleLoading ? (
+            <div className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-stone-300 rounded-xl text-sm font-semibold text-stone-500 shadow-sm">
+              <svg
+                className="animate-spin h-5 w-5 text-stone-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              <span>Signing in with Google...</span>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                useOneTap={false}
+                theme="outline"
+                size="large"
+                width="400"
+                text="continue_with"
+                shape="rectangular"
+                logo_alignment="left"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* OR Divider */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="flex-1 h-px bg-stone-200" />
+          <span className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
+            or sign in with email
+          </span>
+          <div className="flex-1 h-px bg-stone-200" />
+        </div>
+
+        {/* Email/Password Form — UNCHANGED */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1.5">

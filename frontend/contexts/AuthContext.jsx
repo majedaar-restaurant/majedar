@@ -7,6 +7,9 @@ import {
   customerLogout,
   customerSignup,
   verifyEmail,
+  customerGoogleLogin,
+  customerGoogleSignup,
+  updateCustomerPhone,
 } from "../lib/api";
 
 export const AuthContext = createContext(null);
@@ -56,6 +59,77 @@ export function AuthProvider({ children }) {
     return response;
   };
 
+  /**
+   * Google Sign In (Login Intent).
+   * Authenticates existing customer via verified Google ID token.
+   * If customer is not registered yet, returns { notRegistered: true, signupToken, email, name }.
+   * Does NOT auto-create an account.
+   *
+   * @param {string} idToken - Google credential ID token
+   */
+  const googleLogin = async (idToken) => {
+    try {
+      const response = await customerGoogleLogin(idToken);
+      if (response?.data?.customer) {
+        setCustomer(response.data.customer);
+      }
+      return {
+        success: true,
+        customer: response?.data?.customer,
+        needsPhone: response?.data?.needsPhone ?? (!response?.data?.customer?.phone),
+      };
+    } catch (err) {
+      if (err?.status === 404 && err?.data?.signupToken) {
+        return {
+          notRegistered: true,
+          signupToken: err.data.signupToken,
+          email: err.data.email,
+          name: err.data.name,
+          message: err.message || "Your Google account is not registered yet. Please create an account to continue.",
+        };
+      }
+      throw err;
+    }
+  };
+
+  /**
+   * Google Sign Up (Registration Intent).
+   * Explicitly registers a new customer using Google identity.
+   * If customer already exists, backend throws 409 Conflict.
+   *
+   * @param {Object} params
+   * @param {string} [params.idToken]
+   * @param {string} [params.signupToken]
+   */
+  const googleSignup = async ({ idToken, signupToken }) => {
+    const response = await customerGoogleSignup({ idToken, signupToken });
+    if (response?.data?.customer) {
+      setCustomer(response.data.customer);
+    }
+    return {
+      success: true,
+      customer: response?.data?.customer,
+      isNewUser: true,
+      needsPhone: true,
+    };
+  };
+
+  /**
+   * Update the phone number for the authenticated customer.
+   * Used for mandatory phone collection and profile updates.
+   *
+   * @param {string} phone - Phone number, e.g. "+919876543210"
+   */
+  const updatePhone = async (phone) => {
+    const updatedCustomer = await updateCustomerPhone(phone);
+    if (updatedCustomer) {
+      setCustomer((prev) =>
+        prev ? { ...prev, phone: updatedCustomer.phone ?? phone } : prev
+      );
+    }
+    return updatedCustomer;
+  };
+
   const logout = async () => {
     try {
       await customerLogout();
@@ -77,6 +151,9 @@ export function AuthProvider({ children }) {
     login,
     signup,
     verifyOtp,
+    googleLogin,
+    googleSignup,
+    updatePhone,
     logout,
     refreshCustomer,
     updateCustomerState,

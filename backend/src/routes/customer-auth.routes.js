@@ -14,6 +14,10 @@ import {
     updateAddress,
     deleteAddress,
     setDefaultAddress,
+    googleAuth,
+    googleLogin,
+    googleSignup,
+    updatePhone,
 } from '../controllers/customer-auth.controller.js';
 import { validate } from '../middleware/validation.middleware.js';
 import {
@@ -41,6 +45,11 @@ router.post('/signup', customerAuthLimiter, validate(customerSignupSchema), sign
 router.post('/login', customerAuthLimiter, validate(customerLoginSchema), login);
 router.post('/logout', logout);
 
+// Google OAuth endpoints — separate login and registration intents
+router.post('/google', customerAuthLimiter, googleAuth);
+router.post('/google/login', customerAuthLimiter, googleLogin);
+router.post('/google/signup', customerAuthLimiter, googleSignup);
+
 // Verification and password reset endpoints
 router.post('/verify-email', customerOtpVerifyLimiter, validate(verifyEmailSchema), verifyEmail);
 router.post('/resend-otp', customerOtpLimiter, validate(resendOtpSchema), resendOtp);
@@ -50,6 +59,9 @@ router.post('/reset-password', customerOtpVerifyLimiter, validate(resetPasswordS
 // Protected customer profile endpoints
 router.get('/me', authenticateCustomer, getMe);
 router.patch('/profile', authenticateCustomer, validate(updateCustomerProfileSchema), updateProfile);
+
+// Update phone number — for Google users collecting phone post-signup, and profile edits
+router.patch('/update-phone', authenticateCustomer, updatePhone);
 
 // Protected address book endpoints
 router.get('/addresses', authenticateCustomer, getAddresses);

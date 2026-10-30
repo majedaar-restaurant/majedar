@@ -50,5 +50,8 @@ export const config = {
         privateKey: process.env.VAPID_PRIVATE_KEY || 'EtwHkxk3C_nlHmo0Dwi6imRzgJcwZsif7Ws31B7HbbM',
         subject: process.env.VAPID_SUBJECT || 'mailto:majedarrestaurant@gmail.com',
     },
+    google: {
+        clientId: process.env.GOOGLE_CLIENT_ID || '',
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    },
 };
-

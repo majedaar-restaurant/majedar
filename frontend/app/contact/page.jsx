@@ -102,6 +102,33 @@ export default function Contact() {
           />
         </div>
       </section>
+
+      {/* Portfolio */}
+      <div className="mt-10 pt-8 flex flex-col items-center text-center">
+        <img
+          src='./assets/abuzar.jpg'
+          alt="Abuzar Hindi"
+          className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+        />
+
+        <h3 className="mt-4 text-lg font-semibold text-gray-900">
+          Abuzar Hindi
+        </h3>
+
+        <p className="mt-1 text-sm text-gray-500 max-w-md">
+          Designed & developed with care for Majedaar. Crafting modern,
+          scalable and user-focused web experiences.
+        </p>
+
+        <a
+          href="https://abuzar-hindi.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+        >
+          View Portfolio
+        </a>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "../contexts/AuthContext";
 import ShopContextProvider from "../contexts/ShopContext";
+import GoogleAuthProvider from "../components/GoogleAuthProvider";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Searchbar from "../components/Searchbar";
@@ -11,6 +12,7 @@ import StickyCartBar from "../components/StickyCartBar";
 import ScrollToTopHandler from "../components/ScrollToTopHandler";
 import BrandedLoader from "../components/BrandedLoader";
 import ShopStatusBanner from "../components/ShopStatusBanner";
+import MandatoryPhoneModal from "../components/MandatoryPhoneModal";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -184,19 +186,22 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}
         />
         <AuthProvider>
-          <ShopContextProvider>
-            <BrandedLoader />
-            <ScrollToTopHandler />
-            <ToastContainer position="bottom-right" />
-            <div className="flex flex-col flex-1">
-              <ShopStatusBanner />
-              <Navbar />
-              <Searchbar />
-              <main className="flex-1">{children}</main>
-            </div>
-            <StickyCartBar />
-            <Footer />
-          </ShopContextProvider>
+          <MandatoryPhoneModal />
+          <GoogleAuthProvider>
+            <ShopContextProvider>
+              <BrandedLoader />
+              <ScrollToTopHandler />
+              <ToastContainer position="bottom-right" />
+              <div className="flex flex-col flex-1">
+                <ShopStatusBanner />
+                <Navbar />
+                <Searchbar />
+                <main className="flex-1">{children}</main>
+              </div>
+              <StickyCartBar />
+              <Footer />
+            </ShopContextProvider>
+          </GoogleAuthProvider>
         </AuthProvider>
       </body>
     </html>

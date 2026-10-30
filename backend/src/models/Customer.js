@@ -97,13 +97,13 @@ const customerSchema = new mongoose.Schema(
         },
         phone: {
             type: String,
-            required: [true, 'Phone number is required'],
             trim: true,
+            default: null,
         },
         passwordHash: {
             type: String,
-            required: [true, 'Password hash is required'],
             select: false, // Never return passwordHash by default
+            default: null,
         },
         emailVerified: {
             type: Boolean,
@@ -113,6 +113,22 @@ const customerSchema = new mongoose.Schema(
         tokenVersion: {
             type: Number,
             default: 0,
+        },
+        // Google OAuth fields
+        googleId: {
+            type: String,
+            default: null,
+            index: true,
+            sparse: true,
+        },
+        authProvider: {
+            type: String,
+            enum: ['local', 'google'],
+            default: 'local',
+        },
+        profilePicture: {
+            type: String,
+            default: null,
         },
         addresses: [customerAddressSchema],
     },
