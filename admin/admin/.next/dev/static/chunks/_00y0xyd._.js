@@ -880,6 +880,8 @@ __turbopack_context__.s([
     ()=>getAdminMenu,
     "getAdminMenuItem",
     ()=>getAdminMenuItem,
+    "normalizeAdminMenuItems",
+    ()=>normalizeAdminMenuItems,
     "updateMenuItem",
     ()=>updateMenuItem
 ]);
@@ -895,7 +897,31 @@ async function getAdminMenu(params = {}) {
     const queryString = query.toString();
     const endpoint = `/admin/menu${queryString ? `?${queryString}` : ""}`;
     const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$client$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiRequest"])(endpoint);
-    return res?.data?.menu || [];
+    if (!Array.isArray(res?.data?.menu)) {
+        throw new Error("The menu API returned an invalid products list.");
+    }
+    return res.data.menu;
+}
+function normalizeAdminMenuItems(menuItems) {
+    if (!Array.isArray(menuItems)) {
+        throw new Error("The menu API returned an invalid products list.");
+    }
+    return menuItems.map((item)=>{
+        const id = item?._id ?? item?.id;
+        if (!id || typeof item?.name !== "string") {
+            throw new Error("A menu item is missing its ID or name.");
+        }
+        const categoryValue = item.category;
+        const categoryId = typeof categoryValue === "object" && categoryValue !== null ? categoryValue._id ?? categoryValue.id : categoryValue;
+        return {
+            ...item,
+            _id: String(id),
+            category: categoryId == null ? null : {
+                ...typeof categoryValue === "object" && categoryValue !== null ? categoryValue : {},
+                _id: String(categoryId)
+            }
+        };
+    });
 }
 async function getAdminMenuItem(id) {
     const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$client$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["apiRequest"])(`/admin/menu/${id}`);

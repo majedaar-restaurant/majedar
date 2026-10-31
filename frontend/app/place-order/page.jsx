@@ -36,6 +36,8 @@ export default function PlaceOrder() {
     canAcceptOrders,
     restrictionMessage,
     minimumOrderAmount = 100,
+    couponCode,
+    pricingSummary,
   } = useContext(ShopContext);
 
   const [zones, setZones] = useState([]);
@@ -372,6 +374,7 @@ export default function PlaceOrder() {
         orderType: "delivery",
         paymentMethod: paymentMethod, // "razorpay" | "cod"
         deliveryAddress: deliveryAddressPayload,
+        couponCode: couponCode || undefined,
       };
 
       const created = await createOrder(payload);

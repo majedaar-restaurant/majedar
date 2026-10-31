@@ -36,6 +36,7 @@ function StarRating({ rating }) {
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [datePreset, setDatePreset] = useState("");
@@ -50,6 +51,7 @@ export default function ReviewsPage() {
 
   const loadReviews = useCallback(async () => {
     setLoading(true);
+    setLoadError("");
     try {
       const params = {
         page: currentPage,
@@ -72,10 +74,11 @@ export default function ReviewsPage() {
       }
 
       const data = await getAdminReviews(params);
-      setReviews(data);
-      setTotalReviews(data.total ?? data.length);
-      setTotalPages(data.totalPages ?? Math.max(1, Math.ceil((data.total ?? data.length) / pageSize)));
+      setReviews(data.reviews);
+      setTotalReviews(data.total);
+      setTotalPages(data.totalPages);
     } catch (err) {
+      setLoadError(err.message || "Failed to load reviews. Please try again.");
       toast(err.message || "Failed to load reviews", "danger");
     } finally {
       setLoading(false);
@@ -266,6 +269,13 @@ export default function ReviewsPage() {
           <div style={{ padding: "40px", textAlign: "center", color: "var(--muted)" }}>
             Loading customer ratings...
           </div>
+        ) : loadError ? (
+          <div role="alert" style={{ padding: "40px", textAlign: "center", color: "#b91c1c" }}>
+            <p>{loadError}</p>
+            <button type="button" className="row-action" onClick={loadReviews} style={{ marginTop: 12 }}>
+              Try again
+            </button>
+          </div>
         ) : reviews.length === 0 ? (
           <EmptyState
             title={activeChips.length > 0 ? "No ratings found for this date/rating combination" : "No ratings found"}
@@ -277,15 +287,15 @@ export default function ReviewsPage() {
           />
         ) : (
           <Table
-            columns={["Customer", "Menu Item", "Star Rating", "Date", "Action"]}
+            columns={["Customer", "Menu Item", "Star Rating", "Comment", "Date", "Action"]}
             rows={reviews}
             renderRow={(r) => {
               const customerName =
                 r.customer?.name ||
                 `${r.customer?.firstName || ""} ${r.customer?.lastName || ""}`.trim() ||
-                "Customer";
+                "Unknown customer";
 
-              const itemName = r.menuItem?.name || "Menu Item";
+              const itemName = r.menuItem?.name || "Unknown menu item";
               const itemPrice = r.menuItem?.price ? `₹${r.menuItem.price}` : "";
 
               const dateStr = r.createdAt
@@ -311,6 +321,7 @@ export default function ReviewsPage() {
                   <td>
                     <StarRating rating={r.rating} />
                   </td>
+                  <td>{r.comment?.trim() || <span className="muted">No comment</span>}</td>
                   <td className="muted">{dateStr}</td>
                   <td>
                     <button

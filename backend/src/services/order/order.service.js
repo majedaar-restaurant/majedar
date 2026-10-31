@@ -32,6 +32,11 @@ import {
 } from '../../socket/socket.server.js';
 import { calculateRouteDistance } from '../delivery/distance.service.js';
 import { getPublicSettings } from '../settings/settings.service.js';
+import {
+    calculateCartPricing,
+    recordDiscountUsage,
+    rollbackDiscountUsage,
+} from '../discount/discount.service.js';
 
 export const createOrder = async (customerId, orderData) => {
 
@@ -233,31 +238,40 @@ export const createOrder = async (customerId, orderData) => {
             });
             deliveryAddress.location = null;
         }
-
-        // Authoritative 5% GST strictly on items subtotal (not delivery fee)
-        gst = Math.round(subtotal * 0.05 * 100) / 100;
     } else {
         deliveryAddress.location = null;
     }
 
-    const total = Math.round((subtotal + gst + deliveryFee) * 100) / 100;
+    // Central authoritative discount and pricing calculation
+    const pricing = await calculateCartPricing({
+        items: orderData.items,
+        couponCode: orderData.couponCode,
+        customerId,
+        deliveryFee,
+    });
 
-    // 11. Generate unique customer-facing order reference
+    if (pricing.foodSubtotal < restaurantConfig.minimumOrderAmount) {
+        throw new BadRequestError(
+            `Minimum order amount is ₹${restaurantConfig.minimumOrderAmount}. Current subtotal is ₹${pricing.foodSubtotal}.`
+        );
+    }
+
     const orderNumber = generateOrderNumber();
-
     const acceptanceDeadline = new Date(Date.now() + 3 * 60 * 1000);
 
-    // 12 & 13. Persist order with immutable snapshots and initial statuses
+    // Persist order with immutable snapshots and initial statuses
     const order = new Order({
         orderNumber,
         customer: customerId,
-        items: orderItemSnapshots,
+        items: pricing.items,
         deliveryAddress,
         orderType,
-        subtotal,
-        gst,
-        deliveryFee,
-        total,
+        subtotal: pricing.foodSubtotal,
+        discount: pricing.discount,
+        totalSavings: pricing.totalSavings,
+        gst: pricing.gst,
+        deliveryFee: pricing.deliveryFee,
+        total: pricing.total,
         paymentMethod: orderData.paymentMethod || 'cod',
         paymentStatus: 'pending',
         orderStatus: 'placed',
@@ -270,6 +284,11 @@ export const createOrder = async (customerId, orderData) => {
     });
 
     await order.save();
+
+    // Record discount redemption atomically
+    if (pricing.discount?.discountId) {
+        await recordDiscountUsage(pricing.discount.discountId, customerId, pricing.discount.amount);
+    }
 
     // 10. Emit real-time Socket.IO event to admin:orders (safe & non-blocking)
     try {
@@ -880,6 +899,10 @@ export const cancelCustomerOrder = async (orderId, customerId) => {
 
     order.orderStatus = 'cancelled';
     await order.save();
+
+    if (order.discount?.discountId) {
+        await rollbackDiscountUsage(order.discount.discountId, order.customer, order.discount.amount);
+    }
 
     try {
         emitOrderCancelled(order);

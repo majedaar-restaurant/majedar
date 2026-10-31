@@ -4,6 +4,8 @@ import { useContext, useState, useMemo, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShopContext } from "../../contexts/ShopContext";
 import ImageLightbox from "../../components/ImageLightbox";
+import BannerCarousel from "../../components/BannerCarousel";
+import DiscountBadge from "../../components/DiscountBadge";
 
 const DEFAULT_CATEGORIES = [
   "All",
@@ -31,8 +33,9 @@ function OrderAndDineContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
+  const filterParam = searchParams.get("filter");
 
-  const { products, categories, currency, addToCart, search, setSearch, loading } =
+  const { products, categories, currency, addToCart, search, setSearch, loading, banners } =
     useContext(ShopContext);
 
   const [activeCategory, setActiveCategory] = useState("All");
@@ -40,20 +43,22 @@ function OrderAndDineContent() {
   const [lightboxItem, setLightboxItem] = useState(null);
 
   useEffect(() => {
-    if (categoryParam) {
+    if (filterParam === "offer" || filterParam === "on-offer") {
+      setActiveCategory("On Offer");
+    } else if (categoryParam) {
       setActiveCategory(categoryParam);
     }
-  }, [categoryParam]);
+  }, [categoryParam, filterParam]);
 
   const setItemVariant = (itemId, variant) => {
     setSelectedVariants((prev) => ({ ...prev, [itemId]: variant }));
   };
 
   const categoryList = useMemo(() => {
-    if (categories && categories.length > 0) {
-      return ["All", ...categories.map((c) => c.name)];
-    }
-    return DEFAULT_CATEGORIES;
+    const names = categories && categories.length > 0
+      ? categories.map((c) => c.name)
+      : DEFAULT_CATEGORIES.slice(1);
+    return ["All", "On Offer", ...names];
   }, [categories]);
 
   const filteredProducts = useMemo(() => {
@@ -70,6 +75,10 @@ function OrderAndDineContent() {
       }
 
       if (activeCategory === "All") return true;
+
+      if (activeCategory === "On Offer" || activeCategory === "On Offer") {
+        return Boolean(item.onOffer || item.activeDiscount || item.discountBadge);
+      }
 
       const catLower = activeCategory.toLowerCase().trim();
       const itemCatLower = (catName || "").toLowerCase().trim();
@@ -158,6 +167,13 @@ function OrderAndDineContent() {
         </div>
       </div>
 
+      {/* Promotional Offers Strip */}
+      {/* {banners && banners.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6">
+          <BannerCarousel banners={banners} />
+        </div>
+      )} */}
+
       {/* Menu Grid */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8">
         <div className="flex items-center justify-between mb-6 pb-2 border-b border-stone-200">
@@ -214,11 +230,23 @@ function OrderAndDineContent() {
                 ? selectedVariants[item._id] || "full"
                 : "single";
 
-              const displayPrice = isHalfFull
+              const originalPrice = isHalfFull
                 ? currentVariant === "half"
-                  ? item.halfPrice
-                  : item.fullPrice
+                  ? (item.halfPrice || 0)
+                  : (item.fullPrice || 0)
                 : item.price || 0;
+
+              let discountedPrice = isHalfFull
+                ? currentVariant === "half"
+                  ? (item.discountedHalfPrice != null ? item.discountedHalfPrice : originalPrice)
+                  : (item.discountedFullPrice != null ? item.discountedFullPrice : originalPrice)
+                : item.discountedPrice != null
+                  ? item.discountedPrice
+                  : originalPrice;
+
+              const hasDiscount = discountedPrice < originalPrice;
+              const savings = Math.max(0, Math.round((originalPrice - discountedPrice) * 100) / 100);
+              const badgeLabel = item.discountBadge || (hasDiscount ? "Offer" : null);
 
               return (
                 <div
@@ -325,10 +353,35 @@ function OrderAndDineContent() {
                       )}
                     </div>
                     <div className="flex items-center justify-between mt-auto pt-1">
-                      <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
-                        {currency}
-                        {displayPrice}
-                      </span>
+                      <div className="flex flex-col">
+                        {hasDiscount ? (
+                          <>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs text-stone-400 line-through">
+                                {currency}{originalPrice}
+                              </span>
+                              <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
+                                {currency}{discountedPrice}
+                              </span>
+                              {badgeLabel && (
+                                <DiscountBadge label={badgeLabel} size="sm" />
+                              )}
+                            </div>
+                            <span className="text-[10px] font-bold text-emerald-700">
+                              You save {currency}{savings}
+                            </span>
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
+                              {currency}{originalPrice}
+                            </span>
+                            {badgeLabel && (
+                              <DiscountBadge label={badgeLabel} size="sm" />
+                            )}
+                          </div>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5">
                         {isAvailable ? (
                           <button

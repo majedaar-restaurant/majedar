@@ -8,3 +8,5 @@ export * from "./reviews";
 export * from "./contact";
 export * from "./payments";
 export * from "./settings";
+export * from "./discounts";
+export * from "./banners";

@@ -231,10 +231,15 @@ export default function MyOrders() {
 
                   {/* Bottom Row */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-stone-100">
-                    <div className="flex items-center gap-3 text-xs">
+                    <div className="flex items-center gap-3 text-xs flex-wrap">
                       <span className="font-extrabold text-base text-[#1B3B2B]">
                         ₹{order.total}
                       </span>
+                      {(order.totalSavings > 0 || order.discount?.amount > 0) && (
+                        <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+                          Saved ₹{order.totalSavings || order.discount.amount}
+                        </span>
+                      )}
                       <span className="text-stone-300">•</span>
                       <span className="text-stone-500 uppercase text-[11px] font-semibold">
                         {order.paymentMethod === "cod"

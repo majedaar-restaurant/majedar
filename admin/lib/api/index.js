@@ -8,6 +8,8 @@ export * from "./reviews";
 export * from "./payments";
 export * from "./riders";
 export * from "./settings";
+export * from "./discounts";
+export * from "./banners";
 
 import * as auth from "./auth";
 import * as categories from "./categories";
@@ -18,6 +20,8 @@ import * as reviews from "./reviews";
 import * as payments from "./payments";
 import * as riders from "./riders";
 import * as settings from "./settings";
+import * as discounts from "./discounts";
+import * as banners from "./banners";
 
 export const adminApi = {
   auth,
@@ -29,6 +33,8 @@ export const adminApi = {
   payments,
   riders,
   settings,
+  discounts,
+  banners,
 };
 
 export default adminApi;

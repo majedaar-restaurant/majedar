@@ -3,7 +3,7 @@
 import { createContext, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { getPublicMenu, getCategories, getPublicRestaurantSettings } from "../lib/api";
+import { getPublicMenu, getCategories, getPublicRestaurantSettings, calculateCartPricing, validateCoupon, getActiveBanners } from "../lib/api";
 
 export const ShopContext = createContext();
 
@@ -18,6 +18,7 @@ const ShopContextProvider = (props) => {
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [banners, setBanners] = useState([]);
   const [restaurantSettings, setRestaurantSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,21 +30,29 @@ const ShopContextProvider = (props) => {
   const [showSearch, setShowSearch] = useState(false);
   const [cartItems, setCartItems] = useState({});
 
+  // Coupon & Pricing State
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [pricingSummary, setPricingSummary] = useState(null);
+  const [isPricingLoading, setIsPricingLoading] = useState(false);
+
   // Navigate helper — matches existing component usage
   const navigate = (path) => router.push(path);
 
-  // Fetch real menu, categories, and restaurant availability settings
+  // Fetch real menu, categories, banners, and restaurant availability settings
   const fetchShopData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [menuData, categoryData, settingsData] = await Promise.all([
+      const [menuData, categoryData, settingsData, bannersData] = await Promise.all([
         getPublicMenu(),
         getCategories(),
         getPublicRestaurantSettings(),
+        getActiveBanners().catch(() => []),
       ]);
       setProducts(Array.isArray(menuData) ? menuData : []);
       setCategories(Array.isArray(categoryData) ? categoryData : []);
+      setBanners(Array.isArray(bannersData) ? bannersData : []);
       if (settingsData) {
         setRestaurantSettings(settingsData);
       }
@@ -206,8 +215,104 @@ const ShopContextProvider = (props) => {
     return totalAmount;
   };
 
+  const getCartItemsArray = useCallback(() => {
+    const items = [];
+    for (const key in cartItems) {
+      const qty = cartItems[key];
+      if (typeof qty === "number" && qty > 0) {
+        const [id, variant = "single"] = key.split("__");
+        items.push({ menuItem: id, variant, quantity: qty });
+      }
+    }
+    return items;
+  }, [cartItems]);
+
+  const refreshCartPricing = useCallback(
+    async (feeOverride = null, couponOverride = undefined) => {
+      const itemsArray = getCartItemsArray();
+      if (itemsArray.length === 0) {
+        setPricingSummary(null);
+        return null;
+      }
+
+      const fee = typeof feeOverride === "number" ? feeOverride : (deliveryFee || 15);
+      const code = couponOverride !== undefined ? couponOverride : couponCode;
+
+      try {
+        setIsPricingLoading(true);
+        const res = await calculateCartPricing({
+          items: itemsArray,
+          couponCode: code || null,
+          deliveryFee: fee,
+        });
+        setPricingSummary(res);
+        if (res?.isCoupon && res?.discount?.code) {
+          setAppliedCoupon(res.discount);
+        }
+        return res;
+      } catch (err) {
+        if (code) {
+          setCouponCode("");
+          setAppliedCoupon(null);
+          toast.info(err.message || "Applied coupon is no longer applicable to your cart.");
+        }
+        return null;
+      } finally {
+        setIsPricingLoading(false);
+      }
+    },
+    [getCartItemsArray, deliveryFee, couponCode]
+  );
+
+  useEffect(() => {
+    refreshCartPricing();
+  }, [cartItems, selectedDeliveryTier, refreshCartPricing]);
+
+  const applyCoupon = async (code) => {
+    const trimmed = (code || "").trim().toUpperCase();
+    if (!trimmed) {
+      toast.error("Please enter a coupon code");
+      return { success: false, message: "Please enter a coupon code" };
+    }
+
+    const itemsArray = getCartItemsArray();
+    if (itemsArray.length === 0) {
+      toast.error("Your cart is empty");
+      return { success: false, message: "Your cart is empty" };
+    }
+
+    try {
+      setIsPricingLoading(true);
+      const res = await validateCoupon({
+        couponCode: trimmed,
+        items: itemsArray,
+        deliveryFee,
+      });
+      setPricingSummary(res);
+      setCouponCode(trimmed);
+      setAppliedCoupon(res?.discount || { code: trimmed });
+      toast.success(`Coupon "${trimmed}" applied! You save ₹${res.discountAmount}`);
+      return { success: true, data: res };
+    } catch (err) {
+      toast.error(err.message || "Invalid coupon code");
+      return { success: false, message: err.message || "Invalid coupon code" };
+    } finally {
+      setIsPricingLoading(false);
+    }
+  };
+
+  const removeCoupon = async () => {
+    setCouponCode("");
+    setAppliedCoupon(null);
+    toast.info("Coupon removed");
+    refreshCartPricing(null, "");
+  };
+
   const clearCart = () => {
     setCartItems({});
+    setCouponCode("");
+    setAppliedCoupon(null);
+    setPricingSummary(null);
     try {
       localStorage.removeItem("cartItems");
     } catch {}
@@ -216,6 +321,7 @@ const ShopContextProvider = (props) => {
   const value = {
     products,
     categories,
+    banners,
     loading,
     error,
     refreshMenu: fetchShopData,
@@ -245,6 +351,13 @@ const ShopContextProvider = (props) => {
     restrictionMessage: restaurantSettings?.restrictionMessage || null,
     minimumOrderAmount: restaurantSettings?.minimumOrderAmount || 100,
     refreshSettings,
+    couponCode,
+    appliedCoupon,
+    pricingSummary,
+    isPricingLoading,
+    applyCoupon,
+    removeCoupon,
+    refreshCartPricing,
   };
 
   return (

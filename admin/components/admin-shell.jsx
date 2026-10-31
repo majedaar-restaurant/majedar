@@ -49,6 +49,17 @@ export const navItems = [
     ],
   },
   {
+    label: "Offers & Discounts",
+    href: "/dashboard/offers",
+    icon: "discount",
+    children: [
+      { label: "Overview", href: "/dashboard/offers" },
+      { label: "Promotional Banners", href: "/dashboard/offers/banners" },
+      { label: "Discounts", href: "/dashboard/offers/discounts" },
+      { label: "Create New Discount", href: "/dashboard/offers/discounts/create" },
+    ],
+  },
+  {
     label: "Reviews",
     href: "/dashboard/reviews",
     icon: "reviews",
@@ -78,6 +89,7 @@ function Icon({ name, size = 16 }) {
     riders: "M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16h2m-6 0h2m-2-5h5l2 4H7l2-4zm3-4a2 2 0 11-4 0 2 2 0 014 0z",
     payments: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
     menu: "M4 6h16M4 10h16M4 14h16M4 18h16",
+    discount: "M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z",
     delivery: "M1 3h15v13H1zM16 8h4l3 3v5h-7V8zM5.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM18.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3z",
     reviews: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
     customers: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",

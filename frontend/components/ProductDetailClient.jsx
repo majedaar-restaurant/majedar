@@ -7,6 +7,7 @@ import { getPublicMenuItem } from "../lib/api";
 import RelatedProducts from "./RelatedProducts";
 import CustomerReviews from "./CustomerReviews";
 import ImageLightbox from "./ImageLightbox";
+import DiscountBadge from "./DiscountBadge";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80";
@@ -170,45 +171,92 @@ export default function ProductDetailClient({ initialProduct, productId }) {
               )}
             </div>
 
-            {/* Portion Selector & Price */}
-            {productData.pricingType === "half-full" ? (
-              <div className="mb-4 sm:mb-6">
-                <p className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
-                  Select Portion
-                </p>
-                <div className="flex items-center gap-2.5 sm:gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedVariant("half")}
-                    className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all cursor-pointer ${selectedVariant === "half"
-                      ? "bg-[#1B3B2B] text-white border-[#1B3B2B] shadow-2xs"
-                      : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
-                      }`}
-                  >
-                    <span>Half Portion</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedVariant("full")}
-                    className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all cursor-pointer ${selectedVariant === "full"
-                      ? "bg-[#1B3B2B] text-white border-[#1B3B2B] shadow-2xs"
-                      : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
-                      }`}
-                  >
-                    <span>Full Portion</span>
-                  </button>
+            {/* Portion Selector & Price with Discount Breakdown */}
+            {(() => {
+              const isHalfFull = productData.pricingType === "half-full";
+              const originalPrice = isHalfFull
+                ? selectedVariant === "half"
+                  ? (productData.halfPrice || 0)
+                  : (productData.fullPrice || 0)
+                : productData.price || 0;
+
+              const discountedPrice = isHalfFull
+                ? selectedVariant === "half"
+                  ? (productData.discountedHalfPrice != null ? productData.discountedHalfPrice : originalPrice)
+                  : (productData.discountedFullPrice != null ? productData.discountedFullPrice : originalPrice)
+                : productData.discountedPrice != null
+                  ? productData.discountedPrice
+                  : originalPrice;
+
+              const hasDiscount = discountedPrice < originalPrice;
+              const savings = Math.max(0, Math.round((originalPrice - discountedPrice) * 100) / 100);
+              const badgeLabel = productData.discountBadge || (hasDiscount ? "Special Offer" : null);
+
+              return (
+                <div className="mb-4 sm:mb-6">
+                  {badgeLabel && (
+                    <div className="mb-3">
+                      <DiscountBadge label={badgeLabel} size="md" />
+                    </div>
+                  )}
+
+                  {isHalfFull && (
+                    <div className="mb-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
+                        Select Portion
+                      </p>
+                      <div className="flex items-center gap-2.5 sm:gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedVariant("half")}
+                          className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all cursor-pointer ${
+                            selectedVariant === "half"
+                              ? "bg-[#1B3B2B] text-white border-[#1B3B2B] shadow-2xs"
+                              : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
+                          }`}
+                        >
+                          <span>Half Portion</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedVariant("full")}
+                          className={`flex-1 sm:flex-initial min-h-[44px] px-4 sm:px-5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all cursor-pointer ${
+                            selectedVariant === "full"
+                              ? "bg-[#1B3B2B] text-white border-[#1B3B2B] shadow-2xs"
+                              : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
+                          }`}
+                        >
+                          <span>Full Portion</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Price display */}
+                  <div className="mt-3">
+                    {hasDiscount ? (
+                      <div className="space-y-1">
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-lg sm:text-xl text-stone-400 line-through">
+                            {currency}{originalPrice}
+                          </span>
+                          <span className="text-2xl sm:text-4xl font-extrabold text-[#1B3B2B]">
+                            {currency}{discountedPrice}
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm font-bold text-emerald-700">
+                          You save {currency}{savings} on this dish!
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-2xl sm:text-3xl font-extrabold text-[#1B3B2B]">
+                        {currency}{originalPrice}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <p className="text-2xl sm:text-3xl font-extrabold text-[#1B3B2B] mt-3 sm:mt-4">
-                  {currency}
-                  {selectedVariant === "half" ? productData.halfPrice : productData.fullPrice}
-                </p>
-              </div>
-            ) : (
-              <p className="text-2xl sm:text-3xl font-extrabold text-[#1B3B2B] mb-4 sm:mb-6">
-                {currency}
-                {productData.price}
-              </p>
-            )}
+              );
+            })()}
 
             <div className="border-t border-b border-stone-100 py-3.5 sm:py-4 mb-5 sm:mb-6">
               <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">

@@ -380,28 +380,66 @@ const BestsellerSection = () => {
                   )}
 
                   {/* Price & Add to Cart Footer */}
-                  <div className="w-full flex items-center justify-between pt-2.5 border-t border-stone-100 mt-auto">
-                    <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
-                      {currency}{displayPrice}
-                    </span>
-                    {isAvailable ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToCart(item._id, currentVariant);
-                        }}
-                        className="px-4 py-2 rounded-xl bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs sm:text-[13px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <span>ADD</span>
-                        <span className="text-sm leading-none">+</span>
-                      </button>
-                    ) : (
-                      <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100">
-                        Unavailable
-                      </span>
-                    )}
-                  </div>
+                  {(() => {
+                    const originalPrice = isHalfFull
+                      ? currentVariant === "half"
+                        ? (item.halfPrice || 0)
+                        : (item.fullPrice || 0)
+                      : item.price || 0;
+
+                    const discountedPrice = isHalfFull
+                      ? currentVariant === "half"
+                        ? (item.discountedHalfPrice != null ? item.discountedHalfPrice : originalPrice)
+                        : (item.discountedFullPrice != null ? item.discountedFullPrice : originalPrice)
+                      : item.discountedPrice != null
+                        ? item.discountedPrice
+                        : originalPrice;
+
+                    const hasDiscount = discountedPrice < originalPrice;
+
+                    return (
+                      <div className="w-full flex items-center justify-between pt-2.5 border-t border-stone-100 mt-auto">
+                        <div className="flex flex-col">
+                          {hasDiscount ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-stone-400 line-through">
+                                {currency}{originalPrice}
+                              </span>
+                              <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
+                                {currency}{discountedPrice}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
+                              {currency}{originalPrice}
+                            </span>
+                          )}
+                          {item.discountBadge && (
+                            <span className="text-[10px] font-bold text-[#C85A17]">
+                              {item.discountBadge}
+                            </span>
+                          )}
+                        </div>
+                        {isAvailable ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(item._id, currentVariant);
+                            }}
+                            className="px-4 py-2 rounded-xl bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs sm:text-[13px] font-bold uppercase tracking-wider active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>ADD</span>
+                            <span className="text-sm leading-none">+</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100">
+                            Unavailable
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}

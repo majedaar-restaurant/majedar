@@ -145,6 +145,7 @@ export const createOrderSchema = z
                 }),
             ])
             .optional(),
+        couponCode: z.string().trim().optional().nullable(),
     })
     .strip();
 

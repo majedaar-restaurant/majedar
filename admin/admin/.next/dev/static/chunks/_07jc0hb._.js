@@ -1415,11 +1415,43 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                                     color: "var(--muted)",
                                                                     fontSize: "11px"
                                                                 },
-                                                                children: [
-                                                                    "Unit price: ₹",
-                                                                    item.price
-                                                                ]
-                                                            }, void 0, true, {
+                                                                children: item.originalUnitPrice && item.originalUnitPrice > item.price ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                            style: {
+                                                                                textDecoration: "line-through",
+                                                                                marginRight: "6px"
+                                                                            },
+                                                                            children: [
+                                                                                "₹",
+                                                                                item.originalUnitPrice
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                                            lineNumber: 685,
+                                                                            columnNumber: 27
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                            style: {
+                                                                                color: "#166534",
+                                                                                fontWeight: 600
+                                                                            },
+                                                                            children: [
+                                                                                "₹",
+                                                                                item.price
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                                            lineNumber: 686,
+                                                                            columnNumber: 27
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                                    lineNumber: 684,
+                                                                    columnNumber: 25
+                                                                }, this) : `Unit price: ₹${item.price}`
+                                                            }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
                                                                 lineNumber: 682,
                                                                 columnNumber: 21
@@ -1438,7 +1470,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 686,
+                                                        lineNumber: 693,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1449,7 +1481,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 687,
+                                                        lineNumber: 694,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
@@ -1477,7 +1509,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Items Subtotal"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 695,
+                                                        lineNumber: 702,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -1487,23 +1519,57 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 696,
+                                                        lineNumber: 703,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 694,
+                                                lineNumber: 701,
                                                 columnNumber: 15
+                                            }, this),
+                                            order.discount && order.discount.amount > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "totals-row",
+                                                style: {
+                                                    color: "var(--gold)"
+                                                },
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        children: [
+                                                            "Discount (",
+                                                            order.discount.name || "Offer",
+                                                            order.discount.code ? ` - ${order.discount.code}` : "",
+                                                            ")"
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                        lineNumber: 707,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        children: [
+                                                            "-₹",
+                                                            Number(order.discount.amount || 0).toFixed(2)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                        lineNumber: 711,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                lineNumber: 706,
+                                                columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "totals-row",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        children: "GST (5% on items)"
+                                                        children: "GST (5% on food items)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 699,
+                                                        lineNumber: 715,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -1513,13 +1579,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 700,
+                                                        lineNumber: 716,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 698,
+                                                lineNumber: 714,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1529,7 +1595,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Delivery Fee"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 703,
+                                                        lineNumber: 719,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -1539,13 +1605,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 704,
+                                                        lineNumber: 720,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 702,
+                                                lineNumber: 718,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1555,7 +1621,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Authoritative Total"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 707,
+                                                        lineNumber: 723,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -1565,19 +1631,50 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 708,
+                                                        lineNumber: 724,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 706,
+                                                lineNumber: 722,
                                                 columnNumber: 15
+                                            }, this),
+                                            order.totalSavings > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "totals-row",
+                                                style: {
+                                                    marginTop: "6px",
+                                                    fontSize: "11px",
+                                                    color: "#166534"
+                                                },
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        children: "Customer Savings"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                        lineNumber: 728,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        children: [
+                                                            "₹",
+                                                            Number(order.totalSavings).toFixed(2)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                        lineNumber: 729,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/dashboard/orders/[id]/page.js",
+                                                lineNumber: 727,
+                                                columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 693,
+                                        lineNumber: 700,
                                         columnNumber: 13
                                     }, this)
                                 ]
@@ -1602,7 +1699,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                         children: "Customer & Delivery Details"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 718,
+                                        lineNumber: 740,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1615,20 +1712,20 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Customer Name"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 721,
+                                                        lineNumber: 743,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                         children: customerName
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 722,
+                                                        lineNumber: 744,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 720,
+                                                lineNumber: 742,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1638,14 +1735,14 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Contact"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 725,
+                                                        lineNumber: 747,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                         children: customerPhone
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 726,
+                                                        lineNumber: 748,
                                                         columnNumber: 17
                                                     }, this),
                                                     customerEmail && customerEmail !== "—" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1656,13 +1753,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: customerEmail
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 728,
+                                                        lineNumber: 750,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 724,
+                                                lineNumber: 746,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1672,14 +1769,14 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Delivery Address"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 732,
+                                                        lineNumber: 754,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                         children: order.deliveryAddress?.address || "—"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 733,
+                                                        lineNumber: 755,
                                                         columnNumber: 17
                                                     }, this),
                                                     order.deliveryAddress?.landmark && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1693,7 +1790,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 735,
+                                                        lineNumber: 757,
                                                         columnNumber: 19
                                                     }, this),
                                                     order.deliveryAddress?.area && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1708,7 +1805,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 740,
+                                                        lineNumber: 762,
                                                         columnNumber: 19
                                                     }, this),
                                                     (()=>{
@@ -1753,7 +1850,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                                lineNumber: 783,
+                                                                                lineNumber: 805,
                                                                                 columnNumber: 27
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1770,13 +1867,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                                lineNumber: 794,
+                                                                                lineNumber: 816,
                                                                                 columnNumber: 27
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                        lineNumber: 782,
+                                                                        lineNumber: 804,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     loc?.formattedAddress && loc.formattedAddress !== order.deliveryAddress?.address && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1793,7 +1890,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                                                 children: "Google Formatted:"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                                lineNumber: 807,
+                                                                                lineNumber: 829,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             " ",
@@ -1801,7 +1898,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                        lineNumber: 806,
+                                                                        lineNumber: 828,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1825,18 +1922,18 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                                             children: "🗺️ Open in Google Maps ↗"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                            lineNumber: 811,
+                                                                            lineNumber: 833,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                        lineNumber: 810,
+                                                                        lineNumber: 832,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                lineNumber: 770,
+                                                                lineNumber: 792,
                                                                 columnNumber: 23
                                                             }, this);
                                                         }
@@ -1861,7 +1958,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                                     children: "ℹ️ Precise coordinates not available (Manual address entry)"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                    lineNumber: 855,
+                                                                    lineNumber: 877,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 searchUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -1879,20 +1976,20 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                                     children: "Search text address on Google Maps ↗"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                                    lineNumber: 859,
+                                                                    lineNumber: 881,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                            lineNumber: 845,
+                                                            lineNumber: 867,
                                                             columnNumber: 21
                                                         }, this);
                                                     })()
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 731,
+                                                lineNumber: 753,
                                                 columnNumber: 15
                                             }, this),
                                             order.deliveryAddress?.deliveryInstructions && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1902,14 +1999,14 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Delivery Instructions"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 881,
+                                                        lineNumber: 903,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                         children: order.deliveryAddress.deliveryInstructions
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 882,
+                                                        lineNumber: 904,
                                                         columnNumber: 19
                                                     }, this),
                                                     order.deliveryAddress.deliveryInstructionOther && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1923,25 +2020,25 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 884,
+                                                        lineNumber: 906,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 880,
+                                                lineNumber: 902,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 719,
+                                        lineNumber: 741,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                lineNumber: 717,
+                                lineNumber: 739,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("article", {
@@ -1963,7 +2060,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 children: "🚴 Assigned Rider"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 896,
+                                                lineNumber: 918,
                                                 columnNumber: 15
                                             }, this),
                                             !isTerminalState && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1978,13 +2075,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 children: order.rider ? "Change Rider" : "Assign Rider"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 900,
+                                                lineNumber: 922,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 895,
+                                        lineNumber: 917,
                                         columnNumber: 13
                                     }, this),
                                     order.rider ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2009,7 +2106,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: order.rider.name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 921,
+                                                        lineNumber: 943,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2024,13 +2121,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Assigned"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 922,
+                                                        lineNumber: 944,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 920,
+                                                lineNumber: 942,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2051,18 +2148,18 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                    lineNumber: 936,
+                                                    lineNumber: 958,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 935,
+                                                lineNumber: 957,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 912,
+                                        lineNumber: 934,
                                         columnNumber: 15
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         style: {
@@ -2074,13 +2171,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                         children: "No delivery rider assigned yet."
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 950,
+                                        lineNumber: 972,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                lineNumber: 894,
+                                lineNumber: 916,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("article", {
@@ -2091,7 +2188,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                         children: "Order Timeline"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 958,
+                                        lineNumber: 980,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2104,20 +2201,20 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         children: "Order placed"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 961,
+                                                        lineNumber: 983,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
                                                         children: formattedDate
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 962,
+                                                        lineNumber: 984,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 960,
+                                                lineNumber: 982,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2130,20 +2227,20 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 965,
+                                                        lineNumber: 987,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
                                                         children: isOnlinePayment ? "Razorpay online verification" : "Cash on Delivery"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 966,
+                                                        lineNumber: 988,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 964,
+                                                lineNumber: 986,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2156,26 +2253,26 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 969,
+                                                        lineNumber: 991,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
                                                         children: "Authoritative state in restaurant system"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                        lineNumber: 970,
+                                                        lineNumber: 992,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 968,
+                                                lineNumber: 990,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 959,
+                                        lineNumber: 981,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2207,12 +2304,12 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                     size: 17
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                    lineNumber: 992,
+                                                    lineNumber: 1014,
                                                     columnNumber: 17
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 975,
+                                                lineNumber: 997,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -2225,25 +2322,25 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 children: "Back to Orders"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 994,
+                                                lineNumber: 1016,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 974,
+                                        lineNumber: 996,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                lineNumber: 957,
+                                lineNumber: 979,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                        lineNumber: 715,
+                        lineNumber: 737,
                         columnNumber: 9
                     }, this)
                 ]
@@ -2265,7 +2362,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                         children: "Authoritative state transitions governed by restaurant workflow rules."
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                        lineNumber: 1012,
+                        lineNumber: 1034,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2278,7 +2375,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                         children: "Order Status"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 1019,
+                                        lineNumber: 1041,
                                         columnNumber: 15
                                     }, this),
                                     isTerminalState ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2293,7 +2390,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 children: STATUS_LABELS[order.orderStatus] || order.orderStatus
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 1022,
+                                                lineNumber: 1044,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2309,13 +2406,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 1023,
+                                                lineNumber: 1045,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 1021,
+                                        lineNumber: 1043,
                                         columnNumber: 17
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                         value: newOrderStatus,
@@ -2330,7 +2427,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 1033,
+                                                lineNumber: 1055,
                                                 columnNumber: 19
                                             }, this),
                                             VALID_NEXT_STATUSES[order.orderStatus]?.map((opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2338,19 +2435,19 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                     children: opt.label
                                                 }, opt.value, false, {
                                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                    lineNumber: 1037,
+                                                    lineNumber: 1059,
                                                     columnNumber: 21
                                                 }, this))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 1028,
+                                        lineNumber: 1050,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                lineNumber: 1018,
+                                lineNumber: 1040,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -2360,7 +2457,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                         children: "Payment Status"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 1047,
+                                        lineNumber: 1069,
                                         columnNumber: 15
                                     }, this),
                                     isOnlinePayment ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2382,12 +2479,12 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                     children: PAYMENT_LABELS[order.paymentStatus] || order.paymentStatus
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                    lineNumber: 1051,
+                                                    lineNumber: 1073,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 1050,
+                                                lineNumber: 1072,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2399,13 +2496,13 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 children: "Online payment status is cryptographically synchronized with Razorpay webhooks and cannot be manually modified by admin."
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 1055,
+                                                lineNumber: 1077,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 1049,
+                                        lineNumber: 1071,
                                         columnNumber: 17
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                         value: newPaymentStatus,
@@ -2417,7 +2514,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 children: "Pending — Not yet collected"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 1065,
+                                                lineNumber: 1087,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2425,7 +2522,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 children: "Paid — Cash collected at doorstep"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 1066,
+                                                lineNumber: 1088,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2433,19 +2530,19 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 children: "Failed — Delivery rejected / uncollected"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                                lineNumber: 1067,
+                                                lineNumber: 1089,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 1060,
+                                        lineNumber: 1082,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                lineNumber: 1046,
+                                lineNumber: 1068,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2461,7 +2558,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                         children: "Cancel"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 1073,
+                                        lineNumber: 1095,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2470,25 +2567,25 @@ function OrderDetailPage({ params: paramsPromise }) {
                                         children: updating ? "Updating..." : "Save Status"
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                        lineNumber: 1080,
+                                        lineNumber: 1102,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                lineNumber: 1072,
+                                lineNumber: 1094,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                        lineNumber: 1016,
+                        lineNumber: 1038,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                lineNumber: 1008,
+                lineNumber: 1030,
                 columnNumber: 9
             }, this),
             showRiderModal && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Modal"], {
@@ -2515,7 +2612,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                            lineNumber: 1098,
+                            lineNumber: 1120,
                             columnNumber: 13
                         }, this),
                         loadingRiders ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2527,7 +2624,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                             children: "Loading available riders..."
                         }, void 0, false, {
                             fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                            lineNumber: 1103,
+                            lineNumber: 1125,
                             columnNumber: 15
                         }, this) : activeRiders.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             style: {
@@ -2549,14 +2646,14 @@ function OrderDetailPage({ params: paramsPromise }) {
                                     children: "Riders section"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                    lineNumber: 1109,
+                                    lineNumber: 1131,
                                     columnNumber: 17
                                 }, this),
                                 "."
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                            lineNumber: 1107,
+                            lineNumber: 1129,
                             columnNumber: 15
                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             children: [
@@ -2570,7 +2667,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                     children: "Available Active Riders"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                    lineNumber: 1115,
+                                    lineNumber: 1137,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -2595,18 +2692,18 @@ function OrderDetailPage({ params: paramsPromise }) {
                                             ]
                                         }, r._id, true, {
                                             fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                            lineNumber: 1127,
+                                            lineNumber: 1149,
                                             columnNumber: 21
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                    lineNumber: 1118,
+                                    lineNumber: 1140,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                            lineNumber: 1114,
+                            lineNumber: 1136,
                             columnNumber: 15
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2625,7 +2722,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                    lineNumber: 1136,
+                                    lineNumber: 1158,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2634,24 +2731,24 @@ function OrderDetailPage({ params: paramsPromise }) {
                                     children: assigningRider ? "Assigning..." : "Confirm Assignment"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                                    lineNumber: 1144,
+                                    lineNumber: 1166,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                            lineNumber: 1135,
+                            lineNumber: 1157,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                    lineNumber: 1097,
+                    lineNumber: 1119,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
-                lineNumber: 1093,
+                lineNumber: 1115,
                 columnNumber: 9
             }, this)
         ]

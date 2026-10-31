@@ -11,14 +11,23 @@ export async function getAdminReviews(params = {}) {
   const endpoint = `/admin/reviews${queryString ? `?${queryString}` : ""}`;
   const res = await apiRequest(endpoint);
   const data = res?.data;
-  if (!data) return [];
-  const reviewsList = Array.isArray(data) ? data : (data.reviews || []);
-  reviewsList.total = data.total ?? data.pagination?.totalReviews ?? reviewsList.length;
-  reviewsList.page = data.page ?? data.pagination?.page ?? 1;
-  reviewsList.limit = data.limit ?? data.pagination?.limit ?? reviewsList.length;
-  reviewsList.totalPages = data.pagination?.totalPages ?? 1;
-  reviewsList.reviews = reviewsList;
-  return reviewsList;
+  const reviewsList = Array.isArray(data) ? data : data?.reviews;
+  if (!Array.isArray(reviewsList)) {
+    throw new Error("The reviews API returned an invalid response.");
+  }
+
+  const total = data.total ?? data.pagination?.totalReviews ?? reviewsList.length;
+  const limit = data.limit ?? data.pagination?.limit ?? reviewsList.length;
+  return {
+    reviews: reviewsList,
+    total,
+    page: data.page ?? data.pagination?.page ?? 1,
+    limit,
+    totalPages:
+      data.totalPages ??
+      data.pagination?.totalPages ??
+      Math.max(1, Math.ceil(total / (limit || 1))),
+  };
 }
 
 export async function deleteAdminReview(id) {

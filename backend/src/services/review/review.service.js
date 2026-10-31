@@ -234,24 +234,20 @@ export const getAdminReviews = async ({ page = 1, limit = 20, rating, search, da
         const escaped = s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
         const regex = new RegExp(escaped, 'i');
 
-        let customerIds = [];
-        let menuItemIds = [];
-        try {
-            const [matchingCusts, matchingItems] = await Promise.all([
-                Customer.find({
-                    $or: [
-                        { name: regex },
-                        { email: regex },
-                        { phone: regex },
-                        { firstName: regex },
-                        { lastName: regex },
-                    ],
-                }).select('_id').lean(),
-                MenuItem.find({ name: regex }).select('_id').lean(),
-            ]);
-            customerIds = (matchingCusts || []).map((c) => c._id);
-            menuItemIds = (matchingItems || []).map((m) => m._id);
-        } catch (_) {}
+        const [matchingCusts, matchingItems] = await Promise.all([
+            Customer.find({
+                $or: [
+                    { name: regex },
+                    { email: regex },
+                    { phone: regex },
+                    { firstName: regex },
+                    { lastName: regex },
+                ],
+            }).select('_id').lean(),
+            MenuItem.find({ name: regex }).select('_id').lean(),
+        ]);
+        const customerIds = matchingCusts.map((c) => c._id);
+        const menuItemIds = matchingItems.map((m) => m._id);
 
         filter.$and = filter.$and || [];
         filter.$and.push({
@@ -267,7 +263,7 @@ export const getAdminReviews = async ({ page = 1, limit = 20, rating, search, da
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limitNum)
-            .populate('customer', 'firstName lastName name email phone')
+            .populate('customer', 'name firstName lastName email phone')
             .populate('menuItem', 'name price')
             .populate('order', 'orderNumber orderStatus')
             .lean(),

@@ -42,6 +42,23 @@ const orderItemSnapshotSchema = new mongoose.Schema(
             required: [true, 'Item subtotal is required'],
             min: [0, 'Subtotal cannot be negative'],
         },
+        originalUnitPrice: {
+            type: Number,
+            default: null,
+        },
+        discountAmount: {
+            type: Number,
+            default: 0,
+            min: [0, 'Discount amount cannot be negative'],
+        },
+        discountedUnitPrice: {
+            type: Number,
+            default: null,
+        },
+        discountedSubtotal: {
+            type: Number,
+            default: null,
+        },
     },
     { _id: false }
 );
@@ -189,6 +206,50 @@ const orderSchema = new mongoose.Schema(
             type: Number,
             required: [true, 'Subtotal is required'],
             min: [0, 'Subtotal cannot be negative'],
+        },
+        discount: {
+            discountId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Discount',
+                default: null,
+            },
+            name: {
+                type: String,
+                default: null,
+            },
+            code: {
+                type: String,
+                default: null,
+            },
+            method: {
+                type: String,
+                enum: ['automatic', 'coupon', null],
+                default: null,
+            },
+            discountType: {
+                type: String,
+                enum: ['percentage', 'flat', null],
+                default: null,
+            },
+            discountValue: {
+                type: Number,
+                default: 0,
+            },
+            amount: {
+                type: Number,
+                default: 0,
+                min: 0,
+            },
+            eligibleSubtotal: {
+                type: Number,
+                default: 0,
+                min: 0,
+            },
+        },
+        totalSavings: {
+            type: Number,
+            default: 0,
+            min: 0,
         },
         gst: {
             type: Number,

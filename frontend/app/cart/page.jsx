@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { ShopContext } from "../../contexts/ShopContext";
 import CartTotal from "../../components/CartTotal";
+import DiscountBadge from "../../components/DiscountBadge";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
@@ -20,9 +21,19 @@ export default function Cart() {
     canAcceptOrders,
     restrictionMessage,
     minimumOrderAmount = 100,
+    banners,
+    couponCode,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    pricingSummary,
+    isPricingLoading,
   } = useContext(ShopContext);
 
   const [cartList, setCartList] = useState([]);
+  const [couponInput, setCouponInput] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [couponFeedback, setCouponFeedback] = useState(null);
 
   useEffect(() => {
     const list = [];
@@ -43,8 +54,38 @@ export default function Cart() {
     setCartList(list);
   }, [cartItems, products]);
 
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+    if (!couponInput.trim()) return;
+
+    setApplying(true);
+    setCouponFeedback(null);
+
+    const res = await applyCoupon(couponInput);
+    if (res.success) {
+      setCouponFeedback({
+        type: "success",
+        message: `Coupon "${couponInput.toUpperCase()}" applied! You save ₹${res.data?.discountAmount || 0}`,
+      });
+      setCouponInput("");
+    } else {
+      setCouponFeedback({
+        type: "error",
+        message: res.message || "Invalid coupon code",
+      });
+    }
+    setApplying(false);
+  };
+
+  const handleRemoveCoupon = async () => {
+    setCouponFeedback(null);
+    await removeCoupon();
+  };
+
   const getImg = (product) =>
     product?.image?.url || product?.images?.[0] || FALLBACK_IMG;
+
+  const promoBanner = banners && banners.length > 0 ? banners[0] : null;
 
   return (
     <div className="min-h-[80vh] bg-[#FAF8F5] pt-8 pb-16 px-4 sm:px-6 lg:px-8">
@@ -69,10 +110,40 @@ export default function Cart() {
           )}
         </div>
 
+        {/* Compact Promotional Banner / Offer Reminder */}
+        {promoBanner && promoBanner.image?.url && (
+          <div className="mb-6 rounded-2xl overflow-hidden border border-amber-200/80 bg-[#FFFDF9] p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="w-16 h-12 rounded-lg bg-stone-100 flex-none overflow-hidden border border-stone-200/80">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={promoBanner.image.url}
+                  alt={promoBanner.title || "Promotion"}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div>
+                <p className="font-bold text-xs sm:text-sm text-[#11261B]">
+                  {promoBanner.title || "Special Restaurant Offer Available!"}
+                </p>
+                <p className="text-[11px] text-stone-500 line-clamp-1">
+                  {promoBanner.description || "Automatic discounts & exclusive deals apply directly at checkout."}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/orderanddine?filter=offer"
+              className="text-xs font-bold text-[#C85A17] hover:underline whitespace-nowrap self-end sm:self-center"
+            >
+              Explore Offers →
+            </Link>
+          </div>
+        )}
+
         {/* Cart Items */}
         {cartList.length > 0 ? (
-          <div className="space-y-3.5 mb-10">
-            {cartList.map(({ cartKey, quantity, variant, productData }) => {
+          <div className="space-y-3.5 mb-8">
+            {cartList.map(({ cartKey, quantity, variant, productData, itemId }) => {
               if (!productData) {
                 return (
                   <div
@@ -93,12 +164,32 @@ export default function Cart() {
               }
 
               let unitPrice = 0;
+              let discountedUnitPrice = null;
               if (productData.pricingType === "half-full") {
                 unitPrice = variant === "half" ? (productData.halfPrice || 0) : (productData.fullPrice || 0);
+                if (productData.discountedHalfPrice && variant === "half") {
+                  discountedUnitPrice = productData.discountedHalfPrice;
+                } else if (productData.discountedFullPrice && variant === "full") {
+                  discountedUnitPrice = productData.discountedFullPrice;
+                }
               } else {
                 unitPrice = productData.price || 0;
+                if (productData.discountedPrice) {
+                  discountedUnitPrice = productData.discountedPrice;
+                }
               }
+
+              // Also check if pricingSummary snapshot has a specific line item discount
+              const summaryItem = pricingSummary?.items?.find(
+                (si) => (si.menuItem === itemId || si.menuItem?._id === itemId) && si.variant === variant
+              );
+              if (summaryItem?.discountedUnitPrice != null && summaryItem.discountAmount > 0) {
+                discountedUnitPrice = summaryItem.discountedUnitPrice;
+              }
+
               const isAvailable = productData.isAvailable !== false;
+              const hasDiscount = discountedUnitPrice != null && discountedUnitPrice < unitPrice;
+              const effectivePrice = hasDiscount ? discountedUnitPrice : unitPrice;
 
               return (
                 <div
@@ -120,11 +211,10 @@ export default function Cart() {
                       {productData.isVeg !== undefined && (
                         <div className="absolute top-1 left-1 bg-white/95 p-0.5 rounded shadow-xs">
                           <div
-                            className={`w-2 h-2 rounded-full ${
-                              productData.isVeg
+                            className={`w-2 h-2 rounded-full ${productData.isVeg
                                 ? "bg-emerald-600"
                                 : "bg-rose-600"
-                            }`}
+                              }`}
                           />
                         </div>
                       )}
@@ -139,12 +229,25 @@ export default function Cart() {
                             {variant}
                           </span>
                         )}
+                        {hasDiscount && (
+                          <DiscountBadge label={productData.discountBadge || "Discounted"} size="sm" />
+                        )}
                       </div>
                       <div className="flex items-center gap-2 mt-1 text-xs">
-                        <span className="font-extrabold text-[#1B3B2B]">
-                          {currency}
-                          {unitPrice}
-                        </span>
+                        {hasDiscount ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-stone-400 line-through text-[11px]">
+                              {currency}{unitPrice}
+                            </span>
+                            <span className="font-extrabold text-[#1B3B2B] text-sm">
+                              {currency}{discountedUnitPrice}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="font-extrabold text-[#1B3B2B]">
+                            {currency}{unitPrice}
+                          </span>
+                        )}
                         {!isAvailable && (
                           <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
                             Currently Unavailable
@@ -177,10 +280,17 @@ export default function Cart() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="font-extrabold text-sm sm:text-base text-[#1B3B2B]">
-                        {currency}
-                        {unitPrice * quantity}
-                      </span>
+                      <div className="text-right">
+                        {hasDiscount && (
+                          <span className="block text-[11px] text-stone-400 line-through">
+                            {currency}{unitPrice * quantity}
+                          </span>
+                        )}
+                        <span className="font-extrabold text-sm sm:text-base text-[#1B3B2B]">
+                          {currency}{Math.round(effectivePrice * quantity * 100) / 100}
+                        </span>
+                      </div>
+
                       <button
                         onClick={() => updateQuantity(cartKey, 0)}
                         className="p-2 text-stone-400 hover:text-rose-600 transition-colors rounded-full hover:bg-rose-50"
@@ -236,16 +346,84 @@ export default function Cart() {
           </div>
         )}
 
-        {/* Order Summary */}
+        {/* Coupon Code Section & Order Summary */}
         {cartList.length > 0 && (() => {
-          const subtotal = getCartAmount();
+          const subtotal = pricingSummary?.foodSubtotal || getCartAmount();
           const minOrder = minimumOrderAmount || 100;
           const remainingAmount = Math.max(0, minOrder - subtotal);
           const isBelowMinimum = subtotal < minOrder;
 
           return (
-            <div className="flex justify-end">
-              <div className="w-full sm:w-[420px] bg-white rounded-2xl p-6 border border-stone-200/90 shadow-2xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              {/* Coupon Code Input Box (Strictly manual entry, no view coupon list) */}
+              <div className="bg-white rounded-2xl p-5 border border-stone-200/90 shadow-2xs space-y-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-sm text-[#11261B]">
+                    Have a coupon code?
+                  </h3>
+                </div>
+
+                {appliedCoupon ? (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-extrabold text-xs uppercase text-emerald-900 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                          {appliedCoupon.code || couponCode}
+                        </span>
+                        <span className="text-xs font-bold text-emerald-800">
+                          Applied!
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-emerald-700 mt-0.5">
+                        You saved ₹{pricingSummary?.discountAmount || 0} with this code.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-xs font-bold text-rose-600 hover:text-rose-800 underline px-2 py-1"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleApplyCoupon} className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Enter coupon code"
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        className="font-mono uppercase font-bold text-xs tracking-wider flex-1 px-3.5 py-2.5 border border-stone-200 rounded-xl focus:outline-none focus:border-[#1B3B2B]"
+                      />
+                      <button
+                        type="submit"
+                        disabled={applying || !couponInput.trim()}
+                        className="px-5 py-2.5 bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all disabled:opacity-50 active:scale-95 flex-none"
+                      >
+                        {applying ? "..." : "Apply"}
+                      </button>
+                    </div>
+
+                    {couponFeedback && (
+                      <p
+                        className={`text-xs font-medium ${couponFeedback.type === "success"
+                            ? "text-emerald-700"
+                            : "text-rose-600"
+                          }`}
+                      >
+                        {couponFeedback.message}
+                      </p>
+                    )}
+                  </form>
+                )}
+                <p className="text-[11px] text-stone-400">
+                  Enter your promotional coupon code to apply exclusive discounts to your order.
+                </p>
+              </div>
+
+              {/* Order Billing Summary */}
+              <div className="w-full bg-white rounded-2xl p-6 border border-stone-200/90 shadow-2xs">
                 <CartTotal />
 
                 {/* Minimum Order Notice Banner */}
@@ -296,7 +474,7 @@ export default function Cart() {
                   ) : (
                     <button
                       onClick={() => navigate("/place-order")}
-                      className="w-full py-3.5 rounded-full bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs sm:text-sm font-bold uppercase tracking-wider active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2"
+                      className="w-full py-3.5 rounded-full bg-[#1B3B2B] hover:bg-[#11261B] text-white text-xs sm:text-sm font-bold uppercase tracking-wider active:scale-95 transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <span>Proceed to Checkout</span>
                       <svg

@@ -190,6 +190,29 @@ const navItems = [
         ]
     },
     {
+        label: "Offers & Discounts",
+        href: "/dashboard/offers",
+        icon: "discount",
+        children: [
+            {
+                label: "Overview",
+                href: "/dashboard/offers"
+            },
+            {
+                label: "Promotional Banners",
+                href: "/dashboard/offers/banners"
+            },
+            {
+                label: "Discounts",
+                href: "/dashboard/offers/discounts"
+            },
+            {
+                label: "Create New Discount",
+                href: "/dashboard/offers/discounts/create"
+            }
+        ]
+    },
+    {
         label: "Reviews",
         href: "/dashboard/reviews",
         icon: "reviews"
@@ -218,6 +241,7 @@ function Icon({ name, size = 16 }) {
         riders: "M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16h2m-6 0h2m-2-5h5l2 4H7l2-4zm3-4a2 2 0 11-4 0 2 2 0 014 0z",
         payments: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
         menu: "M4 6h16M4 10h16M4 14h16M4 18h16",
+        discount: "M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z",
         delivery: "M1 3h15v13H1zM16 8h4l3 3v5h-7V8zM5.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM18.5 21a1.5 1.5 0 100-3 1.5 1.5 0 000 3z",
         reviews: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
         customers: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
@@ -243,12 +267,12 @@ function Icon({ name, size = 16 }) {
             d: paths[name]
         }, void 0, false, {
             fileName: "[project]/components/admin-shell.jsx",
-            lineNumber: 94,
+            lineNumber: 106,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/components/admin-shell.jsx",
-        lineNumber: 93,
+        lineNumber: 105,
         columnNumber: 5
     }, this);
 }
@@ -272,7 +296,7 @@ function SidebarNav({ pathname, onClose, unreadCount, pendingOrdersCount = 0 }) 
                 children: "Workspace"
             }, void 0, false, {
                 fileName: "[project]/components/admin-shell.jsx",
-                lineNumber: 112,
+                lineNumber: 124,
                 columnNumber: 7
             }, this),
             navItems.map((item)=>{
@@ -293,19 +317,19 @@ function SidebarNav({ pathname, onClose, unreadCount, pendingOrdersCount = 0 }) 
                                         size: 15
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 133,
+                                        lineNumber: 145,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-shell.jsx",
-                                    lineNumber: 132,
+                                    lineNumber: 144,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                     children: item.label
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-shell.jsx",
-                                    lineNumber: 135,
+                                    lineNumber: 147,
                                     columnNumber: 15
                                 }, this),
                                 badge ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -313,13 +337,13 @@ function SidebarNav({ pathname, onClose, unreadCount, pendingOrdersCount = 0 }) 
                                     children: badge
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-shell.jsx",
-                                    lineNumber: 137,
+                                    lineNumber: 149,
                                     columnNumber: 17
                                 }, this) : null
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/admin-shell.jsx",
-                            lineNumber: 127,
+                            lineNumber: 139,
                             columnNumber: 13
                         }, this),
                         showChildren && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -331,25 +355,25 @@ function SidebarNav({ pathname, onClose, unreadCount, pendingOrdersCount = 0 }) 
                                     children: child.label
                                 }, child.href, false, {
                                     fileName: "[project]/components/admin-shell.jsx",
-                                    lineNumber: 143,
+                                    lineNumber: 155,
                                     columnNumber: 19
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/components/admin-shell.jsx",
-                            lineNumber: 141,
+                            lineNumber: 153,
                             columnNumber: 15
                         }, this)
                     ]
                 }, item.label, true, {
                     fileName: "[project]/components/admin-shell.jsx",
-                    lineNumber: 126,
+                    lineNumber: 138,
                     columnNumber: 11
                 }, this);
             })
         ]
     }, void 0, true, {
         fileName: "[project]/components/admin-shell.jsx",
-        lineNumber: 111,
+        lineNumber: 123,
         columnNumber: 5
     }, this);
 }
@@ -582,7 +606,7 @@ function AdminShell({ children }) {
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 372,
+                                        lineNumber: 384,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -591,26 +615,26 @@ function AdminShell({ children }) {
                                                 children: "Majedaar"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 374,
+                                                lineNumber: 386,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
                                                 children: "Restaurant Office"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 375,
+                                                lineNumber: 387,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 373,
+                                        lineNumber: 385,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/admin-shell.jsx",
-                                lineNumber: 371,
+                                lineNumber: 383,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -622,18 +646,18 @@ function AdminShell({ children }) {
                                     size: 18
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-shell.jsx",
-                                    lineNumber: 383,
+                                    lineNumber: 395,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/admin-shell.jsx",
-                                lineNumber: 378,
+                                lineNumber: 390,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/admin-shell.jsx",
-                        lineNumber: 370,
+                        lineNumber: 382,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(SidebarNav, {
@@ -643,7 +667,7 @@ function AdminShell({ children }) {
                         pendingOrdersCount: alertState.pendingCount
                     }, void 0, false, {
                         fileName: "[project]/components/admin-shell.jsx",
-                        lineNumber: 388,
+                        lineNumber: 400,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -659,7 +683,7 @@ function AdminShell({ children }) {
                                         children: initials
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 393,
+                                        lineNumber: 405,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -668,20 +692,20 @@ function AdminShell({ children }) {
                                                 children: adminName
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 395,
+                                                lineNumber: 407,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
                                                 children: adminRole
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 396,
+                                                lineNumber: 408,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 394,
+                                        lineNumber: 406,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -691,18 +715,18 @@ function AdminShell({ children }) {
                                             size: 13
                                         }, void 0, false, {
                                             fileName: "[project]/components/admin-shell.jsx",
-                                            lineNumber: 399,
+                                            lineNumber: 411,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 398,
+                                        lineNumber: 410,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/admin-shell.jsx",
-                                lineNumber: 392,
+                                lineNumber: 404,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -715,26 +739,26 @@ function AdminShell({ children }) {
                                         size: 15
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 403,
+                                        lineNumber: 415,
                                         columnNumber: 13
                                     }, this),
                                     "Log out"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/admin-shell.jsx",
-                                lineNumber: 402,
+                                lineNumber: 414,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/admin-shell.jsx",
-                        lineNumber: 391,
+                        lineNumber: 403,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/admin-shell.jsx",
-                lineNumber: 368,
+                lineNumber: 380,
                 columnNumber: 7
             }, this),
             drawerOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -743,7 +767,7 @@ function AdminShell({ children }) {
                 onClick: closeDrawer
             }, void 0, false, {
                 fileName: "[project]/components/admin-shell.jsx",
-                lineNumber: 411,
+                lineNumber: 423,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -761,12 +785,12 @@ function AdminShell({ children }) {
                                     size: 22
                                 }, void 0, false, {
                                     fileName: "[project]/components/admin-shell.jsx",
-                                    lineNumber: 427,
+                                    lineNumber: 439,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/admin-shell.jsx",
-                                lineNumber: 422,
+                                lineNumber: 434,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -776,27 +800,27 @@ function AdminShell({ children }) {
                                         children: "Majedaar"
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 431,
+                                        lineNumber: 443,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
                                         children: "/"
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 432,
+                                        lineNumber: 444,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                         children: breadcrumbLabel(pathname)
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 433,
+                                        lineNumber: 445,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/admin-shell.jsx",
-                                lineNumber: 430,
+                                lineNumber: 442,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -832,12 +856,12 @@ function AdminShell({ children }) {
                                             children: "Enable Sound Alerts"
                                         }, void 0, false, {
                                             fileName: "[project]/components/admin-shell.jsx",
-                                            lineNumber: 461,
+                                            lineNumber: 473,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 439,
+                                        lineNumber: 451,
                                         columnNumber: 15
                                     }, this) : alertState.isAudioPlaying ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         style: {
@@ -872,7 +896,7 @@ function AdminShell({ children }) {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/admin-shell.jsx",
-                                                        lineNumber: 481,
+                                                        lineNumber: 493,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -883,13 +907,13 @@ function AdminShell({ children }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/admin-shell.jsx",
-                                                        lineNumber: 490,
+                                                        lineNumber: 502,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 465,
+                                                lineNumber: 477,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -909,13 +933,13 @@ function AdminShell({ children }) {
                                                 children: "Mute"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 492,
+                                                lineNumber: 504,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 464,
+                                        lineNumber: 476,
                                         columnNumber: 15
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
@@ -943,12 +967,12 @@ function AdminShell({ children }) {
                                             children: "Alerts Active"
                                         }, void 0, false, {
                                             fileName: "[project]/components/admin-shell.jsx",
-                                            lineNumber: 534,
+                                            lineNumber: 546,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 511,
+                                        lineNumber: 523,
                                         columnNumber: 15
                                     }, this),
                                     pushStatus === "granted" && pushSubscribed ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -986,7 +1010,7 @@ function AdminShell({ children }) {
                                                 size: 13
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 570,
+                                                lineNumber: 582,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -996,13 +1020,13 @@ function AdminShell({ children }) {
                                                 children: "Alerts Active"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 571,
+                                                lineNumber: 583,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 540,
+                                        lineNumber: 552,
                                         columnNumber: 15
                                     }, this) : pushStatus !== "unsupported" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         type: "button",
@@ -1025,20 +1049,20 @@ function AdminShell({ children }) {
                                                 size: 13
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 594,
+                                                lineNumber: 606,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 children: subscribingPush ? "Enabling..." : "Enable Alerts"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 595,
+                                                lineNumber: 607,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 574,
+                                        lineNumber: 586,
                                         columnNumber: 15
                                     }, this) : null,
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1058,7 +1082,7 @@ function AdminShell({ children }) {
                                                 size: 17
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 611,
+                                                lineNumber: 623,
                                                 columnNumber: 15
                                             }, this),
                                             unreadCount > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1082,13 +1106,13 @@ function AdminShell({ children }) {
                                                 children: unreadCount > 99 ? "99+" : unreadCount
                                             }, void 0, false, {
                                                 fileName: "[project]/components/admin-shell.jsx",
-                                                lineNumber: 613,
+                                                lineNumber: 625,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 599,
+                                        lineNumber: 611,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1096,19 +1120,19 @@ function AdminShell({ children }) {
                                         children: today
                                     }, void 0, false, {
                                         fileName: "[project]/components/admin-shell.jsx",
-                                        lineNumber: 636,
+                                        lineNumber: 648,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/admin-shell.jsx",
-                                lineNumber: 436,
+                                lineNumber: 448,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/admin-shell.jsx",
-                        lineNumber: 421,
+                        lineNumber: 433,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -1116,26 +1140,26 @@ function AdminShell({ children }) {
                         children: children
                     }, void 0, false, {
                         fileName: "[project]/components/admin-shell.jsx",
-                        lineNumber: 641,
+                        lineNumber: 653,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/admin-shell.jsx",
-                lineNumber: 419,
+                lineNumber: 431,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$new$2d$order$2d$alert$2d$modal$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["NewOrderAlertModal"], {
                 pendingOrders: alertState.pendingOrders
             }, void 0, false, {
                 fileName: "[project]/components/admin-shell.jsx",
-                lineNumber: 645,
+                lineNumber: 657,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/admin-shell.jsx",
-        lineNumber: 366,
+        lineNumber: 378,
         columnNumber: 5
     }, this);
 }

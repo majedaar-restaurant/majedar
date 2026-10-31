@@ -899,15 +899,30 @@ export default function OrderDetailsPage() {
                               )}
                             </div>
                             <p className="text-xs text-stone-500 mt-0.5">
-                              Quantity: <span className="font-semibold">{item.quantity}</span> × ₹{item.unitPrice || item.price}
+                              Quantity: <span className="font-semibold">{item.quantity}</span> ×{" "}
+                              {item.discountAmount > 0 ? (
+                                <>
+                                  <span className="line-through text-stone-400">₹{item.originalUnitPrice || item.unitPrice}</span>{" "}
+                                  <span className="font-bold text-[#1B3B2B]">₹{item.discountedUnitPrice}</span>
+                                </>
+                              ) : (
+                                <span>₹{item.unitPrice || item.price}</span>
+                              )}
                             </p>
                           </div>
                         </div>
 
                         <div className="flex items-center sm:flex-col sm:items-end justify-between gap-2">
-                          <span className="font-extrabold text-sm text-[#1B3B2B]">
-                            ₹{item.subtotal || item.price * item.quantity}
-                          </span>
+                          <div className="text-right">
+                            {item.discountAmount > 0 && (
+                              <span className="block text-[11px] text-stone-400 line-through">
+                                ₹{item.subtotal}
+                              </span>
+                            )}
+                            <span className="font-extrabold text-sm text-[#1B3B2B]">
+                              ₹{item.discountedSubtotal != null && item.discountAmount > 0 ? item.discountedSubtotal : item.subtotal || item.price * item.quantity}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -1116,8 +1131,17 @@ export default function OrderDetailsPage() {
                     <span>Items Subtotal</span>
                     <span className="font-semibold text-stone-800">₹{order.subtotal}</span>
                   </div>
+                  {order.discount?.amount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-medium bg-emerald-50/70 px-2 py-1 rounded">
+                      <span className="flex items-center gap-1">
+                        <span>Offer Applied</span>
+                        {order.discount.code && <span className="text-[10px] uppercase font-bold tracking-wider px-1 bg-emerald-100 rounded">({order.discount.code})</span>}
+                      </span>
+                      <span>-₹{order.discount.amount}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
-                    <span>5% GST (Items)</span>
+                    <span>5% GST (Taxes)</span>
                     <span className="font-semibold text-stone-800">₹{order.gst}</span>
                   </div>
                   <div className="flex justify-between">
@@ -1129,6 +1153,11 @@ export default function OrderDetailsPage() {
                     <span>Total Amount</span>
                     <span className="text-[#1B3B2B]">₹{order.total}</span>
                   </div>
+                  {order.totalSavings > 0 && (
+                    <p className="text-[11px] font-semibold text-emerald-700 text-right">
+                      Total savings on this order: ₹{order.totalSavings}
+                    </p>
+                  )}
                   <div className="pt-2 flex items-center justify-between text-[11px] text-stone-500">
                     <span>Payment Status:</span>
                     <span className={`font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border text-[10px] ${paymentStatusConfig.classes}`}>

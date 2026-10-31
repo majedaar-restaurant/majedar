@@ -152,11 +152,43 @@ const MenuPreview = ({ selectedCategory = "All" }) => {
                       {item.description.split("#")[0]}
                     </p>
 
-                    {/* Half / Full Variant Selector */}
-                    <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
-                      {currency}
-                      {displayPrice}
-                    </span>
+                    {/* Price with discount support */}
+                    {(() => {
+                      const originalPrice = isHalfFull
+                        ? currentVariant === "half" ? (item.halfPrice || 0) : (item.fullPrice || 0)
+                        : item.price || 0;
+                      const discountedPrice = isHalfFull
+                        ? currentVariant === "half" ? (item.discountedHalfPrice ?? originalPrice) : (item.discountedFullPrice ?? originalPrice)
+                        : (item.discountedPrice ?? originalPrice);
+                      const hasDiscount = discountedPrice < originalPrice;
+
+                      return hasDiscount ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs text-stone-400 line-through">
+                            {currency}{originalPrice}
+                          </span>
+                          <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
+                            {currency}{discountedPrice}
+                          </span>
+                          {item.discountBadge && (
+                            <span className="text-[10px] font-bold text-[#C85A17] bg-[#FFF5EE] px-1.5 py-0.5 rounded border border-[#FED7AA]">
+                              {item.discountBadge}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-base sm:text-lg font-extrabold text-[#1B3B2B]">
+                            {currency}{originalPrice}
+                          </span>
+                          {item.discountBadge && (
+                            <span className="text-[10px] font-bold text-[#C85A17] bg-[#FFF5EE] px-1.5 py-0.5 rounded border border-[#FED7AA]">
+                              {item.discountBadge}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="flex items-center justify-between mt-auto pt-1">
                     {isHalfFull && (

@@ -680,7 +680,14 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                   <div style={{ flex: 1 }}>
                     <div className="order-item-name">{item.name}</div>
                     <div className="order-item-variant" style={{ color: "var(--muted)", fontSize: "11px" }}>
-                      Unit price: ₹{item.price}
+                      {item.originalUnitPrice && item.originalUnitPrice > item.price ? (
+                        <span>
+                          <span style={{ textDecoration: "line-through", marginRight: "6px" }}>₹{item.originalUnitPrice}</span>
+                          <span style={{ color: "#166534", fontWeight: 600 }}>₹{item.price}</span>
+                        </span>
+                      ) : (
+                        `Unit price: ₹${item.price}`
+                      )}
                     </div>
                   </div>
                   <div className="order-item-qty">×{item.quantity}</div>
@@ -695,8 +702,17 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                 <span>Items Subtotal</span>
                 <strong>₹{Number(order.subtotal || 0).toFixed(2)}</strong>
               </div>
+              {order.discount && order.discount.amount > 0 && (
+                <div className="totals-row" style={{ color: "var(--gold)" }}>
+                  <span>
+                    Discount ({order.discount.name || "Offer"}
+                    {order.discount.code ? ` - ${order.discount.code}` : ""})
+                  </span>
+                  <strong>-₹{Number(order.discount.amount || 0).toFixed(2)}</strong>
+                </div>
+              )}
               <div className="totals-row">
-                <span>GST (5% on items)</span>
+                <span>GST (5% on food items)</span>
                 <strong>₹{Number(order.gst || 0).toFixed(2)}</strong>
               </div>
               <div className="totals-row">
@@ -707,6 +723,12 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                 <span>Authoritative Total</span>
                 <strong>₹{Number(order.total || 0).toFixed(2)}</strong>
               </div>
+              {order.totalSavings > 0 && (
+                <div className="totals-row" style={{ marginTop: "6px", fontSize: "11px", color: "#166534" }}>
+                  <span>Customer Savings</span>
+                  <strong>₹{Number(order.totalSavings).toFixed(2)}</strong>
+                </div>
+              )}
             </div>
           </article>
         </div>

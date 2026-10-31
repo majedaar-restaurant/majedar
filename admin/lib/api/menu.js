@@ -10,7 +10,43 @@ export async function getAdminMenu(params = {}) {
   const queryString = query.toString();
   const endpoint = `/admin/menu${queryString ? `?${queryString}` : ""}`;
   const res = await apiRequest(endpoint);
-  return res?.data?.menu || [];
+  if (!Array.isArray(res?.data?.menu)) {
+    throw new Error("The menu API returned an invalid products list.");
+  }
+  return res.data.menu;
+}
+
+export function normalizeAdminMenuItems(menuItems) {
+  if (!Array.isArray(menuItems)) {
+    throw new Error("The menu API returned an invalid products list.");
+  }
+
+  return menuItems.map((item) => {
+    const id = item?._id ?? item?.id;
+    if (!id || typeof item?.name !== "string") {
+      throw new Error("A menu item is missing its ID or name.");
+    }
+
+    const categoryValue = item.category;
+    const categoryId =
+      typeof categoryValue === "object" && categoryValue !== null
+        ? categoryValue._id ?? categoryValue.id
+        : categoryValue;
+
+    return {
+      ...item,
+      _id: String(id),
+      category:
+        categoryId == null
+          ? null
+          : {
+              ...(typeof categoryValue === "object" && categoryValue !== null
+                ? categoryValue
+                : {}),
+              _id: String(categoryId),
+            },
+    };
+  });
 }
 
 export async function getAdminMenuItem(id) {

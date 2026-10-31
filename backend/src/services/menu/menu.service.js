@@ -4,6 +4,7 @@ import { Review } from '../../models/Review.js';
 import { NotFoundError, BadRequestError } from '../../utils/errors.js';
 import { uploadImageBuffer, deleteCloudinaryImage } from '../uploads/image.service.js';
 import mongoose from 'mongoose';
+import { decorateMenuItemsWithDiscounts } from '../discount/discount.service.js';
 
 /**
  * Resolve a category input (ID, slug, or name) to a Category document.
@@ -171,6 +172,10 @@ export const getMenuItems = async ({
         });
     } catch (_) { }
 
+    try {
+        finalItems = await decorateMenuItemsWithDiscounts(finalItems);
+    } catch (_) { }
+
     return finalItems;
 };
 
@@ -205,10 +210,21 @@ export const getMenuItemById = async (id, { isPublic = false } = {}) => {
         doc.ratingSummary = summary;
         doc.averageRating = summary.averageRating;
         doc.reviewCount = summary.reviewCount;
-        return doc;
+        try {
+            const decorated = await decorateMenuItemsWithDiscounts([doc]);
+            return decorated[0];
+        } catch (_) {
+            return doc;
+        }
     } catch (_) { }
 
-    return item.toJSON ? item.toJSON() : item;
+    try {
+        const raw = item.toJSON ? item.toJSON() : item;
+        const decorated = await decorateMenuItemsWithDiscounts([raw]);
+        return decorated[0];
+    } catch (_) {
+        return item.toJSON ? item.toJSON() : item;
+    }
 };
 
 /**
