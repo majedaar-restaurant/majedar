@@ -12,7 +12,7 @@
  * - Rider CRUD & validation
  * - Rider assignment (active vs inactive) & change rider
  * - Customer visibility (rider visible only at out_for_delivery)
- * - Protection of rider deletion when referenced by orders
+ * - Safe rider deletion while preserving historical order data
  */
 
 import { test, describe, before, after } from 'node:test';
@@ -383,14 +383,53 @@ describe('Acceptance Window & Rider Management System', () => {
             assert.equal(outOrder.rider.passwordHash, undefined);
         });
 
-        test('Rider cannot be deleted if associated with historical orders', async () => {
-            await assert.rejects(
-                () => riderService.deleteRider(testRider1._id),
-                (err) => {
-                    assert.ok(err.message.includes('associated with') || err.message.includes('orders'));
-                    return true;
-                }
-            );
+        test('Rider deletion preserves orders and history while clearing current assignments', async () => {
+            let assignedOrder = await Order.findOne({ rider: testRider1._id });
+            assert.ok(assignedOrder);
+            assignedOrder.riderDeliveryHistory.push({
+                rider: testRider1._id,
+                status: 'delivered',
+                timestamp: new Date(),
+            });
+            assignedOrder.codCollections.push({
+                rider: testRider1._id,
+                amount: 1,
+                method: 'cash',
+                collectedAt: new Date(),
+            });
+            await assignedOrder.save();
+            const orderId = assignedOrder._id;
+            const orderStatus = assignedOrder.orderStatus;
+            const assignmentHistory = assignedOrder.riderAssignmentHistory.map((entry) => entry.toObject());
+            const deliveryHistory = assignedOrder.riderDeliveryHistory.map((entry) => entry.toObject());
+            const codCollections = assignedOrder.codCollections.map((entry) => entry.toObject());
+
+            const result = await riderService.deleteRider(testRider1._id);
+            assert.equal(result.id.toString(), testRider1._id.toString());
+            assert.equal(await Rider.findById(testRider1._id), null);
+
+            const preservedOrder = await Order.findById(orderId).lean();
+            assert.ok(preservedOrder);
+            assert.equal(preservedOrder.orderStatus, orderStatus);
+            assert.equal(preservedOrder.rider, null);
+            assert.deepEqual(preservedOrder.riderAssignmentHistory.map((entry) => ({
+                rider: entry.rider.toString(),
+                assignedAt: entry.assignedAt.toISOString(),
+                acceptedAt: entry.acceptedAt?.toISOString() || null,
+                rejectedAt: entry.rejectedAt?.toISOString() || null,
+            })), assignmentHistory.map((entry) => ({
+                rider: entry.rider.toString(),
+                assignedAt: entry.assignedAt.toISOString(),
+                acceptedAt: entry.acceptedAt?.toISOString() || null,
+                rejectedAt: entry.rejectedAt?.toISOString() || null,
+            })));
+            assert.deepEqual(preservedOrder.riderDeliveryHistory.map((entry) => entry.rider.toString()),
+                deliveryHistory.map((entry) => entry.rider.toString()));
+            assert.deepEqual(preservedOrder.codCollections.map((entry) => entry.rider.toString()),
+                codCollections.map((entry) => entry.rider.toString()));
+            assert.ok(preservedOrder.statusHistory.some((entry) =>
+                entry.domain === 'assignment' && entry.status === 'unassigned'
+            ));
         });
     });
 

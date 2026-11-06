@@ -49,8 +49,10 @@ export default function RidersPage() {
     if (!socket) return undefined;
     const reload = () => loadRiders();
     socket.on("rider:availability_changed", reload);
+    socket.on("rider:deleted", reload);
     return () => {
       socket.off("rider:availability_changed", reload);
+      socket.off("rider:deleted", reload);
     };
   }, [loadRiders]);
 
@@ -117,7 +119,7 @@ export default function RidersPage() {
 
   const handleDelete = async (rider) => {
     const confirmed = window.confirm(
-      `Are you sure you want to delete rider "${rider.name}"? Deletion is blocked when delivery history exists; deactivate them instead.`
+      `Are you sure you want to permanently delete rider "${rider.name}"?`
     );
     if (!confirmed) return;
 

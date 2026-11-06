@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { Rider } from '../../models/Rider.js';
 import { Order } from '../../models/Order.js';
 import { RiderNotification } from '../../models/RiderNotification.js';
+import { RiderPushSubscription } from '../../models/RiderPushSubscription.js';
 import { NotFoundError, BadRequestError, ConflictError, ForbiddenError } from '../../utils/errors.js';
 import { emitPaymentSuccess, getIO } from '../../socket/socket.server.js';
 import { config } from '../../config/env.js';
@@ -632,11 +633,53 @@ export const updateRider = async (id, updates) => {
 export const deleteRider = async (id) => {
     const rider = await Rider.findById(id);
     if (!rider) throw new NotFoundError('Rider not found');
-    const associatedOrders = await Order.countDocuments({ $or: [{ rider: id }, { 'riderAssignmentHistory.rider': id }] });
-    if (associatedOrders > 0) {
-        throw new BadRequestError(`Cannot delete rider associated with ${associatedOrders} historical order(s). Please deactivate the rider instead.`);
+
+    const activeOrders = await Order.find({
+        rider: id,
+        riderStatus: { $in: activeStatuses },
+    });
+    for (const order of activeOrders) {
+        const now = new Date();
+        const previousRiderStatus = order.riderStatus;
+        const handoffRequired = order.riderHandoffRequired
+            || ['picked_up', 'out_for_delivery'].includes(previousRiderStatus);
+        for (const assignment of order.riderAssignmentHistory || []) {
+            if (riderIdOf(assignment.rider) === rider._id.toString() && !assignment.unassignedAt) {
+                assignment.unassignedAt = now;
+            }
+        }
+        order.rider = null;
+        order.riderStatus = 'pending';
+        order.riderHandoffRequired = handoffRequired;
+        order.riderLocation = { latitude: null, longitude: null, updatedAt: null };
+        order.routeEta = { durationSeconds: null, calculatedAt: null };
+        order.statusHistory.push({
+            domain: 'assignment',
+            status: 'unassigned',
+            previousStatus: previousRiderStatus,
+            actorType: 'system',
+            note: 'Rider account deleted; order is available for reassignment.',
+            timestamp: now,
+        });
+        await order.save();
+        getIO()?.to('admin:orders').emit('rider:assignment_updated', {
+            orderId: order._id.toString(),
+            riderId: null,
+            riderStatus: order.riderStatus,
+            orderStatus: order.orderStatus,
+            riderHandoffRequired: order.riderHandoffRequired,
+        });
     }
+
+    // Historical order and embedded delivery references remain intact.
+    await Order.updateMany({ rider: id }, { $set: { rider: null } });
+    getIO()?.in(`rider:${rider._id}`).disconnectSockets(true);
+    await Promise.all([
+        RiderNotification.deleteMany({ recipientType: 'rider', rider: rider._id }),
+        RiderPushSubscription.deleteMany({ rider: rider._id }),
+    ]);
     await Rider.findByIdAndDelete(id);
+    getIO()?.to('admin:orders').emit('rider:deleted', { riderId: rider._id.toString() });
     return { id, name: rider.name };
 };
 
