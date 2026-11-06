@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { toast } from "react-toastify";
 import RiderTrackingMap from "../../../components/RiderTrackingMap";
-import { getSocket } from "../../../lib/socket";
+import { disconnectSocket, getSocket } from "../../../lib/socket";
 import {
   changeRiderPassword,
   getRiderDashboard,
@@ -175,6 +176,9 @@ export default function RiderDashboardPage() {
   const [codCollectionOrder, setCodCollectionOrder] = useState(null);
   const [codMethod, setCodMethod] = useState("cash");
   const lastLocationSent = useRef({});
+  const alertedAssignments = useRef(new Set());
+  const processedAssignmentEvents = useRef(new Set());
+  const processedTerminalUpdates = useRef(new Set());
   const pendingAssignments = useMemo(() => orders
     .filter((order) => order.riderStatus === "pending")
     .map((order) => {
@@ -231,11 +235,32 @@ export default function RiderDashboardPage() {
   }, []);
 
   useEffect(() => {
-    const socket = getSocket();
+    const socket = getSocket("rider");
     if (!socket) return undefined;
     const refreshOnChange = () => refresh().catch((cause) => setError(cause?.message || "Unable to refresh rider data."));
+    const handleAssignment = (payload) => {
+      if (payload?.assignmentId) {
+        if (processedAssignmentEvents.current.has(payload.assignmentId)) return;
+        processedAssignmentEvents.current.add(payload.assignmentId);
+      }
+      if (process.env.NODE_ENV !== "production") console.info("[Socket] assignment received");
+      refreshOnChange();
+    };
     const handleDeliveryUpdate = (payload) => {
       if (!payload?.orderId) return;
+      if (process.env.NODE_ENV !== "production") console.info("[Socket] order update received");
+      const isTerminal = ["delivered", "failed", "rejected"].includes(payload.riderStatus)
+        || ["cancelled", "completed"].includes(payload.orderStatus)
+        || payload.riderId === null;
+      if (isTerminal) {
+        setOrders((previous) => previous.filter((order) => String(order._id) !== String(payload.orderId)));
+        const updateKey = `${payload.orderId}:${payload.riderStatus}:${payload.orderStatus}:${payload.updatedAt || payload.cancelledAt || ""}`;
+        if (!processedTerminalUpdates.current.has(updateKey)) {
+          processedTerminalUpdates.current.add(updateKey);
+          refreshOnChange();
+        }
+        return;
+      }
       setOrders((previous) => previous.map((order) => {
         if (String(order._id) !== String(payload.orderId)) return order;
         return {
@@ -250,25 +275,55 @@ export default function RiderDashboardPage() {
         };
       }));
     };
+    const handleAvailabilityChange = (payload) => {
+      if (!payload?.riderId || !payload?.availability) return;
+      setRider((current) => current && String(current._id) === String(payload.riderId)
+        ? { ...current, availability: payload.availability }
+        : current);
+    };
+    const handleNotification = (payload) => {
+      if (!payload?.message) return;
+      toast.info(payload.message, { toastId: payload._id || `${payload.event}:${payload.orderId}` });
+    };
     let hasConnected = socket.connected;
     const handleConnect = () => {
+      if (process.env.NODE_ENV !== "production") console.info("[Socket] connected");
       if (hasConnected) refreshOnChange();
       hasConnected = true;
     };
-    socket.on("rider:assignment", refreshOnChange);
-    socket.on("rider:assignment_updated", refreshOnChange);
+    const handleDisconnect = () => {
+      if (process.env.NODE_ENV !== "production") console.info("[Socket] disconnected");
+    };
+    socket.off("rider:assignment", handleAssignment);
+    socket.off("rider:assignment_updated", handleDeliveryUpdate);
+    socket.off("rider:delivery_updated", handleDeliveryUpdate);
+    socket.off("rider:location_updated", handleDeliveryUpdate);
+    socket.off("rider:cod_updated", handleDeliveryUpdate);
+    socket.off("rider:availability_changed", handleAvailabilityChange);
+    socket.off("rider:notification", handleNotification);
+    socket.off("connect", handleConnect);
+    socket.off("disconnect", handleDisconnect);
+    socket.on("rider:assignment", handleAssignment);
+    socket.on("rider:assignment_updated", handleDeliveryUpdate);
     socket.on("rider:delivery_updated", handleDeliveryUpdate);
     socket.on("rider:location_updated", handleDeliveryUpdate);
     socket.on("rider:cod_updated", handleDeliveryUpdate);
+    socket.on("rider:availability_changed", handleAvailabilityChange);
+    socket.on("rider:notification", handleNotification);
     socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
     if (!socket.connected) socket.connect();
     return () => {
-      socket.off("rider:assignment", refreshOnChange);
-      socket.off("rider:assignment_updated", refreshOnChange);
+      socket.off("rider:assignment", handleAssignment);
+      socket.off("rider:assignment_updated", handleDeliveryUpdate);
       socket.off("rider:delivery_updated", handleDeliveryUpdate);
       socket.off("rider:location_updated", handleDeliveryUpdate);
       socket.off("rider:cod_updated", handleDeliveryUpdate);
+      socket.off("rider:availability_changed", handleAvailabilityChange);
+      socket.off("rider:notification", handleNotification);
       socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      disconnectSocket();
     };
   }, [refresh]);
 
@@ -278,13 +333,21 @@ export default function RiderDashboardPage() {
       () => refresh().catch((cause) => setError(cause?.message || "Unable to refresh assignment status.")),
       Math.max(0, pendingAssignmentAlarmDeadline - Date.now() + 100)
     );
-    playRiderAssignmentChime();
-    const interval = setInterval(playRiderAssignmentChime, 5000);
     return () => {
       clearTimeout(timeout);
-      clearInterval(interval);
     };
   }, [pendingAssignmentAlarmKey, pendingAssignmentAlarmDeadline, refresh]);
+
+  useEffect(() => {
+    let hasNewAssignment = false;
+    for (const { order, assignment } of pendingAssignments) {
+      const assignmentKey = `${order._id}:${new Date(assignment.assignedAt).getTime()}`;
+      if (alertedAssignments.current.has(assignmentKey)) continue;
+      alertedAssignments.current.add(assignmentKey);
+      hasNewAssignment = true;
+    }
+    if (hasNewAssignment) playRiderAssignmentChime();
+  }, [pendingAssignments]);
 
   useEffect(() => {
     if (!orders.some((order) => ["picked_up", "out_for_delivery"].includes(order.riderStatus))) return undefined;

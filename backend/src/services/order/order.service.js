@@ -23,6 +23,7 @@ import {
 } from '../../utils/errors.js';
 import { getDateRangeFilter } from '../../utils/date-filter.js';
 import { sendAdminPushNotification } from '../notifications/admin-push.service.js';
+import { sendRiderPushNotification } from '../rider/rider-push.service.js';
 import { initiateRefund } from '../payments/payment-verification.service.js';
 import {
     emitNewOrder,
@@ -52,11 +53,13 @@ const refreshPreviousRiderAvailability = async (riderId) => {
     if (activeAssignments > 0) return;
     rider.availability = 'available';
     await rider.save();
-    getIO()?.to('admin:orders').emit('rider:availability_changed', {
+    const availabilityPayload = {
         riderId: rider._id.toString(),
         availability: rider.availability,
         activeAssignments: 0,
-    });
+    };
+    getIO()?.to('admin:orders').emit('rider:availability_changed', availabilityPayload);
+    getIO()?.to(`rider:${rider._id}`).emit('rider:availability_changed', availabilityPayload);
 };
 
 const getDeliveryAttention = (order, now = new Date()) => {
@@ -1165,12 +1168,36 @@ export const assignRiderToOrder = async (orderId, riderId, adminId = null, note 
         availability: 'busy',
         activeAssignments: 1,
     });
+    getIO()?.to(`rider:${rider._id}`).emit('rider:availability_changed', {
+        riderId: rider._id.toString(),
+        availability: 'busy',
+        activeAssignments: 1,
+    });
     await order.populate('rider', 'name phone email isActive availability');
     const populated = order;
     try {
         emitRiderAssigned(populated);
     } catch (err) {
         console.error('[OrderService] emitRiderAssigned error:', err.message);
+    }
+    const activeAssignment = [...(populated.riderAssignmentHistory || [])].reverse()
+        .find((assignment) => assignment.rider.toString() === rider._id.toString() && !assignment.unassignedAt);
+    const assignmentId = activeAssignment
+        ? `${populated._id}:${rider._id}:${new Date(activeAssignment.assignedAt).getTime()}`
+        : null;
+    const riderHasSocket = Boolean(getIO()?.sockets.adapter.rooms.get(`rider:${rider._id}`)?.size);
+    if (!riderHasSocket) {
+        sendRiderPushNotification({
+            riderId: rider._id,
+            title: 'New delivery assigned',
+            body: `Order ${populated.orderNumber} requires your acceptance.`,
+            url: `/rider/dashboard?order=${populated._id}`,
+            data: {
+                event: 'rider_assignment',
+                assignmentId,
+                orderId: populated._id.toString(),
+            },
+        }).catch((error) => console.error('[RiderPush] Unable to send assignment alert:', error.message));
     }
     return populated;
 };
@@ -1266,33 +1293,19 @@ export const recoverDeliveryOrder = async (orderId, adminId, { action, note, ver
         emitOrderStatusChanged(updatedOrder);
     } else if (action === 'cancel_order') {
         await refreshPreviousRiderAvailability(riderId);
-        emitOrderCancelled(updatedOrder);
+        emitOrderCancelled(updatedOrder, riderId);
         if (riderId) {
             const rider = await Rider.findById(riderId).select('name').lean();
             await createRiderNotification({
                 recipientType: 'rider',
                 rider: { _id: riderId, name: rider?.name || 'Rider' },
                 order: order._id,
-                event: 'order_cancelled_by_admin',
+                event: 'order_cancelled',
                 message: `Admin cancelled order ${order.orderNumber}.`,
-                dedupeKey: `admin-cancelled:${order._id}:${now.getTime()}`,
+                dedupeKey: `order-cancelled:${order._id}`,
             });
         }
     }
-    const io = getIO();
-    const eventPayload = {
-        orderId: order._id.toString(),
-        orderNumber: order.orderNumber,
-        orderStatus: updatedOrder.orderStatus,
-        riderStatus: updatedOrder.riderStatus,
-        riderId: updatedOrder.rider?.toString?.() || null,
-        deliveryStartedAt: updatedOrder.deliveryStartedAt,
-        riderLocation: updatedOrder.riderLocation,
-        routeEta: updatedOrder.routeEta,
-    };
-    io?.to(`order:${order._id}`).emit('rider:delivery_updated', eventPayload);
-    io?.to('admin:orders').emit('rider:delivery_updated', eventPayload);
-    if (riderId) io?.to(`rider:${riderId}`).emit('rider:delivery_updated', eventPayload);
     return getAdminOrderById(updatedOrder._id);
 };
 
@@ -1375,6 +1388,17 @@ export const cancelCustomerOrder = async (orderId, customerId) => {
         emitOrderCancelled(order);
     } catch (emitErr) {
         console.error('[OrderService] emitOrderCancelled error:', emitErr.message);
+    }
+    if (order.rider) {
+        const rider = await Rider.findById(order.rider).select('name').lean();
+        await createRiderNotification({
+            recipientType: 'rider',
+            rider: { _id: order.rider, name: rider?.name || 'Rider' },
+            order: order._id,
+            event: 'order_cancelled',
+            message: `Customer cancelled order ${order.orderNumber}.`,
+            dedupeKey: `order-cancelled:${order._id}`,
+        });
     }
 
     return order;

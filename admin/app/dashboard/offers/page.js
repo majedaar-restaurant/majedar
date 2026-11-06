@@ -60,7 +60,6 @@ export default function OffersOverviewPage() {
     <div className={`${styles.page} space-y-6`}>
       <PageHeader
         title="Offers & Discounts"
-        description="Manage promotional banners, automatic discounts, and custom coupon codes."
         action={
           <div className="flex items-center gap-3">
             <Link href="/dashboard/offers/banners" className="btn btn-secondary">

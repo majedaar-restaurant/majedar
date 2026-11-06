@@ -219,7 +219,6 @@ function MessagesPage() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PageHeader"], {
                 title: "Customer Messages",
-                description: "Customer complaints, suggestions, and support queries.",
                 action: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                     variant: "secondary",
                     onClick: loadMessages,
@@ -227,7 +226,7 @@ function MessagesPage() {
                     children: "Refresh"
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/messages/page.js",
-                    lineNumber: 191,
+                    lineNumber: 190,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
@@ -250,7 +249,7 @@ function MessagesPage() {
                                 children: "Search Messages"
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                lineNumber: 200,
+                                lineNumber: 199,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -281,7 +280,7 @@ function MessagesPage() {
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                        lineNumber: 202,
+                                        lineNumber: 201,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -304,24 +303,24 @@ function MessagesPage() {
                                             d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 234,
+                                            lineNumber: 233,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                        lineNumber: 222,
+                                        lineNumber: 221,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                lineNumber: 201,
+                                lineNumber: 200,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/dashboard/messages/page.js",
-                        lineNumber: 199,
+                        lineNumber: 198,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$admin$2d$filters$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DateFilterControl"], {
@@ -348,7 +347,7 @@ function MessagesPage() {
                         }
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.js",
-                        lineNumber: 239,
+                        lineNumber: 238,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$admin$2d$filters$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterSelectControl"], {
@@ -382,7 +381,7 @@ function MessagesPage() {
                         ]
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.js",
-                        lineNumber: 263,
+                        lineNumber: 262,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$admin$2d$filters$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterSelectControl"], {
@@ -412,13 +411,13 @@ function MessagesPage() {
                         ]
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.js",
-                        lineNumber: 279,
+                        lineNumber: 278,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/dashboard/messages/page.js",
-                lineNumber: 198,
+                lineNumber: 197,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$admin$2d$filters$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ActiveFilterChips"], {
@@ -426,7 +425,7 @@ function MessagesPage() {
                 onClearAll: handleClearAllFilters
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/messages/page.js",
-                lineNumber: 295,
+                lineNumber: 294,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -442,12 +441,12 @@ function MessagesPage() {
                             children: "Loading messages..."
                         }, void 0, false, {
                             fileName: "[project]/app/dashboard/messages/page.js",
-                            lineNumber: 301,
+                            lineNumber: 300,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.js",
-                        lineNumber: 300,
+                        lineNumber: 299,
                         columnNumber: 11
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "table-wrap",
@@ -460,53 +459,53 @@ function MessagesPage() {
                                                 children: "Customer / Contact"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                lineNumber: 308,
+                                                lineNumber: 307,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                 children: "Type"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                lineNumber: 309,
+                                                lineNumber: 308,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                 children: "Message Preview"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                lineNumber: 310,
+                                                lineNumber: 309,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                 children: "Date"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                lineNumber: 311,
+                                                lineNumber: 310,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                 children: "Status"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                lineNumber: 312,
+                                                lineNumber: 311,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                 children: "Action"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                lineNumber: 313,
+                                                lineNumber: 312,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                        lineNumber: 307,
+                                        lineNumber: 306,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 306,
+                                    lineNumber: 305,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -532,7 +531,7 @@ function MessagesPage() {
                                                                 children: item.customer?.name || item.name || "Customer"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                                lineNumber: 332,
+                                                                lineNumber: 331,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -543,7 +542,7 @@ function MessagesPage() {
                                                                 children: item.customer?.email || item.email || item.customer?.phone || item.phone || "No direct contact"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                                lineNumber: 333,
+                                                                lineNumber: 332,
                                                                 columnNumber: 29
                                                             }, this),
                                                             item.orderNumber && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -562,12 +561,12 @@ function MessagesPage() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                                                    lineNumber: 338,
+                                                                    lineNumber: 337,
                                                                     columnNumber: 33
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                                lineNumber: 337,
+                                                                lineNumber: 336,
                                                                 columnNumber: 31
                                                             }, this),
                                                             item.customer && !item.orderNumber && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -579,18 +578,18 @@ function MessagesPage() {
                                                                 children: "Registered Customer"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                                lineNumber: 344,
+                                                                lineNumber: 343,
                                                                 columnNumber: 31
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                                        lineNumber: 331,
+                                                        lineNumber: 330,
                                                         columnNumber: 27
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                                    lineNumber: 330,
+                                                    lineNumber: 329,
                                                     columnNumber: 25
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -609,12 +608,12 @@ function MessagesPage() {
                                                         children: badge.label
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                                        lineNumber: 351,
+                                                        lineNumber: 350,
                                                         columnNumber: 27
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                                    lineNumber: 350,
+                                                    lineNumber: 349,
                                                     columnNumber: 25
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -629,12 +628,12 @@ function MessagesPage() {
                                                         children: item.message
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                                        lineNumber: 368,
+                                                        lineNumber: 367,
                                                         columnNumber: 27
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                                    lineNumber: 367,
+                                                    lineNumber: 366,
                                                     columnNumber: 25
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -646,12 +645,12 @@ function MessagesPage() {
                                                         children: dateFormatted
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                                        lineNumber: 381,
+                                                        lineNumber: 380,
                                                         columnNumber: 27
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                                    lineNumber: 380,
+                                                    lineNumber: 379,
                                                     columnNumber: 25
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -660,12 +659,12 @@ function MessagesPage() {
                                                         children: item.status.toUpperCase()
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                                        lineNumber: 386,
+                                                        lineNumber: 385,
                                                         columnNumber: 27
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                                    lineNumber: 385,
+                                                    lineNumber: 384,
                                                     columnNumber: 25
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -679,18 +678,18 @@ function MessagesPage() {
                                                         children: "View"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                                        lineNumber: 391,
+                                                        lineNumber: 390,
                                                         columnNumber: 27
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                                    lineNumber: 390,
+                                                    lineNumber: 389,
                                                     columnNumber: 25
                                                 }, this)
                                             ]
                                         }, item._id, true, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 329,
+                                            lineNumber: 328,
                                             columnNumber: 23
                                         }, this);
                                     }) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -702,33 +701,33 @@ function MessagesPage() {
                                                 compact: true
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/messages/page.js",
-                                                lineNumber: 408,
+                                                lineNumber: 407,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 407,
+                                            lineNumber: 406,
                                             columnNumber: 21
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/messages/page.js",
-                                        lineNumber: 406,
+                                        lineNumber: 405,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 316,
+                                    lineNumber: 315,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/messages/page.js",
-                            lineNumber: 305,
+                            lineNumber: 304,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.js",
-                        lineNumber: 304,
+                        lineNumber: 303,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$admin$2d$filters$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AdminPagination"], {
@@ -739,13 +738,13 @@ function MessagesPage() {
                         onPageChange: setCurrentPage
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/messages/page.js",
-                        lineNumber: 429,
+                        lineNumber: 428,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/dashboard/messages/page.js",
-                lineNumber: 298,
+                lineNumber: 297,
                 columnNumber: 7
             }, this),
             activeMessage && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Modal"], {
@@ -780,7 +779,7 @@ function MessagesPage() {
                                             children: (typeBadgeColors[activeMessage.type] || typeBadgeColors.query).label
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 447,
+                                            lineNumber: 446,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["StatusBadge"], {
@@ -788,13 +787,13 @@ function MessagesPage() {
                                             children: activeMessage.status.toUpperCase()
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 462,
+                                            lineNumber: 461,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 446,
+                                    lineNumber: 445,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -805,13 +804,13 @@ function MessagesPage() {
                                     children: new Date(activeMessage.createdAt).toLocaleString("en-IN")
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 466,
+                                    lineNumber: 465,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/messages/page.js",
-                            lineNumber: 445,
+                            lineNumber: 444,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -835,20 +834,20 @@ function MessagesPage() {
                                             children: "Contact Email"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 473,
+                                            lineNumber: 472,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                             children: activeMessage.customer?.email || activeMessage.email || "—"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 476,
+                                            lineNumber: 475,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 472,
+                                    lineNumber: 471,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -864,26 +863,26 @@ function MessagesPage() {
                                             children: "Contact Phone"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 479,
+                                            lineNumber: 478,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                             children: activeMessage.customer?.phone || activeMessage.phone || "—"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 482,
+                                            lineNumber: 481,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 478,
+                                    lineNumber: 477,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/messages/page.js",
-                            lineNumber: 471,
+                            lineNumber: 470,
                             columnNumber: 13
                         }, this),
                         (activeMessage.orderNumber || activeMessage.issueType) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -911,7 +910,7 @@ function MessagesPage() {
                                             children: "Linked Order"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 501,
+                                            lineNumber: 500,
                                             columnNumber: 21
                                         }, this),
                                         activeMessage.order ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -929,7 +928,7 @@ function MessagesPage() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 505,
+                                            lineNumber: 504,
                                             columnNumber: 23
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                             children: [
@@ -938,13 +937,13 @@ function MessagesPage() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 512,
+                                            lineNumber: 511,
                                             columnNumber: 23
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 500,
+                                    lineNumber: 499,
                                     columnNumber: 19
                                 }, this),
                                 activeMessage.issueType && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -960,7 +959,7 @@ function MessagesPage() {
                                             children: "Issue Category"
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 518,
+                                            lineNumber: 517,
                                             columnNumber: 21
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
@@ -971,19 +970,19 @@ function MessagesPage() {
                                             children: activeMessage.issueType.replace(/_/g, " ")
                                         }, void 0, false, {
                                             fileName: "[project]/app/dashboard/messages/page.js",
-                                            lineNumber: 521,
+                                            lineNumber: 520,
                                             columnNumber: 21
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 517,
+                                    lineNumber: 516,
                                     columnNumber: 19
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/messages/page.js",
-                            lineNumber: 487,
+                            lineNumber: 486,
                             columnNumber: 15
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1003,7 +1002,7 @@ function MessagesPage() {
                                     children: "Message Content"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 530,
+                                    lineNumber: 529,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1020,13 +1019,13 @@ function MessagesPage() {
                                     children: activeMessage.message
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 533,
+                                    lineNumber: 532,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/messages/page.js",
-                            lineNumber: 529,
+                            lineNumber: 528,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1047,7 +1046,7 @@ function MessagesPage() {
                                     children: "Mark as Read"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 551,
+                                    lineNumber: 550,
                                     columnNumber: 17
                                 }, this),
                                 activeMessage.status !== "resolved" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1058,7 +1057,7 @@ function MessagesPage() {
                                     children: "Mark as Resolved"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 561,
+                                    lineNumber: 560,
                                     columnNumber: 17
                                 }, this),
                                 activeMessage.status === "resolved" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1069,7 +1068,7 @@ function MessagesPage() {
                                     children: "Re-open (Mark as Read)"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 571,
+                                    lineNumber: 570,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1079,24 +1078,24 @@ function MessagesPage() {
                                     children: "Close"
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/messages/page.js",
-                                    lineNumber: 580,
+                                    lineNumber: 579,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/dashboard/messages/page.js",
-                            lineNumber: 549,
+                            lineNumber: 548,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/dashboard/messages/page.js",
-                    lineNumber: 444,
+                    lineNumber: 443,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/messages/page.js",
-                lineNumber: 440,
+                lineNumber: 439,
                 columnNumber: 9
             }, this)
         ]

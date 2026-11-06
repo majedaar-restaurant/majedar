@@ -98,7 +98,6 @@ export default function CustomersPage() {
     <>
       <PageHeader
         title="Customers"
-        description="Verified customer profiles and lifetime activity aggregated from real store orders."
       />
 
       <div className="filter-bar">

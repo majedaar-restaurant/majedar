@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 
 let socket = null;
+let socketUserType = null;
 
 /**
  * Derives the Socket.IO server base URL from NEXT_PUBLIC_API_URL.
@@ -15,15 +16,17 @@ export function getSocketBaseUrl() {
  * Get or create the shared Socket.IO client instance.
  * Transports: ['websocket', 'polling'] with credentials for HttpOnly cookie auth.
  */
-export function getSocket() {
+export function getSocket(userType = null) {
   if (typeof window === "undefined") {
     return null;
   }
 
   if (!socket) {
     const url = getSocketBaseUrl();
+    socketUserType = userType;
     socket = io(url, {
       withCredentials: true,
+      auth: userType ? { userType } : {},
       autoConnect: false,
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -34,8 +37,12 @@ export function getSocket() {
     });
 
     socket.on("connect_error", (err) => {
-      console.warn("[REALTIME] Customer socket connection error:", err.message);
+      console.warn("[Socket] connection error:", err.message);
     });
+  } else if (userType && socketUserType !== userType) {
+    socketUserType = userType;
+    socket.auth = { userType };
+    if (socket.active) socket.disconnect();
   }
 
   return socket;
@@ -44,8 +51,8 @@ export function getSocket() {
 /**
  * Connect the socket if not already connected.
  */
-export function connectSocket() {
-  const s = getSocket();
+export function connectSocket(userType = "customer") {
+  const s = getSocket(userType);
   if (s && !s.connected) {
     s.connect();
   }
@@ -56,9 +63,7 @@ export function connectSocket() {
  * Disconnect socket cleanly if active.
  */
 export function disconnectSocket() {
-  if (socket && socket.connected) {
-    socket.disconnect();
-  }
+  if (socket) socket.disconnect();
 }
 
 /**
@@ -66,7 +71,7 @@ export function disconnectSocket() {
  * Backend securely validates that the authenticated customer owns this order.
  */
 export function joinOrderRoom(orderId, callback) {
-  const s = connectSocket();
+  const s = connectSocket("customer");
   if (!s || !orderId) return;
 
   const emitJoin = () => {

@@ -79,8 +79,7 @@ function CustomersPage() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PageHeader"], {
-                title: "Customers",
-                description: "Verified customer profiles and lifetime activity aggregated from real store orders."
+                title: "Customers"
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/customers/page.js",
                 lineNumber: 99,
@@ -105,12 +104,12 @@ function CustomersPage() {
                                 d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                             }, void 0, false, {
                                 fileName: "[project]/app/dashboard/customers/page.js",
-                                lineNumber: 117,
+                                lineNumber: 116,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/dashboard/customers/page.js",
-                            lineNumber: 106,
+                            lineNumber: 105,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -120,18 +119,18 @@ function CustomersPage() {
                             onChange: (e)=>setSearch(e.target.value)
                         }, void 0, false, {
                             fileName: "[project]/app/dashboard/customers/page.js",
-                            lineNumber: 119,
+                            lineNumber: 118,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/dashboard/customers/page.js",
-                    lineNumber: 105,
+                    lineNumber: 104,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/customers/page.js",
-                lineNumber: 104,
+                lineNumber: 103,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -145,14 +144,14 @@ function CustomersPage() {
                     children: "Loading customer records..."
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/customers/page.js",
-                    lineNumber: 130,
+                    lineNumber: 129,
                     columnNumber: 11
                 }, this) : filteredCustomers.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["EmptyState"], {
                     title: "No customer records found",
                     description: "Verified customer accounts will appear automatically as orders are placed."
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/customers/page.js",
-                    lineNumber: 134,
+                    lineNumber: 133,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2e$jsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Table"], {
                     columns: [
@@ -187,25 +186,25 @@ function CustomersPage() {
                                                 children: initials(c.name)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/customers/page.js",
-                                                lineNumber: 164,
+                                                lineNumber: 163,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                                 children: c.name
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/customers/page.js",
-                                                lineNumber: 165,
+                                                lineNumber: 164,
                                                 columnNumber: 23
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/customers/page.js",
-                                        lineNumber: 163,
+                                        lineNumber: 162,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/customers/page.js",
-                                    lineNumber: 162,
+                                    lineNumber: 161,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -213,7 +212,7 @@ function CustomersPage() {
                                     children: c.phone
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/customers/page.js",
-                                    lineNumber: 168,
+                                    lineNumber: 167,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -221,7 +220,7 @@ function CustomersPage() {
                                     children: c.email
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/customers/page.js",
-                                    lineNumber: 169,
+                                    lineNumber: 168,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -229,12 +228,12 @@ function CustomersPage() {
                                         children: c.ordersCount
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/customers/page.js",
-                                        lineNumber: 171,
+                                        lineNumber: 170,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/customers/page.js",
-                                    lineNumber: 170,
+                                    lineNumber: 169,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -245,12 +244,12 @@ function CustomersPage() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/dashboard/customers/page.js",
-                                        lineNumber: 174,
+                                        lineNumber: 173,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/customers/page.js",
-                                    lineNumber: 173,
+                                    lineNumber: 172,
                                     columnNumber: 19
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -258,24 +257,24 @@ function CustomersPage() {
                                     children: lastStr
                                 }, void 0, false, {
                                     fileName: "[project]/app/dashboard/customers/page.js",
-                                    lineNumber: 176,
+                                    lineNumber: 175,
                                     columnNumber: 19
                                 }, this)
                             ]
                         }, c.id, true, {
                             fileName: "[project]/app/dashboard/customers/page.js",
-                            lineNumber: 161,
+                            lineNumber: 160,
                             columnNumber: 17
                         }, this);
                     }
                 }, void 0, false, {
                     fileName: "[project]/app/dashboard/customers/page.js",
-                    lineNumber: 139,
+                    lineNumber: 138,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/customers/page.js",
-                lineNumber: 128,
+                lineNumber: 127,
                 columnNumber: 7
             }, this)
         ]

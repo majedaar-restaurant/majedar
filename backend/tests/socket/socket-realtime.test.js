@@ -483,8 +483,9 @@ describe('Real-Time Order System (Socket.IO + Web Push Architecture)', () => {
         });
         const riderSocket = Client(baseUrl, {
             transports: ['websocket'],
+            auth: { userType: 'rider' },
             extraHeaders: {
-                Cookie: `${config.riderCookie.name}=${riderToken}`,
+                Cookie: `${config.riderCookie.name}=${riderToken}; ${config.customerCookie.name}=${customer1Token}`,
             },
             reconnection: false,
         });
@@ -507,9 +508,17 @@ describe('Real-Time Order System (Socket.IO + Web Push Architecture)', () => {
         });
         await new Promise((resolve) => adminSocket.on('connect', resolve));
 
+        const acceptedAssignmentPromise = new Promise((resolve) => {
+            riderSocket.once('rider:assignment_updated', resolve);
+        });
+        const availabilityUpdatePromise = new Promise((resolve) => {
+            riderSocket.once('rider:availability_changed', resolve);
+        });
         await riderService.respondToAssignment(testRider._id.toString(), createdOrder._id.toString(), {
             decision: 'accept',
         });
+        assert.equal((await acceptedAssignmentPromise).riderStatus, 'accepted');
+        assert.equal((await availabilityUpdatePromise).availability, 'busy');
         const notificationsBeforeDelivery = await RiderNotification.countDocuments({
             recipientType: 'rider',
             rider: testRider._id,
@@ -594,6 +603,33 @@ describe('Real-Time Order System (Socket.IO + Web Push Architecture)', () => {
         assert.equal(customerOrderList.orderStatus, customerOrderDetail.orderStatus);
         assert.equal(customerOrderList.riderStatus, customerOrderDetail.riderStatus);
         assert.equal(customerOrderDetail.orderStatus, persistedOrder.orderStatus);
+
+        const rejectedOrder = await orderService.createOrder(customer1._id, {
+            items: [{ menuItem: testMenuItem._id.toString(), quantity: 1, variant: 'single' }],
+            deliveryAddress: {
+                firstName: 'Rohan',
+                lastName: 'Verma',
+                phone: '9876543210',
+                email: customer1.email,
+                address: '789 Garden Colony',
+                deliveryInstructions: 'Call on arrival',
+            },
+            orderType: 'delivery',
+            paymentMethod: 'cod',
+        });
+        await orderService.updateOrderStatus(rejectedOrder._id.toString(), { orderStatus: 'confirmed' });
+        await orderService.updateOrderStatus(rejectedOrder._id.toString(), { orderStatus: 'preparing' });
+        await orderService.assignRiderToOrder(rejectedOrder._id.toString(), testRider._id.toString());
+        const rejectedAssignmentPromise = new Promise((resolve) => {
+            riderSocket.once('rider:assignment_updated', resolve);
+        });
+        await riderService.respondToAssignment(testRider._id.toString(), rejectedOrder._id.toString(), {
+            decision: 'reject',
+            reason: 'Unable to deliver',
+        });
+        const rejectedAssignmentPayload = await rejectedAssignmentPromise;
+        assert.equal(rejectedAssignmentPayload.riderStatus, 'rejected');
+        assert.equal(rejectedAssignmentPayload.riderId, null);
 
         riderSocket.disconnect();
         adminSocket.disconnect();

@@ -18,8 +18,8 @@ self.addEventListener("push", (event) => {
     icon: data.icon || "/brand/logo-full.png",
     badge: data.badge || "/brand/logo-mark.svg",
     data: data.data || {},
-    tag: data.data?.event || "rider-update",
-    renotify: true,
+    tag: data.data?.notificationId || data.data?.assignmentId || data.data?.event || "rider-update",
+    renotify: false,
   };
   event.waitUntil(self.registration.showNotification(data.title || "Majedaar Rider", options));
 });

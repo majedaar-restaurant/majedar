@@ -56,6 +56,8 @@ export const createRiderNotification = async ({
         unread: true,
     };
     const io = getIO();
+    const riderHasSocket = recipientType === 'rider'
+        && Boolean(io?.sockets.adapter.rooms.get(`rider:${riderId}`)?.size);
     if (io) {
         if (recipientType === 'rider') {
             io.to(`rider:${riderId}`).emit('rider:notification', payload);
@@ -63,7 +65,7 @@ export const createRiderNotification = async ({
             io.to('admin:orders').emit('rider:notification', payload);
         }
     }
-    if (recipientType === 'rider') {
+    if (recipientType === 'rider' && !riderHasSocket) {
         sendRiderPushNotification({
             riderId,
             title: 'Majedaar Rider',

@@ -17,7 +17,7 @@ const riderIdOf = (value) => (value?._id || value)?.toString();
 const notify = async ({ recipientType, rider, order = null, event, message, dedupeKey }) =>
     createRiderNotification({ recipientType, rider, order, event, message, dedupeKey });
 
-const emitDeliveryUpdate = (order, event = 'rider:delivery_updated') => {
+const emitDeliveryUpdate = (order, event = 'rider:delivery_updated', recipientRiderId = order?.rider) => {
     const io = getIO();
     if (!io || !order) return;
     const orderId = order._id.toString();
@@ -42,7 +42,7 @@ const emitDeliveryUpdate = (order, event = 'rider:delivery_updated') => {
     };
     io.to(`order:${orderId}`).emit(event, payload);
     io.to('admin:orders').emit(event, payload);
-    if (order.rider) io.to(`rider:${order.rider}`).emit(event, payload);
+    if (recipientRiderId) io.to(`rider:${recipientRiderId}`).emit(event, payload);
 };
 
 const loadOrder = async (orderId) => {
@@ -110,9 +110,13 @@ export const setAvailability = async (riderId, availability) => {
         });
     }
     const io = getIO();
-    if (io) io.to('admin:orders').emit('rider:availability_changed', {
+    const availabilityPayload = {
         riderId: riderId.toString(), availability, activeAssignments: activeCount,
-    });
+    };
+    if (io) {
+        io.to('admin:orders').emit('rider:availability_changed', availabilityPayload);
+        io.to(`rider:${riderId}`).emit('rider:availability_changed', availabilityPayload);
+    }
     return { rider: rider.toJSON(), activeAssignments: activeCount };
 };
 
@@ -190,18 +194,20 @@ export const respondToAssignment = async (riderId, orderId, { decision, reason }
             await rider.save();
         }
     }
-    emitDeliveryUpdate(updatedOrder, 'rider:assignment_updated');
+    emitDeliveryUpdate(updatedOrder, 'rider:assignment_updated', riderId);
     const io = getIO();
     if (io && rider) {
         const activeAssignments = await Order.countDocuments({
             rider: riderId,
             riderStatus: { $in: activeStatuses },
         });
-        io.to('admin:orders').emit('rider:availability_changed', {
+        const availabilityPayload = {
             riderId: riderId.toString(),
             availability: rider.availability,
             activeAssignments,
-        });
+        };
+        io.to('admin:orders').emit('rider:availability_changed', availabilityPayload);
+        io.to(`rider:${riderId}`).emit('rider:availability_changed', availabilityPayload);
     }
     if (decision === 'reject') {
         const assignment = [...(updatedOrder.riderAssignmentHistory || [])].reverse()
@@ -354,11 +360,13 @@ export const updateDeliveryStatus = async (riderId, orderId, { status, reason, r
             rider: riderId,
             riderStatus: { $in: activeStatuses },
         });
-        io.to('admin:orders').emit('rider:availability_changed', {
+        const availabilityPayload = {
             riderId: riderId.toString(),
             availability: rider.availability,
             activeAssignments,
-        });
+        };
+        io.to('admin:orders').emit('rider:availability_changed', availabilityPayload);
+        io.to(`rider:${riderId}`).emit('rider:availability_changed', availabilityPayload);
     }
     if (status === 'failed') {
         await notify({

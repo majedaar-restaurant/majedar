@@ -186,7 +186,6 @@ export default function MessagesPage() {
     <>
       <PageHeader
         title="Customer Messages"
-        description="Customer complaints, suggestions, and support queries."
         action={
           <Button variant="secondary" onClick={loadMessages} disabled={loading}>
             Refresh

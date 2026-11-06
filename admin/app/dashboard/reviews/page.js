@@ -175,7 +175,6 @@ export default function ReviewsPage() {
     <>
       <PageHeader
         title="Ratings & Reviews"
-        description="Monitor verified customer ratings (1–5 stars) across dishes."
       />
 
       {/* Prominent Filter Toolbar */}

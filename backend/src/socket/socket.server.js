@@ -48,6 +48,10 @@ export async function socketAuthMiddleware(socket, next) {
         const adminCookieToken = cookies[config.cookie.name];
         const customerCookieToken = cookies[config.customerCookie.name];
         const riderCookieToken = cookies[config.riderCookie.name];
+        const requestedType = socket.handshake?.auth?.userType;
+        if (requestedType && !['admin', 'customer', 'rider'].includes(requestedType)) {
+            return next(new Error('Authentication required. Invalid user type.'));
+        }
 
         // Also allow auth token or Authorization header fallback (useful for mobile or cross-origin dev)
         const headerAuth = socket.handshake?.headers?.authorization;
@@ -55,7 +59,9 @@ export async function socketAuthMiddleware(socket, next) {
         const explicitToken = socket.handshake?.auth?.token || bearerToken;
 
         // 1. Try Admin authentication (prefer admin cookie or explicit token)
-        const potentialAdminToken = adminCookieToken || explicitToken;
+        const potentialAdminToken = requestedType && requestedType !== 'admin'
+            ? null
+            : adminCookieToken || explicitToken;
         if (potentialAdminToken) {
             try {
                 const decoded = verifyToken(potentialAdminToken);
@@ -79,7 +85,9 @@ export async function socketAuthMiddleware(socket, next) {
         }
 
         // 2. Try Customer authentication
-        const potentialCustomerToken = customerCookieToken || explicitToken;
+        const potentialCustomerToken = requestedType && requestedType !== 'customer'
+            ? null
+            : customerCookieToken || explicitToken;
         if (potentialCustomerToken) {
             try {
                 const decoded = verifyToken(potentialCustomerToken);
@@ -111,7 +119,9 @@ export async function socketAuthMiddleware(socket, next) {
         }
 
         // 3. Rider authentication uses a separate cookie and cannot inherit admin access.
-        const potentialRiderToken = riderCookieToken || explicitToken;
+        const potentialRiderToken = requestedType && requestedType !== 'rider'
+            ? null
+            : riderCookieToken || explicitToken;
         if (potentialRiderToken) {
             try {
                 const decoded = verifyToken(potentialRiderToken);
@@ -426,15 +436,19 @@ export function emitOrderExpired(order) {
  * Emit order cancelled event to customer order room and admin channel.
  * @param {Object} order
  */
-export function emitOrderCancelled(order) {
+export function emitOrderCancelled(order, assignedRiderId = null) {
     if (!ioInstance || !order) return;
     try {
         const orderId = order._id ? order._id.toString() : order.id;
+        const riderId = order.rider?._id
+            ? order.rider._id.toString()
+            : order.rider?.toString?.() || assignedRiderId?.toString?.() || null;
         const payload = {
             orderId,
             orderNumber: order.orderNumber,
             orderStatus: 'cancelled',
             riderStatus: order.riderStatus,
+            riderId,
             cancelledAt: order.updatedAt || new Date(),
         };
 
@@ -443,8 +457,7 @@ export function emitOrderCancelled(order) {
         // Also emit order:status_changed for universal compatibility
         ioInstance.to(`order:${orderId}`).emit('order:status_changed', payload);
         ioInstance.to('admin:orders').emit('order:status_changed', payload);
-        if (order.rider) {
-            const riderId = order.rider._id ? order.rider._id.toString() : order.rider.toString();
+        if (riderId) {
             ioInstance.to(`rider:${riderId}`).emit('rider:delivery_updated', payload);
         }
         logger.info(`[REALTIME] order:cancelled emitted for Order #${order.orderNumber}`);
