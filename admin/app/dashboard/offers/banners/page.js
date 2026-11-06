@@ -300,7 +300,7 @@ export default function AdminBannersPage() {
               disabled={submitting}
               className="w-full btn btn-primary py-2.5 mt-2 justify-center"
             >
-              {submitting ? "Uploading Banner..." : "+ Upload Promotional Banner"}
+              {submitting ? "Uploading Banner..." : "Upload Promotional Banner"}
             </button>
           </form>
         </div>

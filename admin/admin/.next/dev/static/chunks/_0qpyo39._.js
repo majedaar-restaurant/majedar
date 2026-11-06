@@ -1760,7 +1760,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                 style: {
                                                     margin: 0
                                                 },
-                                                children: "🚴 Assigned Rider"
+                                                children: " Assigned Rider"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/dashboard/orders/[id]/page.js",
                                                 lineNumber: 747,
@@ -1846,7 +1846,7 @@ function OrderDetailPage({ params: paramsPromise }) {
                                                         fontWeight: 500
                                                     },
                                                     children: [
-                                                        "📞 +91 ",
+                                                        " +91 ",
                                                         order.rider.phone
                                                     ]
                                                 }, void 0, true, {

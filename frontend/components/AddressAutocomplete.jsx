@@ -657,7 +657,7 @@ export default function AddressAutocomplete({
       {/* Notice when GPS coordinates were detected but reverse geocoding did not return street address */}
       {geocodingFailedNotice && (
         <div className="text-[11.5px] p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
-          📍 Device GPS location detected. Please type your building, flat, or street name above to complete your delivery details.
+           Device GPS location detected. Please type your building, flat, or street name above to complete your delivery details.
         </div>
       )}
     </div>

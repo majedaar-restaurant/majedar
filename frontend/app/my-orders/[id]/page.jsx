@@ -15,6 +15,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { toast } from "react-toastify";
 import { useRazorpay } from "../../../hooks/useRazorpay";
 import { connectSocket, joinOrderRoom, leaveOrderRoom } from "../../../lib/socket";
+import RiderTrackingMap from "../../../components/RiderTrackingMap";
 
 const STATUS_CONFIG = {
   placed: {
@@ -306,6 +307,13 @@ export default function OrderDetailsPage() {
   const [issueType, setIssueType] = useState("wrong_item");
   const [issueDesc, setIssueDesc] = useState("");
   const [submittingIssue, setSubmittingIssue] = useState(false);
+  const [showLiveMap, setShowLiveMap] = useState(false);
+  const [trackingNow, setTrackingNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setTrackingNow(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadOrder = useCallback(async () => {
     if (!id) return;
@@ -385,6 +393,10 @@ export default function OrderDetailsPage() {
         return {
           ...prev,
           orderStatus: payload.orderStatus,
+          riderStatus: payload.riderStatus || prev.riderStatus,
+          deliveryStartedAt: payload.deliveryStartedAt || prev.deliveryStartedAt,
+          riderLocation: payload.riderLocation || prev.riderLocation,
+          routeEta: payload.routeEta || prev.routeEta,
           ...(payload.rider ? { rider: payload.rider } : {}),
         };
       });
@@ -397,8 +409,21 @@ export default function OrderDetailsPage() {
         return {
           ...prev,
           ...(payload.rider ? { rider: payload.rider } : {}),
+          ...(payload.riderStatus ? { riderStatus: payload.riderStatus } : {}),
         };
       });
+    };
+
+    const handleDeliveryUpdate = (payload) => {
+      if (payload?.orderId && payload.orderId !== id) return;
+      setOrder((prev) => prev ? {
+        ...prev,
+        riderStatus: payload.riderStatus || prev.riderStatus,
+        orderStatus: payload.orderStatus || prev.orderStatus,
+        deliveryStartedAt: payload.deliveryStartedAt || prev.deliveryStartedAt,
+        riderLocation: payload.riderLocation || null,
+        routeEta: payload.routeEta || null,
+      } : prev);
     };
 
     const handleOrderExpired = (payload) => {
@@ -426,6 +451,9 @@ export default function OrderDetailsPage() {
     socket.on("order:confirmed", handleOrderConfirmed);
     socket.on("order:status_changed", handleStatusChanged);
     socket.on("rider:assigned", handleRiderAssigned);
+    socket.on("rider:delivery_updated", handleDeliveryUpdate);
+    socket.on("rider:location_updated", handleDeliveryUpdate);
+    socket.on("rider:assignment_updated", handleDeliveryUpdate);
     socket.on("order:expired", handleOrderExpired);
     socket.on("connect", handleReconnect);
 
@@ -433,6 +461,9 @@ export default function OrderDetailsPage() {
       socket.off("order:confirmed", handleOrderConfirmed);
       socket.off("order:status_changed", handleStatusChanged);
       socket.off("rider:assigned", handleRiderAssigned);
+      socket.off("rider:delivery_updated", handleDeliveryUpdate);
+      socket.off("rider:location_updated", handleDeliveryUpdate);
+      socket.off("rider:assignment_updated", handleDeliveryUpdate);
       socket.off("order:expired", handleOrderExpired);
       socket.off("connect", handleReconnect);
       leaveOrderRoom(id);
@@ -628,7 +659,7 @@ export default function OrderDetailsPage() {
   }
 
   const statusCfg = STATUS_CONFIG[order.orderStatus] || STATUS_CONFIG.placed;
-  const isCompleted = order.orderStatus === "completed" || order.orderStatus === "delivered";
+  const isCompleted = order.orderStatus === "completed";
   const isDelivered = isCompleted;
   const isCancelled = order.orderStatus === "cancelled";
   const isExpired = order.orderStatus === "expired";
@@ -637,6 +668,22 @@ export default function OrderDetailsPage() {
   const isCOD = order.paymentMethod === "cod";
   const isPaymentPending = order.paymentStatus === "pending";
   const isAlreadyPaid = order.paymentStatus === "paid";
+  const isOutForDelivery = order.orderStatus === "out_for_delivery";
+  const etaUpdatedAt = order.routeEta?.calculatedAt || order.riderLocation?.updatedAt;
+  const etaIsFresh = etaUpdatedAt
+    && trackingNow - new Date(etaUpdatedAt).getTime() <= 2 * 60 * 1000;
+  const etaMinutes = Number.isFinite(order.routeEta?.durationSeconds) && etaIsFresh
+    ? Math.max(1, Math.ceil(order.routeEta.durationSeconds / 60))
+    : null;
+  const trackingMessage = isOutForDelivery
+    ? etaMinutes
+      ? `On the way · Reaching in about ${etaMinutes} minutes`
+      : "Your rider is on the way"
+    : order.orderStatus === "preparing"
+      ? "Your order is being prepared"
+      : order.orderStatus === "ready_for_pickup"
+        ? "Your order is ready and waiting for delivery"
+        : "Your order is being prepared";
 
   // Online payments temporarily disabled centrally
   const canPayOnline = false;
@@ -654,6 +701,60 @@ export default function OrderDetailsPage() {
           <span>/</span>
           <span className="font-bold text-stone-800">{order.orderNumber || order._id}</span>
         </div>
+
+        {!isCancelled && !isExpired && !isCompleted && order.orderStatus !== "placed" && (
+          <section aria-live="polite" className={`rounded-3xl border p-5 shadow-sm sm:p-6 ${
+            isOutForDelivery ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"
+          }`}>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Delivery update</p>
+            <h2 className={`mt-1 text-xl font-extrabold sm:text-2xl ${isOutForDelivery ? "text-[#1B3B2B]" : "text-amber-950"}`}>
+              {trackingMessage}
+            </h2>
+            {isOutForDelivery && order.rider && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-stone-700">
+                  Your rider {order.rider.name ? `· ${order.rider.name}` : ""}{etaMinutes === null ? " · Live ETA will appear when a fresh route is available." : ""}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowLiveMap(true)}
+                  className="rounded-full bg-[#1B3B2B] px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#11261B]"
+                >
+                  View Live Location
+                </button>
+              </div>
+            )}
+            {isOutForDelivery && !order.rider && (
+              <p className="mt-2 text-sm text-stone-600">Rider assignment details are being updated.</p>
+            )}
+          </section>
+        )}
+
+        {showLiveMap && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setShowLiveMap(false);
+            }}
+          >
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="live-location-title"
+              className="w-full max-w-2xl rounded-3xl bg-white p-5 shadow-2xl sm:p-7"
+            >
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#C85A17]">Live delivery tracking</p>
+                  <h2 id="live-location-title" className="mt-1 text-lg font-extrabold text-[#1B3B2B]">Your rider&apos;s location</h2>
+                </div>
+                <button type="button" onClick={() => setShowLiveMap(false)} aria-label="Close live location" className="rounded-full bg-stone-100 px-3 py-1 text-lg font-bold text-stone-600">×</button>
+              </div>
+              <RiderTrackingMap location={order.riderLocation} destination={order.deliveryAddress?.location} />
+            </section>
+          </div>
+        )}
 
         {/* ── 1. DEDICATED TEMPORARY ACCEPTANCE STATE (Placed) ── */}
         {order.orderStatus === "placed" && (
@@ -779,7 +880,9 @@ export default function OrderDetailsPage() {
                             ? 3
                             : order.orderStatus === "out_for_delivery"
                               ? 4
-                              : 5;
+                              : order.orderStatus === "completed"
+                                ? 5
+                                : 1;
                     const isDone = currentStep >= s.step;
                     const isCurrent = currentStep === s.step;
                     return (
@@ -805,30 +908,26 @@ export default function OrderDetailsPage() {
               </div>
 
               {/* ── Assigned Rider Section (Visible ONLY when Out for Delivery) ── */}
-              {order.orderStatus === "out_for_delivery" && order.rider && (
-                <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-[#FAF8F5] border border-purple-200 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center text-lg flex-none">
-                      🚴
+              {(order.riderStatus === "out_for_delivery" || order.orderStatus === "out_for_delivery") && order.rider && (
+                <div className="mt-6 space-y-3 rounded-2xl border border-purple-200 bg-[#FAF8F5] p-4 sm:p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-purple-800">Your delivery rider</span>
+                        <strong className="block text-sm text-stone-800">{order.rider.name}</strong>
+                        <span className="text-xs text-stone-500">+91 {order.rider.phone}</span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-800 block">
-                        Assigned Delivery Rider
-                      </span>
-                      <strong className="text-sm text-stone-800 block">
-                        {order.rider.name}
-                      </strong>
-                      <span className="text-xs text-stone-500">
-                        +91 {order.rider.phone}
-                      </span>
-                    </div>
+                    <a href={`tel:${order.rider.phone}`} className="shrink-0 rounded-full bg-[#1B3B2B] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#11261B]">Call rider</a>
                   </div>
-                  <a
-                    href={`tel:${order.rider.phone}`}
-                    className="px-4 py-2 rounded-full bg-[#1B3B2B] text-white text-xs font-bold hover:bg-[#11261B] transition-colors shrink-0"
-                  >
-                    📞 Call Rider
-                  </a>
+                  {order.riderStatus === "out_for_delivery" && (
+                    <p className="rounded-xl bg-white px-3 py-2 text-sm font-bold text-[#1B3B2B]">
+                      {etaMinutes ? `Reaching in about ${etaMinutes} minutes` : "Live route ETA is unavailable right now"}
+                      <button type="button" onClick={() => setShowLiveMap(true)} className="ml-3 text-xs font-bold underline">
+                        View Live Location
+                      </button>
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -1061,8 +1160,8 @@ export default function OrderDetailsPage() {
                     <p className="font-bold text-stone-800 text-sm">
                       {order.deliveryAddress.firstName} {order.deliveryAddress.lastName}
                     </p>
-                    <p>📞 {order.deliveryAddress.phone}</p>
-                    <p>✉️ {order.deliveryAddress.email}</p>
+                    <p> {order.deliveryAddress.phone}</p>
+                    <p>{order.deliveryAddress.email}</p>
                     <div className="pt-2 border-t border-stone-100 mt-2">
                       <p className="font-semibold text-stone-700">
                         {order.deliveryAddress.address}
@@ -1108,7 +1207,7 @@ export default function OrderDetailsPage() {
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E3EFE8]/70 hover:bg-[#E3EFE8] text-[#1B3B2B] text-xs font-bold transition-all border border-[#1B3B2B]/20"
                             >
-                              <span>📍 View Delivery Pin on Google Maps</span>
+                              <span> View Delivery Pin on Google Maps</span>
                               <span className="text-[10px]">↗</span>
                             </a>
                           </div>

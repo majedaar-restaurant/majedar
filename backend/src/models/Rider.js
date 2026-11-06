@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const phoneRegex = /^(?:\+91|91|0)?[6-9]\d{9}$/;
 
@@ -22,28 +23,80 @@ const riderSchema = new mongoose.Schema(
             },
             index: true,
         },
+        email: {
+            type: String,
+            lowercase: true,
+            trim: true,
+            sparse: true,
+            unique: true,
+            index: true,
+        },
+        passwordHash: {
+            type: String,
+            select: false,
+        },
+        googleId: {
+            type: String,
+            default: null,
+        },
+        tokenVersion: {
+            type: Number,
+            default: 0,
+        },
+        authProvider: {
+            type: String,
+            enum: ['local', 'google'],
+            default: 'local',
+        },
         isActive: {
             type: Boolean,
             default: true,
             index: true,
+        },
+        availability: {
+            type: String,
+            enum: ['available', 'busy', 'unavailable'],
+            default: 'available',
+            index: true,
+        },
+        emailChange: {
+            email: { type: String, lowercase: true, trim: true, default: null },
+            codeHash: { type: String, select: false, default: null },
+            expiresAt: { type: Date, default: null },
         },
     },
     {
         timestamps: true,
         toJSON: {
             transform: (doc, ret) => {
+                delete ret.passwordHash;
+                delete ret.googleId;
+                delete ret.emailChange;
+                delete ret.tokenVersion;
                 delete ret.__v;
                 return ret;
             },
         },
         toObject: {
             transform: (doc, ret) => {
+                delete ret.passwordHash;
+                delete ret.googleId;
+                delete ret.emailChange;
+                delete ret.tokenVersion;
                 delete ret.__v;
                 return ret;
             },
         },
     }
 );
+riderSchema.index({ googleId: 1 }, { unique: true, partialFilterExpression: { googleId: { $type: 'string' } } });
+
+riderSchema.methods.comparePassword = async function (candidatePassword) {
+    if (!this.passwordHash) {
+        throw new Error('Password hash not selected in query');
+    }
+    return bcrypt.compare(candidatePassword, this.passwordHash);
+};
 
 // Format phone consistently before save
 riderSchema.pre('save', function (next) {

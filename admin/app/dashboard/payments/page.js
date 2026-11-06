@@ -265,7 +265,6 @@ export default function PaymentsPage() {
     <>
       <PageHeader
         title="Payments"
-        description="Authoritative ledger of actual successful payments. Shows verified Cash/COD collections and Online payments."
       />
 
       {/* Authoritative Financial Summary Cards (MongoDB Aggregation) */}
@@ -420,7 +419,6 @@ export default function PaymentsPage() {
         ) : (
           <Table
             columns={[
-              "Payment / Transaction ID",
               "Order #",
               "Customer",
               "Payment Method",
@@ -449,16 +447,6 @@ export default function PaymentsPage() {
 
               return (
                 <tr key={payment._id}>
-                  <td>
-                    <code style={{ fontSize: "11.5px", fontWeight: 600 }}>
-                      {payment.transactionId || payment.razorpayPaymentId || "—"}
-                    </code>
-                    {payment.razorpayOrderId && (
-                      <small className="muted" style={{ display: "block", fontSize: "10.5px" }}>
-                        Rzp Order: {payment.razorpayOrderId}
-                      </small>
-                    )}
-                  </td>
                   <td>
                     <strong>{orderNumber}</strong>
                     {payment.refundId && (

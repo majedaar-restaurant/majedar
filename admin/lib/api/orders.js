@@ -9,7 +9,7 @@ export async function getAdminOrders(params = {}) {
   }
   const queryString = query.toString();
   const endpoint = `/admin/orders${queryString ? `?${queryString}` : ""}`;
-  const res = await apiRequest(endpoint);
+  const res = await apiRequest(endpoint, { cache: "no-store" });
   const data = res?.data;
   if (!data) return [];
   const ordersList = Array.isArray(data) ? data : (data.orders || []);
@@ -22,7 +22,7 @@ export async function getAdminOrders(params = {}) {
 }
 
 export async function getAdminOrderById(id) {
-  const res = await apiRequest(`/admin/orders/${id}`);
+  const res = await apiRequest(`/admin/orders/${id}`, { cache: "no-store" });
   return res?.data?.order;
 }
 
@@ -34,10 +34,25 @@ export async function updateAdminOrderStatus(id, updates = {}) {
   return res?.data?.order;
 }
 
-export async function assignAdminOrderRider(id, riderId) {
+export async function assignAdminOrderRider(id, riderId, note = "") {
   const res = await apiRequest(`/admin/orders/${id}/rider`, {
     method: "PATCH",
-    body: { riderId },
+    body: { riderId, note },
+  });
+  return res?.data?.order;
+}
+
+export async function recordAdminDeliveryRecovery(id, recovery) {
+  const res = await apiRequest(`/admin/orders/${id}/recovery`, {
+    method: "POST",
+    body: recovery,
+  });
+  return res?.data?.order;
+}
+
+export async function verifyAdminCodCollection(orderId, collectionIndex) {
+  const res = await apiRequest(`/admin/orders/${orderId}/cod/${collectionIndex}/verify`, {
+    method: "PATCH",
   });
   return res?.data?.order;
 }

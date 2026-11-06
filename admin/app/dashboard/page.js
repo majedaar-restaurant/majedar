@@ -313,7 +313,6 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        description="Real-time restaurant operational control, today's performance, and kitchen fulfillment queue."
       />
 
       {/* ── Operational Control Header (Shop Availability & Over Order) ── */}
@@ -712,14 +711,11 @@ export default function DashboardPage() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "20px" }}>🔔</span>
+              <span style={{ fontSize: "20px" }}></span>
               <div>
                 <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#991b1b", margin: 0 }}>
                   New Orders Awaiting Confirmation ({awaitingOrders.length})
                 </h2>
-                <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "#7f1d1d" }}>
-                  Confirm incoming orders before the deadline expires.
-                </p>
               </div>
             </div>
             <Link

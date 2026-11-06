@@ -6,6 +6,8 @@ import { config } from './config/env.js';
 // Auth routes
 import authRoutes from './routes/auth.routes.js';
 import customerAuthRoutes from './routes/customer-auth.routes.js';
+import riderAuthRoutes from './routes/rider-auth.routes.js';
+import riderRoutes from './routes/rider.routes.js';
 
 // Public & Customer feature routes
 import categoryRoutes from './routes/category.routes.js';
@@ -58,6 +60,8 @@ app.get('/api/health', (req, res) => {
 // Mount application routes
 app.use('/api/auth', authRoutes);
 app.use('/api/customer-auth', customerAuthRoutes);
+app.use('/api/rider-auth', riderAuthRoutes);
+app.use('/api/rider', riderRoutes);
 
 // Customer & Public endpoints
 app.use('/api/categories', categoryRoutes);

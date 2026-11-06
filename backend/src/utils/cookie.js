@@ -42,3 +42,21 @@ export const clearCustomerAuthCookie = (res) => {
     });
 };
 
+export const setRiderAuthCookie = (res, token) => {
+    res.cookie(config.riderCookie.name, token, {
+        httpOnly: config.riderCookie.httpOnly,
+        secure: config.riderCookie.secure,
+        sameSite: config.riderCookie.sameSite,
+        maxAge: config.riderCookie.maxAge,
+        path: config.riderCookie.path,
+    });
+};
+
+export const clearRiderAuthCookie = (res) => {
+    res.clearCookie(config.riderCookie.name, {
+        httpOnly: config.riderCookie.httpOnly,
+        secure: config.riderCookie.secure,
+        sameSite: config.riderCookie.sameSite,
+        path: config.riderCookie.path,
+    });
+};

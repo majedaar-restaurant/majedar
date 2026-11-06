@@ -170,6 +170,79 @@ const deliveryAddressSchema = new mongoose.Schema(
     { _id: false }
 );
 
+const riderAssignmentHistorySchema = new mongoose.Schema(
+    {
+        rider: { type: mongoose.Schema.Types.ObjectId, ref: 'Rider', required: true },
+        assignedBy: { type: String, enum: ['admin', 'rider'], required: true },
+        assignedById: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', default: null },
+        assignedAt: { type: Date, required: true, default: Date.now },
+        responseDeadline: { type: Date, default: null },
+        acceptedAt: { type: Date, default: null },
+        rejectedAt: { type: Date, default: null },
+        timedOutAt: { type: Date, default: null },
+        rejectionReason: { type: String, trim: true, default: null },
+        unassignedAt: { type: Date, default: null },
+    },
+    { _id: false }
+);
+
+const riderDeliveryHistorySchema = new mongoose.Schema(
+    {
+        rider: { type: mongoose.Schema.Types.ObjectId, ref: 'Rider', required: true },
+        status: {
+            type: String,
+            enum: ['accepted', 'rejected', 'picked_up', 'out_for_delivery', 'delivered', 'failed'],
+            required: true,
+        },
+        reason: { type: String, trim: true, default: null },
+        remarks: { type: String, trim: true, default: null },
+        timestamp: { type: Date, required: true, default: Date.now },
+    },
+    { _id: false }
+);
+
+const codCollectionSchema = new mongoose.Schema(
+    {
+        amount: { type: Number, required: true, min: 0 },
+        method: { type: String, enum: ['cash', 'upi'], required: true },
+        rider: { type: mongoose.Schema.Types.ObjectId, ref: 'Rider', required: true },
+        collectedAt: { type: Date, required: true, default: Date.now },
+        verifiedAt: { type: Date, default: null },
+        verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', default: null },
+    },
+    { _id: false }
+);
+
+const deliveryRecoveryHistorySchema = new mongoose.Schema(
+    {
+        action: {
+            type: String,
+            enum: ['contact_rider', 'contact_customer', 'reassign_rider', 'mark_delivered', 'cancel_order'],
+            required: true,
+        },
+        actor: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
+        note: { type: String, trim: true, required: true },
+        rider: { type: mongoose.Schema.Types.ObjectId, ref: 'Rider', default: null },
+        previousRiderStatus: { type: String, default: null },
+        previousOrderStatus: { type: String, default: null },
+        timestamp: { type: Date, required: true, default: Date.now },
+    },
+    { _id: false }
+);
+
+const statusHistorySchema = new mongoose.Schema(
+    {
+        domain: { type: String, enum: ['order', 'rider', 'recovery', 'assignment'], required: true },
+        status: { type: String, required: true, trim: true },
+        previousStatus: { type: String, trim: true, default: null },
+        actorType: { type: String, enum: ['admin', 'rider', 'customer', 'system'], required: true },
+        actor: { type: mongoose.Schema.Types.ObjectId, default: null },
+        note: { type: String, trim: true, default: null },
+        timestamp: { type: Date, required: true, default: Date.now },
+    },
+    { _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
     {
         orderNumber: {
@@ -279,6 +352,7 @@ const orderSchema = new mongoose.Schema(
             default: 'pending',
             index: true,
         },
+        paymentPaidAt: { type: Date, default: null, index: true },
         orderStatus: {
             type: String,
             enum: [
@@ -299,6 +373,43 @@ const orderSchema = new mongoose.Schema(
             ref: 'Rider',
             default: null,
             index: true,
+        },
+        riderStatus: {
+            type: String,
+            enum: ['pending', 'accepted', 'picked_up', 'out_for_delivery', 'delivered', 'failed', 'rejected'],
+            default: 'pending',
+            index: true,
+        },
+        riderAssignmentHistory: {
+            type: [riderAssignmentHistorySchema],
+            default: [],
+        },
+        riderDeliveryHistory: {
+            type: [riderDeliveryHistorySchema],
+            default: [],
+        },
+        codCollections: {
+            type: [codCollectionSchema],
+            default: [],
+        },
+        riderLocation: {
+            latitude: { type: Number, min: -90, max: 90, default: null },
+            longitude: { type: Number, min: -180, max: 180, default: null },
+            updatedAt: { type: Date, default: null },
+        },
+        deliveryStartedAt: { type: Date, default: null, index: true },
+        riderHandoffRequired: { type: Boolean, default: false },
+        deliveryRecoveryHistory: {
+            type: [deliveryRecoveryHistorySchema],
+            default: [],
+        },
+        statusHistory: {
+            type: [statusHistorySchema],
+            default: [],
+        },
+        routeEta: {
+            durationSeconds: { type: Number, min: 0, default: null },
+            calculatedAt: { type: Date, default: null },
         },
         acceptedAt: {
             type: Date,

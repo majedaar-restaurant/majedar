@@ -376,7 +376,7 @@ const handlePaymentCaptured = async (payload) => {
     // Update the application Order payment status and payment method
     const order = await Order.findByIdAndUpdate(
         attempt.order,
-        { paymentStatus: 'paid', paymentMethod: 'razorpay' },
+        { paymentStatus: 'paid', paymentMethod: 'razorpay', paymentPaidAt: new Date() },
         { new: true }
     );
 
@@ -428,7 +428,7 @@ const handleOrderPaid = async (payload) => {
 
     const order = await Order.findByIdAndUpdate(
         attempt.order,
-        { paymentStatus: 'paid', paymentMethod: 'razorpay' },
+        { paymentStatus: 'paid', paymentMethod: 'razorpay', paymentPaidAt: new Date() },
         { new: true }
     );
 
@@ -456,7 +456,15 @@ export const getAllPaymentAttempts = async (filters = {}) => {
         dateTo: filters.dateTo,
         fieldName: 'createdAt',
     });
-    Object.assign(matchQuery, dateFilter);
+    if (dateFilter.createdAt) {
+        matchQuery.$and = matchQuery.$and || [];
+        matchQuery.$and.push({
+            $or: [
+                { paymentPaidAt: dateFilter.createdAt },
+                { paymentPaidAt: null, createdAt: dateFilter.createdAt },
+            ],
+        });
+    }
 
     // Apply search across Order #, Customer (name/email/phone), and Razorpay ID
     if (filters.search && filters.search.trim()) {
@@ -524,7 +532,7 @@ export const getAllPaymentAttempts = async (filters = {}) => {
     // Fetch paginated paid orders
     const orders = await Order.find(matchQuery)
         .populate('customer', 'name email phone')
-        .sort({ createdAt: -1 })
+        .sort({ paymentPaidAt: -1, createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean();
@@ -579,7 +587,7 @@ export const getAllPaymentAttempts = async (filters = {}) => {
             amountInPaise: Math.round(ord.total * 100),
             status: 'paid',
             createdAt: ord.createdAt,
-            paidAt: attempt?.updatedAt || ord.updatedAt || ord.createdAt,
+            paidAt: ord.paymentPaidAt || attempt?.updatedAt || ord.updatedAt || ord.createdAt,
             refundId: attempt?.refundId || null,
             refundAmount: attempt?.refundAmount || null,
             refundStatus: attempt?.refundStatus || null,

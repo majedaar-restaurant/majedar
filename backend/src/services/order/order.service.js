@@ -7,6 +7,8 @@ import { PaymentAttempt } from '../../models/Payment.js';
 import { Message } from '../../models/Message.js';
 import { Customer } from '../../models/Customer.js';
 import { Rider } from '../../models/Rider.js';
+import { config } from '../../config/env.js';
+import { createRiderNotification } from '../rider/rider-notification.service.js';
 import {
     restaurantConfig,
     isRestaurantOpen,
@@ -29,6 +31,7 @@ import {
     emitOrderExpired,
     emitOrderCancelled,
     emitRiderAssigned,
+    getIO,
 } from '../../socket/socket.server.js';
 import { calculateRouteDistance } from '../delivery/distance.service.js';
 import { getPublicSettings } from '../settings/settings.service.js';
@@ -37,6 +40,53 @@ import {
     recordDiscountUsage,
     rollbackDiscountUsage,
 } from '../discount/discount.service.js';
+
+const refreshPreviousRiderAvailability = async (riderId) => {
+    if (!riderId) return;
+    const rider = await Rider.findById(riderId);
+    if (!rider || rider.availability !== 'busy') return;
+    const activeAssignments = await Order.countDocuments({
+        rider: riderId,
+        riderStatus: { $in: ['pending', 'accepted', 'picked_up', 'out_for_delivery'] },
+    });
+    if (activeAssignments > 0) return;
+    rider.availability = 'available';
+    await rider.save();
+    getIO()?.to('admin:orders').emit('rider:availability_changed', {
+        riderId: rider._id.toString(),
+        availability: rider.availability,
+        activeAssignments: 0,
+    });
+};
+
+const getDeliveryAttention = (order, now = new Date()) => {
+    const doc = typeof order.toObject === 'function' ? order.toObject() : order;
+    const lastDeliveryStart = [...(doc.riderDeliveryHistory || [])].reverse()
+        .find((event) => ['picked_up', 'out_for_delivery'].includes(event.status))?.timestamp;
+    const deliveryIsActive = doc.orderStatus === 'out_for_delivery'
+        || ['picked_up', 'out_for_delivery'].includes(doc.riderStatus);
+    const startedAt = doc.deliveryStartedAt || lastDeliveryStart || (deliveryIsActive ? doc.createdAt : null);
+    const durationMinutes = startedAt
+        ? Math.max(0, Math.floor((now.getTime() - new Date(startedAt).getTime()) / 60000))
+        : null;
+    const overdueAt = startedAt
+        ? new Date(new Date(startedAt).getTime() + config.deliveryOverdueMinutes * 60 * 1000)
+        : null;
+    const latestAssignment = [...(doc.riderAssignmentHistory || [])].reverse()
+        .find((assignment) => !assignment.unassignedAt);
+    return {
+        ...doc,
+        deliveryStartedAt: startedAt,
+        deliveryDurationMinutes: durationMinutes,
+        deliveryOverdue: deliveryIsActive && Boolean(overdueAt) && now >= overdueAt,
+        deliveryOverdueAt: deliveryIsActive ? overdueAt : null,
+        deliveryOverdueMinutes: deliveryIsActive && durationMinutes !== null
+            ? Math.max(0, durationMinutes - config.deliveryOverdueMinutes)
+            : 0,
+        assignmentTimedOut: Boolean(latestAssignment?.timedOutAt),
+        assignmentRejected: doc.riderStatus === 'rejected',
+    };
+};
 
 export const createOrder = async (customerId, orderData) => {
 
@@ -275,6 +325,13 @@ export const createOrder = async (customerId, orderData) => {
         paymentMethod: orderData.paymentMethod || 'cod',
         paymentStatus: 'pending',
         orderStatus: 'placed',
+        statusHistory: [{
+            domain: 'order',
+            status: 'placed',
+            actorType: 'customer',
+            actor: customerId,
+            timestamp: new Date(),
+        }],
         acceptanceDeadline,
         acceptedAt: null,
         confirmedAt: null,
@@ -367,6 +424,15 @@ export const expireOverduePlacedOrders = async () => {
                 expiredAt: now,
                 expiryReason: 'admin_acceptance_timeout',
             },
+            $push: {
+                statusHistory: {
+                    domain: 'order',
+                    status: 'expired',
+                    previousStatus: 'placed',
+                    actorType: 'system',
+                    timestamp: now,
+                },
+            },
         }
     );
 
@@ -404,6 +470,15 @@ export const checkAndExpireOrder = async (order) => {
                     orderStatus: 'expired',
                     expiredAt: now,
                     expiryReason: 'admin_acceptance_timeout',
+                },
+                $push: {
+                    statusHistory: {
+                        domain: 'order',
+                        status: 'expired',
+                        previousStatus: 'placed',
+                        actorType: 'system',
+                        timestamp: now,
+                    },
                 },
             },
             { new: true }
@@ -446,6 +521,15 @@ export const checkAndExpireOrders = async (orders) => {
                     expiredAt: now,
                     expiryReason: 'admin_acceptance_timeout',
                 },
+                $push: {
+                    statusHistory: {
+                        domain: 'order',
+                        status: 'expired',
+                        previousStatus: 'placed',
+                        actorType: 'system',
+                        timestamp: now,
+                    },
+                },
             }
         );
         for (const ord of orders) {
@@ -466,7 +550,9 @@ export const checkAndExpireOrders = async (orders) => {
 export const sanitizeCustomerOrder = (order) => {
     if (!order) return null;
     const doc = order.toObject ? order.toObject() : { ...order };
-    if (doc.orderStatus !== 'out_for_delivery' && doc.orderStatus !== 'completed') {
+    const trackingIsLive = doc.orderStatus === 'out_for_delivery';
+    const deliveryHasStarted = ['out_for_delivery', 'completed'].includes(doc.orderStatus);
+    if (!deliveryHasStarted && doc.orderStatus !== 'out_for_delivery' && doc.orderStatus !== 'completed') {
         doc.rider = null;
     } else if (doc.rider) {
         doc.rider = {
@@ -475,6 +561,12 @@ export const sanitizeCustomerOrder = (order) => {
             phone: doc.rider.phone,
         };
     }
+    if (!trackingIsLive) {
+        doc.riderLocation = null;
+        doc.routeEta = null;
+    }
+    delete doc.deliveryRecoveryHistory;
+    delete doc.riderAssignmentHistory;
     return doc;
 };
 
@@ -531,6 +623,8 @@ export const getCustomerOrderById = async (customerId, orderId) => {
 
 export const getAdminOrders = async (queryFilters = {}) => {
     const filter = {};
+    const now = new Date();
+    const overdueBefore = new Date(now.getTime() - config.deliveryOverdueMinutes * 60 * 1000);
 
     if (queryFilters.orderStatus) {
         filter.orderStatus = queryFilters.orderStatus;
@@ -538,6 +632,40 @@ export const getAdminOrders = async (queryFilters = {}) => {
 
     if (queryFilters.paymentStatus) {
         filter.paymentStatus = queryFilters.paymentStatus;
+    }
+
+    if (queryFilters.attention === 'active_deliveries') {
+        filter.$or = [
+            { riderStatus: { $in: ['picked_up', 'out_for_delivery'] } },
+            { orderStatus: 'out_for_delivery' },
+        ];
+    } else if (queryFilters.attention === 'overdue') {
+        filter.$and = [
+            { $or: [{ riderStatus: { $in: ['picked_up', 'out_for_delivery'] } }, { orderStatus: 'out_for_delivery' }] },
+            {
+                $or: [
+                    { deliveryStartedAt: { $lte: overdueBefore } },
+                    {
+                        deliveryStartedAt: null,
+                        riderDeliveryHistory: {
+                            $elemMatch: {
+                                status: { $in: ['picked_up', 'out_for_delivery'] },
+                                timestamp: { $lte: overdueBefore },
+                            },
+                        },
+                    },
+                    { deliveryStartedAt: null, riderDeliveryHistory: { $size: 0 }, createdAt: { $lte: overdueBefore } },
+                    { deliveryStartedAt: null, riderDeliveryHistory: { $exists: false }, createdAt: { $lte: overdueBefore } },
+                ],
+            },
+        ];
+    } else if (queryFilters.attention === 'assignment_pending') {
+        filter.$or = [
+            { orderStatus: 'ready_for_pickup', rider: null },
+            { riderStatus: 'pending', rider: { $ne: null } },
+        ];
+    } else if (queryFilters.attention === 'new_orders') {
+        filter.orderStatus = 'placed';
     }
 
     // Apply server-side date filter (Today, This Week, or Custom Range in IST)
@@ -586,7 +714,7 @@ export const getAdminOrders = async (queryFilters = {}) => {
     if (query && typeof query.populate === 'function') {
         query = query.populate('customer', 'name email phone');
         if (query && typeof query.populate === 'function' && (query.model || query.schema)) {
-            query = query.populate('rider', 'name phone isActive');
+            query = query.populate('rider', 'name phone isActive availability');
         }
     }
 
@@ -604,6 +732,7 @@ export const getAdminOrders = async (queryFilters = {}) => {
     ]);
 
     let orders = await checkAndExpireOrders(ordersResult);
+    orders = orders.map((order) => getDeliveryAttention(order, now));
 
     return {
         orders,
@@ -619,7 +748,13 @@ export const getAdminOrderById = async (orderId) => {
     if (query && typeof query.populate === 'function') {
         query = query.populate('customer', 'name email phone');
         if (query && typeof query.populate === 'function' && (query.model || query.schema)) {
-            query = query.populate('rider', 'name phone isActive');
+            query = query.populate('rider', 'name phone isActive availability');
+            query = query.populate('riderAssignmentHistory.rider', 'name phone');
+            query = query.populate('riderDeliveryHistory.rider', 'name phone');
+            query = query.populate('deliveryRecoveryHistory.actor', 'name email');
+            query = query.populate('deliveryRecoveryHistory.rider', 'name phone');
+            query = query.populate('codCollections.rider', 'name phone');
+            query = query.populate('codCollections.verifiedBy', 'name email');
         }
     }
     let order = await query;
@@ -627,10 +762,10 @@ export const getAdminOrderById = async (orderId) => {
         throw new NotFoundError('Order not found');
     }
     order = await checkAndExpireOrder(order);
-    return order;
+    return getDeliveryAttention(order);
 };
 
-export const updateOrderStatus = async (orderId, updateData) => {
+export const updateOrderStatus = async (orderId, updateData, adminId = null) => {
     let orderStatus;
     let paymentStatus;
     if (typeof updateData === 'string') {
@@ -646,6 +781,7 @@ export const updateOrderStatus = async (orderId, updateData) => {
     }
 
     const now = new Date();
+    const previousOrderStatus = order.orderStatus;
 
     // Check if order has reached deadline before any action
     if (
@@ -661,6 +797,15 @@ export const updateOrderStatus = async (orderId, updateData) => {
                         orderStatus: 'expired',
                         expiredAt: now,
                         expiryReason: 'admin_acceptance_timeout',
+                    },
+                    $push: {
+                        statusHistory: {
+                            domain: 'order',
+                            status: 'expired',
+                            previousStatus: 'placed',
+                            actorType: 'system',
+                            timestamp: now,
+                        },
                     },
                 }
             );
@@ -685,6 +830,22 @@ export const updateOrderStatus = async (orderId, updateData) => {
 
     // Handle orderStatus transition
     if (orderStatus && orderStatus !== order.orderStatus) {
+        if (
+            orderStatus === 'completed'
+            && order.orderType === 'delivery'
+            && order.orderStatus === 'out_for_delivery'
+            && order.riderStatus !== 'delivered'
+        ) {
+            throw new BadRequestError('Verify delivery and use the delivery recovery action before completing this order.');
+        }
+        if (orderStatus === 'out_for_delivery' && order.orderType === 'delivery') {
+            if (!order.rider) {
+                throw new BadRequestError('Assign a rider before marking this delivery out for delivery.');
+            }
+            if (!['pending', 'accepted', 'picked_up', 'out_for_delivery'].includes(order.riderStatus)) {
+                throw new BadRequestError('The assigned rider is not eligible to start this delivery.');
+            }
+        }
         // Special atomic confirmation handling for 'confirmed'
         if (orderStatus === 'confirmed') {
             if (order.orderStatus !== 'placed') {
@@ -766,8 +927,53 @@ export const updateOrderStatus = async (orderId, updateData) => {
         }
     }
 
+    if (
+        orderStatus === 'out_for_delivery'
+        && order.orderStatus === 'out_for_delivery'
+        && order.orderType === 'delivery'
+        && order.rider
+        && (order.riderStatus !== 'out_for_delivery' || !order.deliveryStartedAt)
+    ) {
+        if (!['pending', 'accepted', 'picked_up', 'out_for_delivery'].includes(order.riderStatus)) {
+            throw new BadRequestError('The assigned rider is not eligible to start this delivery.');
+        }
+        const previousRiderStatus = order.riderStatus;
+        order.riderStatus = 'out_for_delivery';
+        order.deliveryStartedAt = order.deliveryStartedAt || now;
+        order.riderHandoffRequired = false;
+        const pendingAssignment = [...(order.riderAssignmentHistory || [])].reverse().find((assignment) =>
+            assignment.rider.toString() === order.rider.toString()
+            && !assignment.acceptedAt
+            && !assignment.rejectedAt
+            && !assignment.timedOutAt
+            && !assignment.unassignedAt
+        );
+        if (pendingAssignment) pendingAssignment.acceptedAt = now;
+        order.statusHistory.push({
+            domain: 'rider',
+            status: 'out_for_delivery',
+            previousStatus: previousRiderStatus,
+            actorType: adminId ? 'admin' : 'system',
+            actor: adminId,
+            note: 'Admin marked the order as handed to the rider.',
+            timestamp: now,
+        });
+    }
+
     if (paymentStatus) {
         order.paymentStatus = paymentStatus;
+        if (paymentStatus === 'paid' && !order.paymentPaidAt) order.paymentPaidAt = now;
+    }
+
+    if (previousOrderStatus !== order.orderStatus) {
+        order.statusHistory.push({
+            domain: 'order',
+            status: order.orderStatus,
+            previousStatus: previousOrderStatus,
+            actorType: adminId ? 'admin' : 'system',
+            actor: adminId,
+            timestamp: now,
+        });
     }
 
     if (typeof order.save === 'function') {
@@ -804,44 +1010,290 @@ export const updateOrderStatus = async (orderId, updateData) => {
  * @param {string|null} riderId 
  * @returns {Promise<Order>}
  */
-export const assignRiderToOrder = async (orderId, riderId) => {
+export const assignRiderToOrder = async (orderId, riderId, adminId = null, note = '') => {
     const order = await Order.findById(orderId);
     if (!order) {
         throw new NotFoundError('Order not found');
     }
 
-    if (order.orderStatus === 'cancelled' || order.orderStatus === 'expired') {
+    if (['completed', 'cancelled', 'expired'].includes(order.orderStatus)) {
         throw new BadRequestError(`Cannot assign a rider to a ${order.orderStatus} order.`);
+    }
+
+    if (riderId && !mongoose.Types.ObjectId.isValid(riderId)) {
+        throw new BadRequestError('Invalid rider ID format');
+    }
+
+    if (riderId && order.rider?.toString() === riderId.toString()) {
+        if (['failed', 'rejected', 'delivered'].includes(order.riderStatus)) {
+            throw new BadRequestError('Choose a different rider to replace this delivery assignment.');
+        }
+        await order.populate('rider', 'name phone email isActive availability');
+        emitRiderAssigned(order);
+        return order;
+    }
+
+    const now = new Date();
+    const previousRiderId = order.rider?.toString();
+    const previousRiderStatus = order.riderStatus;
+    const wasInDelivery = order.riderHandoffRequired || ['picked_up', 'out_for_delivery'].includes(previousRiderStatus);
+    if (order.rider) {
+        const previousAssignment = [...(order.riderAssignmentHistory || [])].reverse()
+            .find((entry) => entry.rider.toString() === order.rider.toString() && !entry.unassignedAt);
+        if (previousAssignment) previousAssignment.unassignedAt = now;
+        else {
+            order.riderAssignmentHistory.push({
+                rider: order.rider,
+                assignedBy: 'admin',
+                assignedAt: order.updatedAt || order.createdAt || now,
+                unassignedAt: now,
+            });
+        }
     }
 
     if (!riderId) {
         order.rider = null;
+        order.riderStatus = 'pending';
+        order.riderHandoffRequired = wasInDelivery;
+        order.riderLocation = { latitude: null, longitude: null, updatedAt: null };
+        order.routeEta = { durationSeconds: null, calculatedAt: null };
+        if (adminId) {
+            order.deliveryRecoveryHistory.push({
+                action: 'reassign_rider',
+                actor: adminId,
+                note: note.trim() || 'Rider removed by admin for reassignment.',
+                rider: previousRiderId,
+                previousRiderStatus: wasInDelivery ? previousRiderStatus : null,
+                previousOrderStatus: order.orderStatus,
+                timestamp: now,
+            });
+        }
+        order.statusHistory.push({
+            domain: 'assignment',
+            status: 'unassigned',
+            previousStatus: previousRiderStatus,
+            actorType: adminId ? 'admin' : 'system',
+            actor: adminId,
+            note: note.trim() || null,
+            timestamp: now,
+        });
         await order.save();
+        await refreshPreviousRiderAvailability(previousRiderId);
+        if (previousRiderId) {
+            getIO()?.to(`rider:${previousRiderId}`).emit('rider:assignment_updated', {
+                orderId: order._id.toString(),
+                riderId: null,
+                riderStatus: order.riderStatus,
+                orderStatus: order.orderStatus,
+            });
+        }
+        getIO()?.to('admin:orders').emit('rider:assignment_updated', {
+            orderId: order._id.toString(), riderId: null, riderStatus: order.riderStatus,
+            orderStatus: order.orderStatus, riderHandoffRequired: order.riderHandoffRequired,
+        });
         return order;
     }
 
-    if (!mongoose.Types.ObjectId.isValid(riderId)) {
-        throw new BadRequestError('Invalid rider ID format');
-    }
-
     const rider = await Rider.findById(riderId);
-    if (!rider) {
-        throw new NotFoundError('Rider not found');
+    if (!rider) throw new NotFoundError('Rider not found');
+    if (!rider.isActive) throw new BadRequestError('This rider is inactive and cannot be assigned to an order.');
+    if (rider.availability !== 'available') {
+        throw new BadRequestError('Only available riders can receive new assignments.');
     }
-
-    if (!rider.isActive) {
-        throw new BadRequestError('This rider is inactive and cannot be assigned to an order.');
-    }
+    const otherAssignments = await Order.countDocuments({
+        _id: { $ne: order._id },
+        rider: rider._id,
+        riderStatus: { $in: ['pending', 'accepted', 'picked_up', 'out_for_delivery'] },
+    });
+    if (otherAssignments > 0) throw new BadRequestError('This rider already has an active assignment.');
+    const reservedRider = await Rider.findOneAndUpdate(
+        { _id: rider._id, isActive: true, availability: 'available' },
+        { $set: { availability: 'busy' } },
+        { new: true }
+    );
+    if (!reservedRider) throw new BadRequestError('This rider is no longer available for assignment.');
 
     order.rider = rider._id;
-    await order.save();
-    const populated = await order.populate('rider', 'name phone isActive');
+    order.riderStatus = 'pending';
+    order.riderHandoffRequired = wasInDelivery;
+    order.riderLocation = { latitude: null, longitude: null, updatedAt: null };
+    order.routeEta = { durationSeconds: null, calculatedAt: null };
+    order.riderAssignmentHistory.push({
+        rider: rider._id,
+        assignedBy: 'admin',
+        assignedById: adminId,
+        assignedAt: now,
+        responseDeadline: new Date(now.getTime() + config.riderAssignmentTimeoutMinutes * 60 * 1000),
+    });
+    if (adminId) {
+        order.deliveryRecoveryHistory.push({
+            action: 'reassign_rider',
+            actor: adminId,
+            note: note.trim() || (wasInDelivery ? 'Rider reassigned during an active delivery.' : 'Rider assigned by admin.'),
+            rider: rider._id,
+            previousRiderStatus: wasInDelivery ? previousRiderStatus : null,
+            previousOrderStatus: order.orderStatus,
+            timestamp: now,
+        });
+    }
+    order.statusHistory.push({
+        domain: 'assignment',
+        status: 'pending',
+        previousStatus: previousRiderStatus,
+        actorType: adminId ? 'admin' : 'system',
+        actor: adminId,
+        note: note.trim() || null,
+        timestamp: now,
+    });
+    try {
+        await order.save();
+    } catch (error) {
+        await Rider.updateOne({ _id: rider._id, availability: 'busy' }, { $set: { availability: 'available' } });
+        throw error;
+    }
+    await refreshPreviousRiderAvailability(previousRiderId);
+    if (previousRiderId) {
+        getIO()?.to(`rider:${previousRiderId}`).emit('rider:assignment_updated', {
+            orderId: order._id.toString(),
+            riderId: null,
+            riderStatus: 'pending',
+            orderStatus: order.orderStatus,
+        });
+    }
+    getIO()?.to('admin:orders').emit('rider:availability_changed', {
+        riderId: rider._id.toString(),
+        availability: 'busy',
+        activeAssignments: 1,
+    });
+    await order.populate('rider', 'name phone email isActive availability');
+    const populated = order;
     try {
         emitRiderAssigned(populated);
     } catch (err) {
         console.error('[OrderService] emitRiderAssigned error:', err.message);
     }
     return populated;
+};
+
+export const recoverDeliveryOrder = async (orderId, adminId, { action, note, verified = false }) => {
+    const order = await Order.findById(orderId);
+    if (!order) throw new NotFoundError('Order not found.');
+    if (!['contact_rider', 'contact_customer', 'mark_delivered', 'cancel_order'].includes(action)) {
+        throw new BadRequestError('Unsupported delivery recovery action.');
+    }
+    if (['completed', 'cancelled', 'expired'].includes(order.orderStatus)) {
+        throw new BadRequestError('This order is already in a terminal state.');
+    }
+    if (action === 'mark_delivered') {
+        if (
+            order.orderStatus !== 'out_for_delivery'
+            || !['out_for_delivery', 'failed'].includes(order.riderStatus)
+        ) {
+            throw new BadRequestError('Only an order currently out for delivery can be verified as delivered.');
+        }
+        if (verified !== true) throw new BadRequestError('Confirm delivery verification before marking this order delivered.');
+    }
+
+    const now = new Date();
+    const riderId = order.rider?._id || order.rider || null;
+    const historyEntry = {
+        action,
+        actor: adminId,
+        note: note.trim(),
+        rider: riderId,
+        previousRiderStatus: order.riderStatus,
+        previousOrderStatus: order.orderStatus,
+        timestamp: now,
+    };
+    const update = {
+        $push: {
+            deliveryRecoveryHistory: historyEntry,
+            statusHistory: {
+                domain: 'recovery',
+                status: action,
+                previousStatus: order.riderStatus,
+                actorType: 'admin',
+                actor: adminId,
+                note: note.trim(),
+                timestamp: now,
+            },
+        },
+    };
+    const updateOptions = { new: true, runValidators: true };
+    if (action === 'mark_delivered') {
+        update.$set = {
+            orderStatus: 'completed',
+            riderStatus: 'delivered',
+            riderLocation: { latitude: null, longitude: null, updatedAt: null },
+            routeEta: { durationSeconds: null, calculatedAt: null },
+        };
+    } else if (action === 'cancel_order') {
+        update.$set = {
+            orderStatus: 'cancelled',
+            riderStatus: 'failed',
+            rider: null,
+            riderLocation: { latitude: null, longitude: null, updatedAt: null },
+            routeEta: { durationSeconds: null, calculatedAt: null },
+            riderHandoffRequired: false,
+        };
+        if (riderId) {
+            const activeAssignment = [...(order.riderAssignmentHistory || [])].reverse()
+                .find((entry) => entry.rider.toString() === riderId.toString() && !entry.unassignedAt);
+            if (activeAssignment) {
+                update.$set['riderAssignmentHistory.$[assignment].unassignedAt'] = now;
+                updateOptions.arrayFilters = [{
+                    'assignment.rider': riderId,
+                    'assignment.unassignedAt': null,
+                }];
+            }
+        }
+    }
+
+    const updatedOrder = await Order.findOneAndUpdate(
+        {
+            _id: order._id,
+            orderStatus: order.orderStatus,
+            riderStatus: order.riderStatus,
+            rider: riderId,
+        },
+        update,
+        updateOptions
+    );
+    if (!updatedOrder) throw new ConflictError('The order changed while this recovery action was being recorded. Refresh and try again.');
+
+    if (action === 'mark_delivered') {
+        await refreshPreviousRiderAvailability(riderId);
+        emitOrderStatusChanged(updatedOrder);
+    } else if (action === 'cancel_order') {
+        await refreshPreviousRiderAvailability(riderId);
+        emitOrderCancelled(updatedOrder);
+        if (riderId) {
+            const rider = await Rider.findById(riderId).select('name').lean();
+            await createRiderNotification({
+                recipientType: 'rider',
+                rider: { _id: riderId, name: rider?.name || 'Rider' },
+                order: order._id,
+                event: 'order_cancelled_by_admin',
+                message: `Admin cancelled order ${order.orderNumber}.`,
+                dedupeKey: `admin-cancelled:${order._id}:${now.getTime()}`,
+            });
+        }
+    }
+    const io = getIO();
+    const eventPayload = {
+        orderId: order._id.toString(),
+        orderNumber: order.orderNumber,
+        orderStatus: updatedOrder.orderStatus,
+        riderStatus: updatedOrder.riderStatus,
+        riderId: updatedOrder.rider?.toString?.() || null,
+        deliveryStartedAt: updatedOrder.deliveryStartedAt,
+        riderLocation: updatedOrder.riderLocation,
+        routeEta: updatedOrder.routeEta,
+    };
+    io?.to(`order:${order._id}`).emit('rider:delivery_updated', eventPayload);
+    io?.to('admin:orders').emit('rider:delivery_updated', eventPayload);
+    if (riderId) io?.to(`rider:${riderId}`).emit('rider:delivery_updated', eventPayload);
+    return getAdminOrderById(updatedOrder._id);
 };
 
 /**
@@ -876,6 +1328,13 @@ export const cancelCustomerOrder = async (orderId, customerId) => {
         order.orderStatus = 'expired';
         order.expiredAt = now;
         order.expiryReason = 'admin_acceptance_timeout';
+        order.statusHistory.push({
+            domain: 'order',
+            status: 'expired',
+            previousStatus: 'placed',
+            actorType: 'system',
+            timestamp: now,
+        });
         await order.save();
         throw new BadRequestError('This order has already expired.');
     }
@@ -898,6 +1357,14 @@ export const cancelCustomerOrder = async (orderId, customerId) => {
     }
 
     order.orderStatus = 'cancelled';
+    order.statusHistory.push({
+        domain: 'order',
+        status: 'cancelled',
+        previousStatus: 'placed',
+        actorType: 'customer',
+        actor: customerId,
+        timestamp: now,
+    });
     await order.save();
 
     if (order.discount?.discountId) {

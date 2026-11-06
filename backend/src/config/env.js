@@ -29,6 +29,14 @@ export const config = {
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
     },
+    riderCookie: {
+        name: 'rider_token',
+        maxAge: 8 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+    },
     cors: {
         origin: process.env.CLIENT_URL
             ? process.env.CLIENT_URL.includes(',')
@@ -45,9 +53,11 @@ export const config = {
         webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',
     },
     onlinePaymentEnabled: process.env.ONLINE_PAYMENT_ENABLED === 'true',
+    riderAssignmentTimeoutMinutes: Math.max(1, Number.parseInt(process.env.RIDER_ASSIGNMENT_TIMEOUT_MINUTES, 10) || 5),
+    deliveryOverdueMinutes: Math.max(1, Number.parseInt(process.env.DELIVERY_OVERDUE_MINUTES, 10) || 90),
     vapid: {
-        publicKey: process.env.VAPID_PUBLIC_KEY || 'BJ8B4LAumNPlvBe0a4VC2MuuvzMh6IXk-OH1rJqbozPqLs_XlJ8zzqg8C2wmGCz4wEPQb9Z9XMJeO_5zitiz59s',
-        privateKey: process.env.VAPID_PRIVATE_KEY || 'EtwHkxk3C_nlHmo0Dwi6imRzgJcwZsif7Ws31B7HbbM',
+        publicKey: process.env.VAPID_PUBLIC_KEY || '',
+        privateKey: process.env.VAPID_PRIVATE_KEY || '',
         subject: process.env.VAPID_SUBJECT || 'mailto:majedarrestaurant@gmail.com',
     },
     google: {

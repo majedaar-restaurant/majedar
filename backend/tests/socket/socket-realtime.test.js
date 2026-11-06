@@ -13,9 +13,11 @@ import { MenuItem } from '../../src/models/MenuItem.js';
 import { Category } from '../../src/models/Category.js';
 import { Order } from '../../src/models/Order.js';
 import { Rider } from '../../src/models/Rider.js';
+import { RiderNotification } from '../../src/models/RiderNotification.js';
 import { initSocketServer, getIO } from '../../src/socket/socket.server.js';
 import { signToken } from '../../src/utils/token.js';
 import * as orderService from '../../src/services/order/order.service.js';
+import * as riderService from '../../src/services/rider/rider.service.js';
 
 describe('Real-Time Order System (Socket.IO + Web Push Architecture)', () => {
     let server;
@@ -448,7 +450,6 @@ describe('Real-Time Order System (Socket.IO + Web Push Architecture)', () => {
 
         await orderService.updateOrderStatus(createdOrder._id.toString(), { orderStatus: 'confirmed' });
         await orderService.updateOrderStatus(createdOrder._id.toString(), { orderStatus: 'preparing' });
-        await orderService.updateOrderStatus(createdOrder._id.toString(), { orderStatus: 'ready_for_pickup' });
 
         const customerSocket = Client(baseUrl, {
             transports: ['websocket'],
@@ -475,6 +476,64 @@ describe('Real-Time Order System (Socket.IO + Web Push Architecture)', () => {
         assert.equal(riderPayload.orderId, createdOrder._id.toString());
         assert.equal(riderPayload.rider, null); // Protected: customer cannot see rider details before out_for_delivery
 
+        const riderToken = signToken({
+            id: testRider._id,
+            type: 'rider',
+            tokenVersion: testRider.tokenVersion ?? 0,
+        });
+        const riderSocket = Client(baseUrl, {
+            transports: ['websocket'],
+            extraHeaders: {
+                Cookie: `${config.riderCookie.name}=${riderToken}`,
+            },
+            reconnection: false,
+        });
+        await new Promise((resolve) => riderSocket.on('connect', resolve));
+        const riderReadyPromise = new Promise((resolve) => {
+            riderSocket.once('rider:delivery_updated', resolve);
+        });
+        await orderService.updateOrderStatus(createdOrder._id.toString(), { orderStatus: 'ready_for_pickup' });
+        const riderReadyPayload = await riderReadyPromise;
+        assert.equal(riderReadyPayload.orderStatus, 'ready_for_pickup');
+        assert.equal(riderReadyPayload.riderStatus, 'pending');
+        assert.equal(riderReadyPayload.riderId, testRider._id.toString());
+
+        const adminSocket = Client(baseUrl, {
+            transports: ['websocket'],
+            extraHeaders: {
+                Cookie: `${config.cookie.name}=${adminToken}`,
+            },
+            reconnection: false,
+        });
+        await new Promise((resolve) => adminSocket.on('connect', resolve));
+
+        await riderService.respondToAssignment(testRider._id.toString(), createdOrder._id.toString(), {
+            decision: 'accept',
+        });
+        const notificationsBeforeDelivery = await RiderNotification.countDocuments({
+            recipientType: 'rider',
+            rider: testRider._id,
+            order: createdOrder._id,
+        });
+        const pickedUpRiderPromise = new Promise((resolve) => {
+            riderSocket.once('rider:delivery_updated', resolve);
+        });
+        const pickedUpAdminPromise = new Promise((resolve) => {
+            adminSocket.once('rider:delivery_updated', resolve);
+        });
+        await riderService.updateDeliveryStatus(testRider._id.toString(), createdOrder._id.toString(), {
+            status: 'picked_up',
+        });
+        const pickedUpRiderPayload = await pickedUpRiderPromise;
+        const pickedUpAdminPayload = await pickedUpAdminPromise;
+        assert.equal(pickedUpRiderPayload.riderStatus, 'picked_up');
+        assert.equal(pickedUpAdminPayload.orderId, createdOrder._id.toString());
+        assert.equal(pickedUpAdminPayload.riderStatus, 'picked_up');
+
+        const riderDeliveryUpdatePromise = new Promise((resolve) => {
+            riderSocket.once('rider:delivery_updated', resolve);
+        });
+
         // 2. Transition to out_for_delivery -> customer receives order:status_changed with rider details
         const outForDeliveryPromise = new Promise((resolve) => {
             customerSocket.on('order:status_changed', (payload) => {
@@ -489,6 +548,55 @@ describe('Real-Time Order System (Socket.IO + Web Push Architecture)', () => {
         assert.equal(deliveryPayload.rider.name, testRider.name);
         assert.equal(deliveryPayload.rider.phone, testRider.phone);
 
+        const riderDeliveryPayload = await riderDeliveryUpdatePromise;
+        assert.equal(riderDeliveryPayload.orderId, createdOrder._id.toString());
+        assert.equal(riderDeliveryPayload.orderStatus, 'out_for_delivery');
+        assert.equal(riderDeliveryPayload.riderStatus, 'out_for_delivery');
+        assert.equal(riderDeliveryPayload.riderId, testRider._id.toString());
+
+        const orderBeforeDelivery = await Order.findById(createdOrder._id);
+        const deliveredRiderPromise = new Promise((resolve) => {
+            riderSocket.once('rider:delivery_updated', resolve);
+        });
+        const deliveredAdminPromise = new Promise((resolve) => {
+            adminSocket.once('rider:delivery_updated', resolve);
+        });
+        await riderService.updateDeliveryStatus(testRider._id.toString(), createdOrder._id.toString(), {
+            status: 'delivered',
+            collection: { amount: orderBeforeDelivery.total, method: 'cash' },
+        });
+        assert.equal((await deliveredRiderPromise).riderStatus, 'delivered');
+        assert.equal((await deliveredAdminPromise).orderStatus, 'completed');
+
+        const persistedOrder = await Order.findById(createdOrder._id).lean();
+        assert.equal(persistedOrder.orderStatus, 'completed');
+        assert.equal(persistedOrder.riderStatus, 'delivered');
+        assert.equal(persistedOrder.statusHistory.filter((event) =>
+            event.domain === 'rider' && event.status === 'picked_up').length, 1);
+        assert.equal(persistedOrder.statusHistory.filter((event) =>
+            event.domain === 'rider' && event.status === 'out_for_delivery').length, 1);
+        assert.equal(persistedOrder.statusHistory.filter((event) =>
+            event.domain === 'rider' && event.status === 'delivered').length, 1);
+        assert.equal(persistedOrder.statusHistory.filter((event) =>
+            event.domain === 'order' && event.status === 'ready_for_pickup').length, 1);
+        assert.equal(persistedOrder.statusHistory.filter((event) =>
+            event.domain === 'order' && event.status === 'out_for_delivery').length, 1);
+        assert.equal(persistedOrder.statusHistory.filter((event) =>
+            event.domain === 'order' && event.status === 'completed').length, 1);
+        assert.equal(persistedOrder.codCollections.length, 1);
+        assert.equal(await RiderNotification.countDocuments({
+            recipientType: 'rider',
+            rider: testRider._id,
+            order: createdOrder._id,
+        }), notificationsBeforeDelivery);
+        const [customerOrderList] = await orderService.getCustomerOrders(customer1._id);
+        const customerOrderDetail = await orderService.getCustomerOrderById(customer1._id, createdOrder._id);
+        assert.equal(customerOrderList.orderStatus, customerOrderDetail.orderStatus);
+        assert.equal(customerOrderList.riderStatus, customerOrderDetail.riderStatus);
+        assert.equal(customerOrderDetail.orderStatus, persistedOrder.orderStatus);
+
+        riderSocket.disconnect();
+        adminSocket.disconnect();
         customerSocket.disconnect();
     });
 

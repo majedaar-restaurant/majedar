@@ -4,7 +4,9 @@ import {
     getAdminOrderById,
     updateOrderStatus,
     assignRider,
+    recoverDeliveryOrder,
 } from '../controllers/order.controller.js';
+import { verifyCodCollection } from '../controllers/rider.controller.js';
 import { authenticateAdmin } from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../middleware/admin.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
@@ -12,8 +14,10 @@ import {
     orderIdParamSchema,
     updateOrderStatusSchema,
     assignOrderRiderSchema,
+    deliveryRecoverySchema,
     orderQuerySchema,
 } from '../validators/order.validator.js';
+import { codCollectionParamSchema } from '../validators/rider.validator.js';
 
 const router = Router();
 
@@ -34,6 +38,17 @@ router.patch(
     validate(orderIdParamSchema, 'params'),
     validate(assignOrderRiderSchema, 'body'),
     assignRider
+);
+router.post(
+    '/:id/recovery',
+    validate(orderIdParamSchema, 'params'),
+    validate(deliveryRecoverySchema, 'body'),
+    recoverDeliveryOrder
+);
+router.patch(
+    '/:id/cod/:collectionIndex/verify',
+    validate(codCollectionParamSchema, 'params'),
+    verifyCodCollection
 );
 
 export default router;

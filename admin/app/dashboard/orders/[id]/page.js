@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import { Button, Modal, PageHeader, StatusBadge, useToast } from "@/components/ui";
-import { getAdminOrderById, updateAdminOrderStatus, assignAdminOrderRider } from "@/lib/api/orders";
+import {
+  getAdminOrderById,
+  updateAdminOrderStatus,
+  assignAdminOrderRider,
+  recordAdminDeliveryRecovery,
+  verifyAdminCodCollection,
+} from "@/lib/api/orders";
 import { getAdminRiders } from "@/lib/api/riders";
 import { getOrderPaymentAttempts } from "@/lib/api/payments";
 import { getWhatsAppShareUrl } from "@/lib/whatsapp";
@@ -34,13 +40,7 @@ const VALID_NEXT_STATUSES = {
     { value: "ready_for_pickup", label: "Ready for Pickup — Food packed" },
     { value: "cancelled", label: "Cancelled — Void order" },
   ],
-  ready_for_pickup: [
-    { value: "out_for_delivery", label: "Out for Delivery — Handed to rider" },
-    { value: "cancelled", label: "Cancelled — Void order" },
-  ],
-  out_for_delivery: [
-    { value: "completed", label: "Completed — Delivered to customer" },
-  ],
+  out_for_delivery: [],
   completed: [],
   cancelled: [],
   expired: [],
@@ -59,6 +59,22 @@ const PAYMENT_TONES = {
   refunded: "refunded",
   pending: "pending",
   created: "neutral",
+};
+
+const riderStatusLabel = (status) => ({
+  pending: "Awaiting rider response",
+  accepted: "Accepted",
+  picked_up: "Picked up",
+  out_for_delivery: "Out for delivery",
+  delivered: "Delivered",
+  failed: "Failed delivery",
+  rejected: "Rejected",
+}[status] || "Unassigned");
+
+const routeEtaLabel = (seconds) => {
+  if (!Number.isFinite(seconds)) return null;
+  const minutes = Math.max(1, Math.ceil(seconds / 60));
+  return `${minutes}–${minutes + 3} mins`;
 };
 
 function AcceptanceCountdown({ deadline, onExpire }) {
@@ -138,6 +154,11 @@ export default function OrderDetailPage({ params: paramsPromise }) {
   const [selectedRiderId, setSelectedRiderId] = useState("");
   const [loadingRiders, setLoadingRiders] = useState(false);
   const [assigningRider, setAssigningRider] = useState(false);
+  const [verifyingCod, setVerifyingCod] = useState("");
+  const [recoveryAction, setRecoveryAction] = useState("");
+  const [recoveryNote, setRecoveryNote] = useState("");
+  const [deliveryVerified, setDeliveryVerified] = useState(false);
+  const [recovering, setRecovering] = useState(false);
 
   const toast = useToast();
 
@@ -213,6 +234,20 @@ export default function OrderDetailPage({ params: paramsPromise }) {
       fetchOrderData();
     };
 
+    const handleDeliveryUpdated = (payload) => {
+      if (payload?.orderId !== id) return;
+      setOrder((prev) => prev ? {
+        ...prev,
+        riderStatus: payload.riderStatus || prev.riderStatus,
+        orderStatus: payload.orderStatus || prev.orderStatus,
+        deliveryStartedAt: payload.deliveryStartedAt || prev.deliveryStartedAt,
+        deliveryDurationMinutes: payload.deliveryDurationMinutes ?? prev.deliveryDurationMinutes,
+        deliveryOverdue: payload.deliveryOverdue ?? prev.deliveryOverdue,
+        riderLocation: payload.riderLocation || null,
+        routeEta: payload.routeEta || null,
+      } : prev);
+    };
+
     const handleExpired = (payload) => {
       if (payload?.orderId !== id) return;
       alertManager.removePendingOrder(id);
@@ -235,6 +270,9 @@ export default function OrderDetailPage({ params: paramsPromise }) {
     socket.on("order:confirmed", handleConfirmed);
     socket.on("order:status_changed", handleStatusChanged);
     socket.on("rider:assigned", handleRiderAssigned);
+    socket.on("rider:delivery_updated", handleDeliveryUpdated);
+    socket.on("rider:location_updated", handleDeliveryUpdated);
+    socket.on("rider:assignment_updated", handleDeliveryUpdated);
     socket.on("order:expired", handleExpired);
     socket.on("order:cancelled", handleCancelled);
     socket.on("connect", handleReconnect);
@@ -243,6 +281,9 @@ export default function OrderDetailPage({ params: paramsPromise }) {
       socket.off("order:confirmed", handleConfirmed);
       socket.off("order:status_changed", handleStatusChanged);
       socket.off("rider:assigned", handleRiderAssigned);
+      socket.off("rider:delivery_updated", handleDeliveryUpdated);
+      socket.off("rider:location_updated", handleDeliveryUpdated);
+      socket.off("rider:assignment_updated", handleDeliveryUpdated);
       socket.off("order:expired", handleExpired);
       socket.off("order:cancelled", handleCancelled);
       socket.off("connect", handleReconnect);
@@ -284,9 +325,9 @@ export default function OrderDetailPage({ params: paramsPromise }) {
     setShowRiderModal(true);
     setLoadingRiders(true);
     try {
-      const riders = await getAdminRiders({ isActive: true });
+      const riders = await getAdminRiders({ isActive: true, availability: "available" });
       setActiveRiders(riders);
-      if (order.rider?._id) {
+      if (order.rider?._id && riders.some((rider) => rider._id === order.rider._id)) {
         setSelectedRiderId(order.rider._id);
       } else if (riders.length > 0) {
         setSelectedRiderId(riders[0]._id);
@@ -307,14 +348,89 @@ export default function OrderDetailPage({ params: paramsPromise }) {
 
     setAssigningRider(true);
     try {
-      const updated = await assignAdminOrderRider(id, selectedRiderId);
+      const updated = await assignAdminOrderRider(id, selectedRiderId, recoveryNote);
       setOrder(updated);
       toast("Delivery rider assigned successfully", "success");
+      setRecoveryNote("");
       setShowRiderModal(false);
     } catch (err) {
       toast(err?.message || "Failed to assign rider", "danger");
     } finally {
       setAssigningRider(false);
+    }
+  };
+
+  const handleUnassignRider = async () => {
+    if (!window.confirm(`Remove ${order.rider?.name || "the current rider"} from Order #${order.orderNumber}?`)) return;
+    setAssigningRider(true);
+    try {
+      const updated = await assignAdminOrderRider(id, null, recoveryNote);
+      setOrder(updated);
+      toast("Rider assignment removed and history preserved", "success");
+      setShowRiderModal(false);
+    } catch (err) {
+      toast(err?.message || "Failed to remove rider assignment", "danger");
+    } finally {
+      setAssigningRider(false);
+    }
+  };
+
+  const handleVerifyCod = async (collectionIndex) => {
+    setVerifyingCod(String(collectionIndex));
+    try {
+      const updated = await verifyAdminCodCollection(id, collectionIndex);
+      setOrder(updated);
+      toast("COD collection reconciled successfully", "success");
+    } catch (err) {
+      toast(err?.message || "Failed to reconcile COD collection", "danger");
+    } finally {
+      setVerifyingCod("");
+    }
+  };
+
+  const handleRecoverySubmit = async (event) => {
+    event.preventDefault();
+    if (!recoveryAction || recoveryNote.trim().length < 5) {
+      toast("Add a recovery note of at least 5 characters.", "danger");
+      return;
+    }
+    if (recoveryAction === "mark_delivered" && !deliveryVerified) {
+      toast("Verify delivery before marking this order delivered.", "danger");
+      return;
+    }
+    if (recoveryAction === "cancel_order"
+      && !window.confirm(`Cancel and resolve Order #${order.orderNumber}?`)) return;
+    setRecovering(true);
+    try {
+      const updated = await recordAdminDeliveryRecovery(id, {
+        action: recoveryAction,
+        note: recoveryNote.trim(),
+        ...(recoveryAction === "mark_delivered" ? { verified: true } : {}),
+      });
+      setOrder(updated);
+      setRecoveryAction("");
+      setRecoveryNote("");
+      setDeliveryVerified(false);
+      toast("Delivery recovery action recorded.", "success");
+    } catch (error) {
+      toast(error?.message || "Unable to complete delivery recovery action.", "danger");
+      await fetchOrderData();
+    } finally {
+      setRecovering(false);
+    }
+  };
+
+  const recordContactAttempt = async (action, phone, message) => {
+    if (!phone || phone === "—") {
+      toast("No phone number is available for this contact.", "danger");
+      return;
+    }
+    try {
+      const updated = await recordAdminDeliveryRecovery(id, { action, note: message });
+      setOrder(updated);
+      window.location.href = `tel:${phone}`;
+    } catch (error) {
+      toast(error?.message || "Unable to record contact attempt.", "danger");
     }
   };
 
@@ -384,6 +500,11 @@ export default function OrderDetailPage({ params: paramsPromise }) {
 
   const isTerminalState = order.orderStatus === "completed" || order.orderStatus === "cancelled" || order.orderStatus === "expired";
   const isOnlinePayment = order.paymentMethod === "razorpay";
+  const activeDelivery = ["picked_up", "out_for_delivery"].includes(order.riderStatus);
+  const deliveryElapsedMinutes = order.deliveryDurationMinutes;
+  const deliveryOverdue = Boolean(order.deliveryOverdue);
+  const needsRecovery = !isTerminalState
+    && (activeDelivery || ["pending", "rejected", "failed"].includes(order.riderStatus) || order.orderStatus === "out_for_delivery");
 
   return (
     <>
@@ -519,6 +640,89 @@ export default function OrderDetailPage({ params: paramsPromise }) {
         >
           <strong>⚠️ Order Expired:</strong> This order was not confirmed within the 3-minute acceptance window and has automatically expired ({order.expiryReason || "admin_acceptance_timeout"}).
         </div>
+      )}
+
+      {needsRecovery && (
+        <section
+          aria-live="polite"
+          style={{
+            border: `1px solid ${deliveryOverdue ? "#fecaca" : "#fed7aa"}`,
+            borderLeft: `5px solid ${deliveryOverdue ? "#dc2626" : "#f59e0b"}`,
+            borderRadius: 10,
+            background: deliveryOverdue ? "#fff1f2" : "#fff7ed",
+            padding: "16px 18px",
+            marginBottom: 20,
+          }}
+        >
+          <strong style={{ display: "block", color: deliveryOverdue ? "#991b1b" : "#9a3412", fontSize: 15 }}>
+            {deliveryOverdue
+              ? `Delivery overdue — order has been out for delivery for ${deliveryElapsedMinutes >= 1440
+                ? `${Math.floor(deliveryElapsedMinutes / 1440)} day(s)`
+                : deliveryElapsedMinutes >= 60
+                  ? `${Math.floor(deliveryElapsedMinutes / 60)} hour(s)`
+                  : `${deliveryElapsedMinutes} minutes`}.`
+              : order.riderStatus === "rejected"
+                ? "Rider assignment rejected — assign another rider."
+                : order.assignmentTimedOut
+                  ? "Rider not responding — reassignment is available."
+                  : order.riderStatus === "pending"
+                    ? "Rider assignment is awaiting a response."
+                    : "Active delivery — review progress or intervene if the rider cannot complete it."}
+          </strong>
+          <p className="muted" style={{ margin: "5px 0 12px", fontSize: 12 }}>
+            {activeDelivery
+              ? `Delivery duration: ${deliveryElapsedMinutes >= 60 ? `${Math.floor(deliveryElapsedMinutes / 60)}h ${deliveryElapsedMinutes % 60}m` : `${deliveryElapsedMinutes || 0}m`}. No order is marked delivered automatically.`
+              : "Review the assignment and delivery details before taking action."}
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {order.rider?.phone && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => recordContactAttempt("contact_rider", order.rider.phone, "Admin initiated a phone contact attempt with the assigned rider.")}
+              >
+                Contact Rider
+              </Button>
+            )}
+            {customerPhone !== "—" && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => recordContactAttempt("contact_customer", customerPhone, "Admin initiated a phone contact attempt with the customer.")}
+              >
+                Contact Customer
+              </Button>
+            )}
+            <Button type="button" onClick={openRiderModal} disabled={assigningRider}>
+              Reassign Rider
+            </Button>
+            {(order.riderStatus === "out_for_delivery" || (order.riderStatus === "failed" && order.orderStatus === "out_for_delivery")) && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setRecoveryAction("mark_delivered");
+                  setRecoveryNote("");
+                  setDeliveryVerified(false);
+                }}
+              >
+                Mark as Delivered
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setRecoveryAction("cancel_order");
+                setRecoveryNote("");
+                setDeliveryVerified(false);
+              }}
+              style={{ color: "#b91c1c", borderColor: "#fecaca" }}
+            >
+              Cancel / Resolve Order
+            </Button>
+          </div>
+        </section>
       )}
 
       <div className="detail-layout">
@@ -811,7 +1015,7 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                               letterSpacing: "0.5px",
                             }}
                           >
-                            📍 Customer Location ({sourceText})
+                             Customer Location ({sourceText})
                           </span>
                           <span
                             style={{
@@ -848,7 +1052,7 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                               boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                             }}
                           >
-                            🗺️ Open in Google Maps ↗
+                            Open in Google Maps ↗
                           </a>
                         </div>
                       </div>
@@ -875,7 +1079,7 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                       }}
                     >
                       <span style={{ color: "var(--muted, #78716c)", display: "block" }}>
-                        ℹ️ Precise coordinates not available (Manual address entry)
+                        Precise coordinates not available (Manual address entry)
                       </span>
                       {searchUrl && (
                         <a
@@ -916,7 +1120,7 @@ export default function OrderDetailPage({ params: paramsPromise }) {
           <article className="surface detail-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
               <p className="detail-section-title" style={{ margin: 0 }}>
-                🚴 Assigned Rider
+                Assigned Rider
               </p>
               {!isTerminalState && (
                 <button
@@ -951,7 +1155,7 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                       fontWeight: 600,
                     }}
                   >
-                    Assigned
+                    {riderStatusLabel(order.riderStatus)}
                   </span>
                 </div>
                 <div style={{ marginTop: "6px" }}>
@@ -966,7 +1170,55 @@ export default function OrderDetailPage({ params: paramsPromise }) {
                   >
                     +91 {order.rider.phone}
                   </a>
+                  {order.rider.availability && (
+                    <span className="muted" style={{ marginLeft: 12, fontSize: 11 }}>
+                      Availability: {order.rider.availability}
+                    </span>
+                  )}
                 </div>
+                {order.riderStatus === "out_for_delivery" && (
+                  <div style={{ marginTop: 12 }}>
+                    {routeEtaLabel(order.routeEta?.durationSeconds) ? (
+                      <p style={{ margin: "0 0 8px", color: "var(--forest-deep)", fontSize: 12, fontWeight: 700 }}>
+                        On the way · Route ETA {routeEtaLabel(order.routeEta.durationSeconds)}
+                      </p>
+                    ) : (
+                      <p className="muted" style={{ margin: "0 0 8px", fontSize: 12 }}>
+                        On the way · Route ETA unavailable
+                      </p>
+                    )}
+                    {order.riderLocation?.latitude != null && order.riderLocation?.longitude != null ? (
+                      <>
+                        <iframe
+                          title="Rider live location"
+                          src={`https://maps.google.com/maps?q=${order.riderLocation.latitude},${order.riderLocation.longitude}&z=15&output=embed`}
+                          width="100%"
+                          height="220"
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          style={{ border: 0, borderRadius: 8 }}
+                        />
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+                          <span className="muted" style={{ fontSize: 11 }}>
+                            Location updated {order.riderLocation.updatedAt ? new Date(order.riderLocation.updatedAt).toLocaleString() : "—"}
+                          </span>
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&origin=${order.riderLocation.latitude},${order.riderLocation.longitude}&destination=${order.deliveryAddress?.location?.latitude != null ? `${order.deliveryAddress.location.latitude},${order.deliveryAddress.location.longitude}` : encodeURIComponent(order.deliveryAddress?.address || "")}&travelmode=driving`}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ color: "var(--crimson)", fontSize: 11, textDecoration: "underline" }}
+                          >
+                            Open road directions ↗
+                          </a>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="muted" style={{ fontSize: 11 }}>
+                        Waiting for the rider’s first GPS update. The rider must allow location access and keep the delivery panel open.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <div style={{ padding: "10px 0", color: "var(--muted)", fontSize: "13px", fontStyle: "italic" }}>
@@ -974,6 +1226,47 @@ export default function OrderDetailPage({ params: paramsPromise }) {
               </div>
             )}
           </article>
+
+          {order.paymentMethod === "cod" && (
+            <article className="surface detail-card">
+              <p className="detail-section-title">Cash on Delivery collections</p>
+              <p className="muted" style={{ fontSize: 12 }}>
+                COD collections are recorded with delivery completion. Reconcile each collection after confirming the payment.
+              </p>
+              {!order.codCollections?.length ? (
+                <p className="muted" style={{ fontSize: 12 }}>No COD collection has been recorded.</p>
+              ) : (
+                <div style={{ display: "grid", gap: 8 }}>
+                  {order.codCollections.map((collection, index) => (
+                    <div key={`${collection.collectedAt}-${index}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", border: "1px solid var(--line-soft)", borderRadius: 8, padding: 10 }}>
+                      <div style={{ fontSize: 12 }}>
+                        <strong>₹{Number(collection.amount).toFixed(2)} · {collection.method?.toUpperCase()}</strong>
+                        <div className="muted" style={{ marginTop: 3 }}>
+                          {collection.rider?.name || "Rider"} · {collection.collectedAt ? new Date(collection.collectedAt).toLocaleString() : "—"}
+                        </div>
+                        {collection.verifiedAt && (
+                          <div style={{ marginTop: 3, color: "var(--forest-deep)", fontSize: 11 }}>
+                            Reconciled {new Date(collection.verifiedAt).toLocaleString()} by {collection.verifiedBy?.name || "Admin"}
+                          </div>
+                        )}
+                      </div>
+                      {collection.verifiedAt ? (
+                        <StatusBadge tone="paid">Verified</StatusBadge>
+                      ) : (
+                        <Button
+                          type="button"
+                          disabled={verifyingCod === String(index)}
+                          onClick={() => handleVerifyCod(index)}
+                        >
+                          {verifyingCod === String(index) ? "Verifying…" : "Reconcile"}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+          )}
 
           {/* Timeline & Actions */}
           <article className="surface detail-card">
@@ -1024,6 +1317,57 @@ export default function OrderDetailPage({ params: paramsPromise }) {
           </article>
         </div>
       </div>
+
+      {recoveryAction && (
+        <Modal
+          title={recoveryAction === "mark_delivered" ? "Verify delivery before completion" : "Cancel and resolve delivery"}
+          onClose={() => !recovering && setRecoveryAction("")}
+        >
+          <form onSubmit={handleRecoverySubmit} className="form-stack">
+            <p className="muted" style={{ fontSize: 12 }}>
+              This action is recorded with the administrator account, timestamp, and note. Orders are never marked delivered automatically.
+            </p>
+            <label className="form-field">
+              <span>Verification / resolution note</span>
+              <textarea
+                value={recoveryNote}
+                onChange={(event) => setRecoveryNote(event.target.value)}
+                minLength={5}
+                maxLength={1000}
+                rows={4}
+                required
+                placeholder={recoveryAction === "mark_delivered"
+                  ? "Describe how delivery was confirmed with the customer."
+                  : "Describe why this order is being cancelled and resolved."}
+                disabled={recovering}
+              />
+            </label>
+            {recoveryAction === "mark_delivered" && (
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 12, fontWeight: 700 }}>
+                <input
+                  type="checkbox"
+                  checked={deliveryVerified}
+                  onChange={(event) => setDeliveryVerified(event.target.checked)}
+                  disabled={recovering}
+                />
+                I verified with the customer that this order was delivered.
+              </label>
+            )}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <Button type="button" variant="secondary" onClick={() => setRecoveryAction("")} disabled={recovering}>
+                Back
+              </Button>
+              <Button
+                type="submit"
+                disabled={recovering || (recoveryAction === "mark_delivered" && !deliveryVerified)}
+                style={recoveryAction === "cancel_order" ? { background: "#b91c1c" } : undefined}
+              >
+                {recovering ? "Recording..." : recoveryAction === "mark_delivered" ? "Confirm Delivered" : "Cancel and Resolve"}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {/* Update Status Modal */}
       {showStatusModal && (
@@ -1118,8 +1462,20 @@ export default function OrderDetailPage({ params: paramsPromise }) {
         >
           <form onSubmit={handleAssignRiderSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <p style={{ color: "var(--muted)", fontSize: "13px", margin: 0 }}>
-              Select an active delivery rider to fulfill Order #{order.orderNumber}.
+              Select an available, active delivery rider to fulfill Order #{order.orderNumber}.
             </p>
+
+            <label className="form-field">
+              <span>Assignment / handoff note</span>
+              <input
+                type="text"
+                value={recoveryNote}
+                onChange={(event) => setRecoveryNote(event.target.value)}
+                maxLength={500}
+                placeholder="Reason for assigning or handing off this delivery"
+                disabled={assigningRider}
+              />
+            </label>
 
             {loadingRiders ? (
               <div style={{ padding: "20px", textAlign: "center", color: "var(--muted)" }}>
@@ -1127,7 +1483,7 @@ export default function OrderDetailPage({ params: paramsPromise }) {
               </div>
             ) : activeRiders.length === 0 ? (
               <div style={{ padding: "16px", background: "#fef2f2", borderRadius: "6px", color: "#991b1b", fontSize: "13px" }}>
-                No active riders found. Please add or activate a rider in the{" "}
+                No available active riders found. Please add, activate, or mark a rider available in the{" "}
                 <Link href="/dashboard/riders" style={{ textDecoration: "underline", fontWeight: 600 }}>
                   Riders section
                 </Link>.
@@ -1163,6 +1519,16 @@ export default function OrderDetailPage({ params: paramsPromise }) {
               >
                 Cancel
               </Button>
+              {order.rider && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleUnassignRider}
+                  disabled={assigningRider}
+                >
+                  Remove assignment
+                </Button>
+              )}
               <Button
                 type="submit"
                 disabled={assigningRider || activeRiders.length === 0}

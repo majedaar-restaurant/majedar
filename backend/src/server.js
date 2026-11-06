@@ -3,6 +3,7 @@ import app from './app.js';
 import { connectDatabase } from './config/database.js';
 import { config } from './config/env.js';
 import { expireOverduePlacedOrders } from './services/order/order.service.js';
+import { processStaleRiderAssignments } from './services/rider/rider.service.js';
 import { initSocketServer } from './socket/socket.server.js';
 
 const PORT = config.port;
@@ -23,6 +24,14 @@ connectDatabase()
                 await expireOverduePlacedOrders();
             } catch (err) {
                 console.error('[OrderExpiryService] Periodic expiration check failed:', err.message);
+            }
+        }, 15000).unref();
+
+        setInterval(async () => {
+            try {
+                await processStaleRiderAssignments();
+            } catch (err) {
+                console.error('[RiderAssignmentService] Stale assignment check failed:', err.message);
             }
         }, 15000).unref();
     })

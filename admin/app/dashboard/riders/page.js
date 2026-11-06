@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { Button, Modal, PageHeader, Table, EmptyState, useToast, Toggle } from "@/components/ui";
 import {
   getAdminRiders,
   createAdminRider,
   updateAdminRider,
   deleteAdminRider,
+  resetAdminRiderPassword,
 } from "@/lib/api/riders";
+import { connectAdminSocket } from "@/lib/socket";
 
 export default function RidersPage() {
   const [riders, setRiders] = useState([]);
@@ -19,6 +22,8 @@ export default function RidersPage() {
   // Form states
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   const toast = useToast();
@@ -39,10 +44,22 @@ export default function RidersPage() {
     loadRiders();
   }, [loadRiders]);
 
+  useEffect(() => {
+    const socket = connectAdminSocket();
+    if (!socket) return undefined;
+    const reload = () => loadRiders();
+    socket.on("rider:availability_changed", reload);
+    return () => {
+      socket.off("rider:availability_changed", reload);
+    };
+  }, [loadRiders]);
+
   const openAdd = () => {
     setEditTarget(null);
     setName("");
     setPhone("");
+    setEmail("");
+    setPassword("");
     setIsActive(true);
     setModalOpen(true);
   };
@@ -51,6 +68,8 @@ export default function RidersPage() {
     setEditTarget(rider);
     setName(rider.name || "");
     setPhone(rider.phone || "");
+    setEmail(rider.email || "");
+    setPassword("");
     setIsActive(Boolean(rider.isActive));
     setModalOpen(true);
   };
@@ -67,19 +86,24 @@ export default function RidersPage() {
       return;
     }
 
-    setSubmitting(true);
+    if (!editTarget && (!email.trim() || password.length < 8)) {
+      toast("Email and a password of at least 8 characters are required to create a rider login.", "danger");
+      return;
+    }
     const payload = {
       name: name.trim(),
       phone: cleanPhone,
       isActive,
     };
+    if (email.trim()) payload.email = email.trim().toLowerCase();
 
+    setSubmitting(true);
     try {
       if (editTarget) {
         await updateAdminRider(editTarget._id, payload);
         toast("Rider updated successfully", "success");
       } else {
-        await createAdminRider(payload);
+        await createAdminRider({ ...payload, password });
         toast("Rider added successfully", "success");
       }
       setModalOpen(false);
@@ -93,7 +117,7 @@ export default function RidersPage() {
 
   const handleDelete = async (rider) => {
     const confirmed = window.confirm(
-      `Are you sure you want to delete rider "${rider.name}"? Note: Deletion is blocked if the rider has delivered previous orders; deactivate them instead.`
+      `Are you sure you want to delete rider "${rider.name}"? Deletion is blocked when delivery history exists; deactivate them instead.`
     );
     if (!confirmed) return;
 
@@ -118,11 +142,25 @@ export default function RidersPage() {
     }
   };
 
+  const handleResetPassword = async (rider) => {
+    const newPassword = window.prompt(`Enter a new password for ${rider.name} (at least 8 characters):`);
+    if (newPassword === null) return;
+    if (newPassword.length < 8) {
+      toast("Password must contain at least 8 characters.", "danger");
+      return;
+    }
+    try {
+      await resetAdminRiderPassword(rider._id, newPassword);
+      toast("Rider password reset. Existing sessions have been signed out.", "success");
+    } catch (err) {
+      toast(err.message || "Failed to reset rider password", "danger");
+    }
+  };
+
   return (
     <>
       <PageHeader
         title="Riders"
-        description="Manage delivery riders, monitor active status, and maintain personnel available for order assignment."
         action={<Button onClick={openAdd}>+ Add Rider</Button>}
       />
 
@@ -140,8 +178,11 @@ export default function RidersPage() {
           <Table
             columns={[
               "Rider Name",
+              "Email",
               "Phone Number",
-              "Status",
+              "Availability",
+              "Account",
+              "Active Orders",
               "Added Date",
               "Actions",
             ]}
@@ -152,6 +193,9 @@ export default function RidersPage() {
                   <strong>{rider.name}</strong>
                 </td>
                 <td>
+                  {rider.email || <span className="muted">Login not configured</span>}
+                </td>
+                <td>
                   <a
                     href={`tel:${rider.phone}`}
                     style={{ color: "var(--crimson)", textDecoration: "none", fontWeight: 500 }}
@@ -160,6 +204,14 @@ export default function RidersPage() {
                   </a>
                 </td>
 
+                <td>
+                  <span className="status-badge" style={{
+                    background: rider.availability === "available" ? "var(--forest-soft)" : rider.availability === "busy" ? "#fff7ed" : "var(--parchment-2)",
+                    color: rider.availability === "available" ? "var(--forest-deep)" : rider.availability === "busy" ? "#9a3412" : "var(--muted)",
+                  }}>
+                    {rider.availability || "available"}
+                  </span>
+                </td>
                 <td>
                   <span
                     style={{
@@ -192,6 +244,8 @@ export default function RidersPage() {
                   </span>
                 </td>
 
+                <td>{rider.activeAssignments || 0}</td>
+
                 <td className="muted">
                   {rider.createdAt
                     ? new Date(rider.createdAt).toLocaleDateString()
@@ -207,6 +261,7 @@ export default function RidersPage() {
                       flexWrap: "wrap",
                     }}
                   >
+                    <Link href={`/dashboard/riders/${rider._id}`} className="row-action">History</Link>
                     {/* Edit Button */}
                     <button
                       type="button"
@@ -227,6 +282,11 @@ export default function RidersPage() {
                     >
                       Edit
                     </button>
+                    {rider.email && (
+                      <button type="button" className="row-action" onClick={() => handleResetPassword(rider)}>
+                        Reset password
+                      </button>
+                    )}
 
                     {/* Activate / Deactivate Button */}
                     <button
@@ -308,6 +368,38 @@ export default function RidersPage() {
                 autoFocus
               />
             </div>
+
+            <div>
+              <label style={{ display: "block", marginBottom: "6px", fontWeight: 500, fontSize: "14px" }}>
+                Rider Email *
+              </label>
+              <input
+                type="email"
+                className="input"
+                placeholder="rider@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            {!editTarget && (
+              <div>
+                <label style={{ display: "block", marginBottom: "6px", fontWeight: 500, fontSize: "14px" }}>
+                  Initial Password *
+                </label>
+                <input
+                  type="password"
+                  className="input"
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                />
+              </div>
+            )}
 
             <div>
               <label style={{ display: "block", marginBottom: "6px", fontWeight: 500, fontSize: "14px" }}>

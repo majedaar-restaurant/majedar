@@ -90,9 +90,9 @@ export function NewOrderAlertModal({ pendingOrders = [] }) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "16px" }}>🔔</span>
+          <span style={{ fontSize: "16px" }}></span>
           <strong style={{ fontSize: "13px", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-            {pendingOrders.length === 1 ? "NEW ORDER RECEIVED" : `🔔 ${pendingOrders.length} NEW ORDERS`}
+            {pendingOrders.length === 1 ? "NEW ORDER RECEIVED" : ` ${pendingOrders.length} NEW ORDERS`}
           </strong>
         </div>
         <button

@@ -92,6 +92,7 @@ export default function OrdersPage() {
   // Filters
   const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
+  const [attentionFilter, setAttentionFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [datePreset, setDatePreset] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -125,6 +126,7 @@ export default function OrdersPage() {
       if (dateTo) params.dateTo = dateTo;
       if (statusFilter !== "all") params.orderStatus = statusFilter;
       if (paymentFilter !== "all") params.paymentStatus = paymentFilter;
+      if (attentionFilter !== "all") params.attention = attentionFilter;
 
       const data = await getAdminOrders(params);
       setOrders(data);
@@ -136,7 +138,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, search, datePreset, dateFrom, dateTo, statusFilter, paymentFilter, toast]);
+  }, [currentPage, pageSize, search, datePreset, dateFrom, dateTo, statusFilter, paymentFilter, attentionFilter, toast]);
 
   useEffect(() => {
     loadOrders();
@@ -216,6 +218,10 @@ export default function OrdersPage() {
       socket.emit("join:admin");
       loadOrders();
     };
+    const handleAssignmentTimeout = (payload) => {
+      loadOrders();
+      toast(`Rider has not responded to Order #${payload?.orderNumber || ""}. Reassignment is available.`, "danger");
+    };
 
     socket.on("order:new", handleNewOrder);
     socket.on("new_order", handleNewOrder);
@@ -223,6 +229,10 @@ export default function OrdersPage() {
     socket.on("order:status_changed", handleStatusChanged);
     socket.on("order:expired", handleExpired);
     socket.on("order:cancelled", handleCancelled);
+    socket.on("rider:assigned", loadOrders);
+    socket.on("rider:assignment_updated", loadOrders);
+    socket.on("rider:delivery_updated", loadOrders);
+    socket.on("rider:assignment_timeout", handleAssignmentTimeout);
     socket.on("connect", handleReconnect);
 
     return () => {
@@ -232,6 +242,10 @@ export default function OrdersPage() {
       socket.off("order:status_changed", handleStatusChanged);
       socket.off("order:expired", handleExpired);
       socket.off("order:cancelled", handleCancelled);
+      socket.off("rider:assigned", loadOrders);
+      socket.off("rider:assignment_updated", loadOrders);
+      socket.off("rider:delivery_updated", loadOrders);
+      socket.off("rider:assignment_timeout", handleAssignmentTimeout);
       socket.off("connect", handleReconnect);
     };
   }, [loadOrders, toast]);
@@ -318,6 +332,23 @@ export default function OrdersPage() {
       },
     });
   }
+  if (attentionFilter !== "all") {
+    const labels = {
+      active_deliveries: "Active Deliveries",
+      overdue: "Overdue",
+      assignment_pending: "Rider Assignment Pending",
+      new_orders: "New Orders",
+    };
+    activeChips.push({
+      id: "attention",
+      label: "Attention",
+      value: labels[attentionFilter],
+      onRemove: () => {
+        setAttentionFilter("all");
+        setCurrentPage(1);
+      },
+    });
+  }
 
   const handleClearAllFilters = () => {
     setSearch("");
@@ -326,6 +357,7 @@ export default function OrdersPage() {
     setDateTo("");
     setStatusFilter("all");
     setPaymentFilter("all");
+    setAttentionFilter("all");
     setCurrentPage(1);
   };
 
@@ -432,6 +464,37 @@ export default function OrdersPage() {
       )}
 
       {/* Prominent Filter Toolbar */}
+      <div className="mb-3 flex flex-wrap gap-2" role="group" aria-label="Order attention filters">
+        {[
+          ["all", "All Orders"],
+          ["active_deliveries", "Active Deliveries"],
+          ["overdue", "Overdue"],
+          ["assignment_pending", "Rider Assignment Pending"],
+          ["new_orders", "New Orders"],
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={attentionFilter === value}
+            onClick={() => {
+              setAttentionFilter(value);
+              setCurrentPage(1);
+            }}
+            style={{
+              border: `1px solid ${attentionFilter === value ? "#1B3B2B" : "#e7e5e4"}`,
+              borderRadius: 999,
+              padding: "7px 12px",
+              background: attentionFilter === value ? "#1B3B2B" : "#fff",
+              color: attentionFilter === value ? "#fff" : "#44403c",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div className="admin-filter-bar">
         <div className="filter-item-wrapper" style={{ flex: "1 1 240px", minWidth: "200px" }}>
           <span className="filter-item-label">Search Orders</span>
@@ -578,11 +641,39 @@ export default function OrdersPage() {
                   minute: "2-digit",
                 })
                 : "—";
+              const deliveryMinutes = order.deliveryDurationMinutes;
+              const overdue = Boolean(order.deliveryOverdue);
+              const assignment = [...(order.riderAssignmentHistory || [])].reverse()
+                .find((entry) => !entry.unassignedAt);
+              const assignmentPending = order.riderStatus === "pending" && Boolean(order.rider);
+              const needsRider = order.orderStatus === "ready_for_pickup" && !order.rider;
+              const assignmentRejected = order.riderStatus === "rejected";
+              const riderNotResponding = Boolean(assignment?.timedOutAt);
+              const isNew = order.orderStatus === "placed"
+                && now - new Date(order.createdAt).getTime() <= 15 * 60 * 1000;
+              const activeDelivery = ["picked_up", "out_for_delivery"].includes(order.riderStatus)
+                || order.orderStatus === "out_for_delivery";
+              const deliveryFailed = order.riderStatus === "failed";
+              const isCancelled = ["cancelled", "expired"].includes(order.orderStatus);
+              const rowTone = overdue ? "#fff1f2"
+                : isCancelled ? "#f5f5f4"
+                  : assignmentRejected || riderNotResponding || needsRider ? "#fff7ed"
+                    : deliveryFailed ? "#fef2f2"
+                    : activeDelivery ? "#effaf4"
+                      : isNew ? "#fffbeb" : "transparent";
 
               return (
-                <tr key={order._id}>
+                <tr key={order._id} style={{ background: rowTone, borderLeft: `4px solid ${
+                  overdue ? "#dc2626"
+                    : isCancelled ? "#a8a29e"
+                      : assignmentRejected || riderNotResponding || needsRider ? "#f59e0b"
+                        : deliveryFailed ? "#dc2626"
+                        : activeDelivery ? "#16a34a"
+                          : isNew ? "#f59e0b" : "transparent"
+                }` }}>
                   <td>
                     <strong>{customerName}</strong>
+                    {isNew && <span className="status-badge" style={{ marginLeft: 6, background: "#fef3c7", color: "#92400e" }}>NEW</span>}
                   </td>
                   <td className="muted">{phone}</td>
                   <td
@@ -606,6 +697,14 @@ export default function OrdersPage() {
                   <td>
                     <div style={{ display: "flex", flexDirection: "column", gap: "3px", alignItems: "flex-start" }}>
                       <StatusBadge>{STATUS_LABELS[order.orderStatus] || order.orderStatus}</StatusBadge>
+                      {activeDelivery && <StatusBadge tone="paid">{order.riderStatus === "picked_up" ? "Picked Up" : "Out for Delivery"}</StatusBadge>}
+                      {assignmentRejected && <StatusBadge tone="cancelled">Rider Assignment Rejected</StatusBadge>}
+                      {deliveryFailed && <StatusBadge tone="cancelled">Delivery Failed</StatusBadge>}
+                      {riderNotResponding && <StatusBadge tone="pending">Rider Not Responding</StatusBadge>}
+                      {assignmentPending && <StatusBadge tone="pending">Rider Response Pending</StatusBadge>}
+                      {needsRider && <StatusBadge tone="pending">Rider Assignment Pending</StatusBadge>}
+                      {overdue && <span style={{ color: "#b91c1c", fontSize: 11, fontWeight: 800 }}>⚠ Delivery overdue · {deliveryMinutes >= 60 ? `${Math.floor(deliveryMinutes / 60)}h ${deliveryMinutes % 60}m` : `${deliveryMinutes}m`} out for delivery</span>}
+                      {activeDelivery && !overdue && <small className="muted" style={{ fontSize: 10 }}>Delivery duration · {deliveryMinutes >= 60 ? `${Math.floor(deliveryMinutes / 60)}h ${deliveryMinutes % 60}m` : `${deliveryMinutes || 0}m`}</small>}
                       {order.orderStatus === "placed" && (
                         <span style={{ fontSize: "10px", color: "var(--muted)" }}>
                           Waiting for confirmation

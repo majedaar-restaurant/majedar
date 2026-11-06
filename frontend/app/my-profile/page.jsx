@@ -589,7 +589,7 @@ export default function MyProfile() {
                           {addr.firstName} {addr.lastName}
                         </h4>
                         <p className="text-xs text-stone-500 mb-2">
-                          📞 {addr.phone}
+                           {addr.phone}
                         </p>
 
                         <p className="text-xs text-stone-700 leading-relaxed font-medium">

@@ -14,6 +14,11 @@ const PROFILE_AUTHENTICATED_MENU = [
     label: "My Profile",
     icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
   },
+  {
+    href: "/orders",
+    label: "My Orders",
+    icon: "M6 2h12v20l-3-2-3 2-3-2-3 2V2zM9 7h6M9 11h6M9 15h4",
+  },
 ];
 
 const PROFILE_GUEST_MENU = [
@@ -40,7 +45,6 @@ const MAIN_NAV_ITEMS = [
   { href: "/contact", label: "Contact" },
 ];
 
-
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -53,7 +57,8 @@ const Navbar = () => {
   const isActive = (path) => pathname === path;
 
   const navLinkClass = (path) =>
-    `transition-colors ${isActive(path) ? "text-[#1B3B2B] font-extrabold" : "hover:text-[#1B3B2B]"
+    `transition-colors ${
+      isActive(path) ? "text-[#1B3B2B] font-extrabold" : "hover:text-[#1B3B2B]"
     }`;
 
   const scrollToMenu = () => {
@@ -105,9 +110,11 @@ const Navbar = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const profileMenuItems = isAuthenticated ? PROFILE_AUTHENTICATED_MENU : PROFILE_GUEST_MENU;
+  const profileMenuItems = isAuthenticated
+    ? PROFILE_AUTHENTICATED_MENU
+    : PROFILE_GUEST_MENU;
   const isAccountSection = profileMenuItems.some((item) =>
-    pathname.startsWith(item.href)
+    pathname.startsWith(item.href),
   );
 
   const handleLogout = async () => {
@@ -122,7 +129,11 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between py-2 sm:py-3.5">
           {/* Left: Brand Logo & 100% PURE VEG Badge */}
           <div className="flex items-center gap-1.5 sm:gap-3.5 shrink-0 min-w-0">
-            <Link href="/" className="flex items-center group py-1 shrink-0" aria-label="Majedaar Restaurant Home">
+            <Link
+              href="/"
+              className="flex items-center group py-1 shrink-0"
+              aria-label="Majedaar Restaurant Home"
+            >
               <Logo variant="full" className="h-7 sm:h-9 md:h-11 w-auto" />
             </Link>
 
@@ -146,7 +157,10 @@ const Navbar = () => {
             <Link href="/" className={navLinkClass("/")}>
               Home
             </Link>
-            <Link href="/orderanddine" className={navLinkClass("/orderanddine")}>
+            <Link
+              href="/orderanddine"
+              className={navLinkClass("/orderanddine")}
+            >
               Order &amp; Dine
             </Link>
             <Link href="/contact" className={navLinkClass("/contact")}>
@@ -166,7 +180,9 @@ const Navbar = () => {
             <button
               onClick={() => {
                 setShowSearch(true);
-                const searchInput = document.getElementById("homepage-search-input");
+                const searchInput = document.getElementById(
+                  "homepage-search-input",
+                );
                 if (searchInput) {
                   searchInput.focus();
                 } else {
@@ -177,7 +193,12 @@ const Navbar = () => {
               title="Search dishes"
               aria-label="Search dishes"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -193,7 +214,12 @@ const Navbar = () => {
               className="relative p-1.5 sm:p-2 rounded-full text-stone-600 hover:text-[#1B3B2B] hover:bg-stone-200/60 transition-colors"
               aria-label="Cart"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -212,14 +238,20 @@ const Navbar = () => {
             <div className="relative" ref={accountRef}>
               <button
                 onClick={() => setAccountOpen((prev) => !prev)}
-                className={`p-1.5 sm:p-2 rounded-full transition-colors flex items-center gap-1.5 ${isAccountSection || accountOpen
-                  ? "text-[#1B3B2B] bg-stone-200/60"
-                  : "text-stone-600 hover:text-[#1B3B2B] hover:bg-stone-200/60"
-                  }`}
+                className={`p-1.5 sm:p-2 rounded-full transition-colors flex items-center gap-1.5 ${
+                  isAccountSection || accountOpen
+                    ? "text-[#1B3B2B] bg-stone-200/60"
+                    : "text-stone-600 hover:text-[#1B3B2B] hover:bg-stone-200/60"
+                }`}
                 aria-label="Profile and account menu"
                 aria-expanded={accountOpen}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -265,10 +297,11 @@ const Navbar = () => {
                         key={href}
                         href={href}
                         onClick={() => setAccountOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-2.5 text-xs font-semibold transition-colors ${pathname === href
-                          ? "text-[#1B3B2B] bg-stone-100"
-                          : "text-stone-700 hover:text-[#1B3B2B] hover:bg-stone-100/80"
-                          }`}
+                        className={`flex items-center gap-3 px-4 py-2.5 text-xs font-semibold transition-colors ${
+                          pathname === href
+                            ? "text-[#1B3B2B] bg-stone-100"
+                            : "text-stone-700 hover:text-[#1B3B2B] hover:bg-stone-100/80"
+                        }`}
                       >
                         <svg
                           className="w-4 h-4 flex-none text-stone-400"
@@ -276,7 +309,12 @@ const Navbar = () => {
                           stroke="currentColor"
                           viewBox="0 0 24 24"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={icon} />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.75}
+                            d={icon}
+                          />
                         </svg>
                         <span>{label}</span>
                       </Link>
@@ -325,8 +363,18 @@ const Navbar = () => {
               className="p-1.5 sm:p-2 rounded-lg md:hidden text-stone-700 hover:bg-stone-200/60 transition-colors"
               aria-label="Open Navigation Menu"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
@@ -336,7 +384,9 @@ const Navbar = () => {
       {/* Mobile Drawer Backdrop Overlay (rendered outside header to avoid backdrop-blur containing block) */}
       <div
         className={`fixed inset-0 z-[9998] bg-black/50 backdrop-blur-xs transition-opacity duration-300 md:hidden ${
-          visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none invisible"
+          visible
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none invisible"
         }`}
         onClick={() => setVisible(false)}
         aria-hidden="true"
@@ -345,7 +395,9 @@ const Navbar = () => {
       {/* Mobile Navigation Drawer Panel */}
       <aside
         className={`fixed top-0 right-0 bottom-0 z-[9999] h-full h-dvh w-72 max-w-[80vw] bg-[#FAF8F5] shadow-2xl transition-transform duration-300 ease-out md:hidden flex flex-col ${
-          visible ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none invisible"
+          visible
+            ? "translate-x-0 pointer-events-auto"
+            : "translate-x-full pointer-events-none invisible"
         }`}
         role="dialog"
         aria-modal="true"
@@ -365,8 +417,18 @@ const Navbar = () => {
               className="p-1.5 rounded-full text-stone-500 hover:text-stone-800 hover:bg-stone-200/60 transition-colors"
               aria-label="Close Menu"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -390,7 +452,9 @@ const Navbar = () => {
                   }`}
                 >
                   <span>{label}</span>
-                  {active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                  {active && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  )}
                 </Link>
               );
             })}

@@ -15,6 +15,7 @@ export async function createOrder(orderData) {
 export async function getMyOrders() {
   const response = await apiRequest("/orders/my", {
     method: "GET",
+    cache: "no-store",
   });
   return response?.data?.orders || [];
 }
@@ -22,6 +23,7 @@ export async function getMyOrders() {
 export async function getMyOrderById(id) {
   const response = await apiRequest(`/orders/${id}`, {
     method: "GET",
+    cache: "no-store",
   });
   return response?.data?.order || null;
 }

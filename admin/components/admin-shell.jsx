@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import Logo from "./logo";
 import {
@@ -16,6 +16,8 @@ import {
 import { connectAdminSocket, disconnectAdminSocket } from "@/lib/socket";
 import { alertManager } from "@/lib/alert-manager";
 import { NewOrderAlertModal } from "@/components/ui/new-order-alert-modal";
+import { useToast } from "@/components/ui";
+import { getAdminRiderNotifications, markAdminRiderNotificationRead } from "@/lib/api/riders";
 
 export const navItems = [
   {
@@ -176,14 +178,44 @@ export default function AdminShell({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { admin, logout } = useAuth();
+  const toast = useToast();
 
   // Push notifications state
   const [pushStatus, setPushStatus] = useState("checking");
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [subscribingPush, setSubscribingPush] = useState(false);
+  const [criticalRiderAlerts, setCriticalRiderAlerts] = useState([]);
+  const [unreadRiderAlerts, setUnreadRiderAlerts] = useState(0);
+  const [riderAlertsOpen, setRiderAlertsOpen] = useState(false);
 
   // Audio alert state managed by alertManager
   const [alertState, setAlertState] = useState(() => alertManager.getState());
+
+  const loadCriticalRiderAlerts = useCallback(async () => {
+    try {
+      const result = await getAdminRiderNotifications();
+      const importantEvents = new Set([
+        "assignment_rejected",
+        "assignment_timeout",
+        "delivery_failed",
+        "rider_unavailable_with_orders",
+      ]);
+      const alerts = (result.notifications || []).filter((item) => importantEvents.has(item.event));
+      setCriticalRiderAlerts(alerts);
+      setUnreadRiderAlerts(alerts.filter((item) => !item.readAt).length);
+    } catch (error) {
+      toast(error.message || "Unable to load rider alerts.", "danger");
+    }
+  }, [toast]);
+
+  const markCriticalRiderAlertRead = async (alert) => {
+    try {
+      await markAdminRiderNotificationRead(alert._id);
+      await loadCriticalRiderAlerts();
+    } catch (error) {
+      toast(error.message || "Unable to update rider alert.", "danger");
+    }
+  };
 
   useEffect(() => {
     return alertManager.subscribe(setAlertState);
@@ -258,6 +290,21 @@ export default function AdminShell({ children }) {
     const handlePaymentSuccess = () => {
       playNotificationChime();
     };
+    const handleCriticalRiderAlert = (payload) => {
+      const importantEvents = new Set([
+        "assignment_rejected",
+        "assignment_timeout",
+        "delivery_failed",
+        "rider_unavailable_with_orders",
+      ]);
+      if (importantEvents.has(payload?.eventType || payload?.event)) {
+        toast(payload.message || "A rider issue requires attention.", "warn");
+        loadCriticalRiderAlerts();
+      }
+    };
+    const handleOrderCancelled = (payload) => {
+      toast(`Order ${payload?.orderNumber || ""} was cancelled.`, "warn");
+    };
 
     socket.on("order:new", handleNewOrder);
     socket.on("new_order", handleNewOrder);
@@ -266,6 +313,10 @@ export default function AdminShell({ children }) {
     socket.on("order:cancelled", handleCancelled);
     socket.on("order:status_changed", handleStatusChanged);
     socket.on("payment:success", handlePaymentSuccess);
+    socket.on("rider:notification", handleCriticalRiderAlert);
+    socket.on("order:cancelled", handleOrderCancelled);
+    socket.on("connect", loadCriticalRiderAlerts);
+    loadCriticalRiderAlerts();
 
     return () => {
       socket.off("order:new", handleNewOrder);
@@ -275,8 +326,11 @@ export default function AdminShell({ children }) {
       socket.off("order:cancelled", handleCancelled);
       socket.off("order:status_changed", handleStatusChanged);
       socket.off("payment:success", handlePaymentSuccess);
+      socket.off("rider:notification", handleCriticalRiderAlert);
+      socket.off("order:cancelled", handleOrderCancelled);
+      socket.off("connect", loadCriticalRiderAlerts);
     };
-  }, [admin]);
+  }, [admin, toast, loadCriticalRiderAlerts]);
 
   // Sync existing placed orders on login to resume alerts if any unconfirmed orders remain
   useEffect(() => {
@@ -607,6 +661,84 @@ export default function AdminShell({ children }) {
                 <span>{subscribingPush ? "Enabling..." : "Enable Alerts"}</span>
               </button>
             ) : null}
+
+            <div style={{ position: "relative" }}>
+              <button
+                type="button"
+                className="icon-button"
+                title="Critical rider alerts"
+                aria-label="Critical rider alerts"
+                aria-expanded={riderAlertsOpen}
+                onClick={() => setRiderAlertsOpen((open) => !open)}
+                style={{ position: "relative" }}
+              >
+                <Icon name="bell" size={17} />
+                {unreadRiderAlerts > 0 && (
+                  <span style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -4,
+                    minWidth: 16,
+                    height: 16,
+                    padding: "0 3px",
+                    borderRadius: 9999,
+                    background: "#dc2626",
+                    color: "#fff",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    lineHeight: "16px",
+                  }}>
+                    {unreadRiderAlerts > 99 ? "99+" : unreadRiderAlerts}
+                  </span>
+                )}
+              </button>
+              {riderAlertsOpen && (
+                <section style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "calc(100% + 10px)",
+                  zIndex: 60,
+                  width: "min(360px, calc(100vw - 32px))",
+                  maxHeight: 420,
+                  overflowY: "auto",
+                  padding: 14,
+                  border: "1px solid var(--line-soft)",
+                  borderRadius: 12,
+                  background: "#fff",
+                  boxShadow: "0 12px 32px rgba(0,0,0,.14)",
+                }}>
+                  <strong style={{ display: "block", marginBottom: 10, fontSize: 13 }}>Rider alerts</strong>
+                  {criticalRiderAlerts.length === 0 ? (
+                    <p className="muted" style={{ margin: 0, fontSize: 12 }}>No critical rider alerts.</p>
+                  ) : (
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {criticalRiderAlerts.map((item) => (
+                        <article key={item._id} style={{
+                          padding: 10,
+                          borderRadius: 8,
+                          background: item.readAt ? "var(--bg-subtle, #faf8f5)" : "#fff7ed",
+                        }}>
+                          <strong style={{ fontSize: 12 }}>{item.message}</strong>
+                          <p className="muted" style={{ margin: "4px 0 0", fontSize: 11 }}>
+                            {[item.rider?.name || item.riderName, item.order?.orderNumber && `Order ${item.order.orderNumber}`, new Date(item.createdAt).toLocaleString()].filter(Boolean).join(" · ")}
+                          </p>
+                          {!item.readAt && (
+                            <button
+                              type="button"
+                              className="row-action"
+                              onClick={() => markCriticalRiderAlertRead(item)}
+                              style={{ marginTop: 6 }}
+                            >
+                              Mark read
+                            </button>
+                          )}
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+            </div>
 
             <Link
               href="/dashboard/messages"

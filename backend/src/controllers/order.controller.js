@@ -92,7 +92,7 @@ export const getAdminOrderById = async (req, res, next) => {
  */
 export const updateOrderStatus = async (req, res, next) => {
     try {
-        const order = await orderService.updateOrderStatus(req.params.id, req.body);
+        const order = await orderService.updateOrderStatus(req.params.id, req.body, req.admin._id);
         return sendSuccess(res, {
             statusCode: 200,
             message: 'Order status updated successfully',
@@ -108,10 +108,28 @@ export const updateOrderStatus = async (req, res, next) => {
  */
 export const assignRider = async (req, res, next) => {
     try {
-        const order = await orderService.assignRiderToOrder(req.params.id, req.body.riderId);
+        const order = await orderService.assignRiderToOrder(
+            req.params.id,
+            req.body.riderId,
+            req.admin._id,
+            req.body.note || ''
+        );
         return sendSuccess(res, {
             statusCode: 200,
             message: 'Rider assigned to order successfully',
+            data: { order },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const recoverDeliveryOrder = async (req, res, next) => {
+    try {
+        const order = await orderService.recoverDeliveryOrder(req.params.id, req.admin._id, req.body);
+        return sendSuccess(res, {
+            statusCode: 200,
+            message: 'Delivery recovery action recorded successfully.',
             data: { order },
         });
     } catch (error) {
@@ -154,4 +172,3 @@ export const reportOrderIssue = async (req, res, next) => {
         next(error);
     }
 };
-

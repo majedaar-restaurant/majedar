@@ -175,13 +175,25 @@ export const assignOrderRiderSchema = z
             .string({ required_error: 'Rider ID is required' })
             .regex(objectIdRegex, 'Invalid rider ID format')
             .nullable(),
+        note: z.string().trim().max(500).optional().default(''),
     })
     .strip();
+
+export const deliveryRecoverySchema = z.object({
+    action: z.enum(['contact_rider', 'contact_customer', 'mark_delivered', 'cancel_order']),
+    note: z.string().trim().min(5, 'A recovery note of at least 5 characters is required.').max(1000),
+    verified: z.boolean().optional(),
+}).strip().superRefine((value, ctx) => {
+    if (value.action === 'mark_delivered' && value.verified !== true) {
+        ctx.addIssue({ code: 'custom', message: 'Delivery must be verified before it can be marked delivered.' });
+    }
+});
 
 export const orderQuerySchema = z
     .object({
         orderStatus: z.enum(ORDER_STATUSES).optional(),
         paymentStatus: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
+        attention: z.enum(['active_deliveries', 'overdue', 'assignment_pending', 'new_orders']).optional(),
         search: z.string().trim().optional(),
         datePreset: z.enum(['today', 'this-week', 'this_week', 'custom']).optional(),
         dateFrom: z
@@ -232,4 +244,3 @@ export const reportOrderIssueSchema = z
             .max(2000, 'Description cannot exceed 2000 characters'),
     })
     .strip();
-

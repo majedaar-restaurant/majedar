@@ -290,7 +290,7 @@ function DashboardPage() {
                                         style: {
                                             fontSize: "20px"
                                         },
-                                        children: "🔔"
+                                        children: ""
                                     }, void 0, false, {
                                         fileName: "[project]/app/dashboard/page.js",
                                         lineNumber: 166,

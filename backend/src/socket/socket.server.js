@@ -4,6 +4,7 @@ import { config } from '../config/env.js';
 import { verifyToken } from '../utils/token.js';
 import { Admin } from '../models/Admin.js';
 import { Customer } from '../models/Customer.js';
+import { Rider } from '../models/Rider.js';
 import { Order } from '../models/Order.js';
 import { logger } from '../utils/logger.js';
 
@@ -46,6 +47,7 @@ export async function socketAuthMiddleware(socket, next) {
 
         const adminCookieToken = cookies[config.cookie.name];
         const customerCookieToken = cookies[config.customerCookie.name];
+        const riderCookieToken = cookies[config.riderCookie.name];
 
         // Also allow auth token or Authorization header fallback (useful for mobile or cross-origin dev)
         const headerAuth = socket.handshake?.headers?.authorization;
@@ -57,7 +59,7 @@ export async function socketAuthMiddleware(socket, next) {
         if (potentialAdminToken) {
             try {
                 const decoded = verifyToken(potentialAdminToken);
-                if (decoded && decoded.id && decoded.type !== 'customer') {
+                if (decoded && decoded.id && ['admin', 'super-admin'].includes(decoded.role)) {
                     const admin = await Admin.findById(decoded.id).select('_id name role email');
                     if (admin) {
                         socket.user = {
@@ -108,6 +110,31 @@ export async function socketAuthMiddleware(socket, next) {
             }
         }
 
+        // 3. Rider authentication uses a separate cookie and cannot inherit admin access.
+        const potentialRiderToken = riderCookieToken || explicitToken;
+        if (potentialRiderToken) {
+            try {
+                const decoded = verifyToken(potentialRiderToken);
+                if (decoded && decoded.id && decoded.type === 'rider') {
+                    const rider = await Rider.findById(decoded.id).select('_id name email isActive tokenVersion');
+                    if (
+                        rider?.isActive &&
+                        (decoded.tokenVersion ?? 0) === (rider.tokenVersion ?? 0)
+                    ) {
+                        socket.user = {
+                            id: rider._id.toString(),
+                            type: 'rider',
+                            name: rider.name,
+                            email: rider.email,
+                        };
+                        return next();
+                    }
+                }
+            } catch (err) {
+                logger.debug('[REALTIME] Rider token verification error:', err.message);
+            }
+        }
+
         // Neither admin nor customer could be authenticated
         return next(new Error('Authentication required. Invalid or missing session.'));
     } catch (error) {
@@ -151,6 +178,9 @@ export function initSocketServer(httpServer) {
             logger.info(`[REALTIME] Admin connected: ${user.name} (${user.id})`);
             // Admin automatically joins the admin:orders room
             socket.join('admin:orders');
+        } else if (user.type === 'rider') {
+            logger.info(`[REALTIME] Rider connected: ${user.name} (${user.id})`);
+            socket.join(`rider:${user.id}`);
         } else {
             logger.info(`[REALTIME] Customer connected: ${user.name} (${user.id})`);
         }
@@ -166,13 +196,26 @@ export function initSocketServer(httpServer) {
                     return;
                 }
 
-                // If admin, allow joining any order room
+                // Admin can join any order room.
                 if (socket.user.type === 'admin') {
                     socket.join(`order:${orderId}`);
                     logger.debug(`[REALTIME] Admin ${socket.user.id} joined room order:${orderId}`);
                     if (typeof callback === 'function') {
                         callback({ success: true, room: `order:${orderId}` });
                     }
+                    return;
+                }
+
+                if (socket.user.type === 'rider') {
+                    const order = await Order.findById(orderId).select('rider');
+                    if (!order || order.rider?.toString() !== socket.user.id) {
+                        if (typeof callback === 'function') {
+                            callback({ success: false, error: 'Forbidden: Order is not assigned to this rider.' });
+                        }
+                        return;
+                    }
+                    socket.join(`order:${orderId}`);
+                    if (typeof callback === 'function') callback({ success: true, room: `order:${orderId}` });
                     return;
                 }
 
@@ -318,13 +361,23 @@ export function emitOrderStatusChanged(order) {
     if (!ioInstance || !order) return;
     try {
         const orderId = order._id ? order._id.toString() : order.id;
+        const riderId = order.rider?._id
+            ? order.rider._id.toString()
+            : order.rider?.toString?.() || null;
         const isRiderVisible =
-            (order.orderStatus === 'out_for_delivery' || order.orderStatus === 'completed') && order.rider;
+            ['out_for_delivery', 'completed'].includes(order.orderStatus) && order.rider;
 
         const payload = {
             orderId,
             orderNumber: order.orderNumber,
+            riderId,
             orderStatus: order.orderStatus,
+            riderStatus: order.riderStatus,
+            riderHandoffRequired: order.riderHandoffRequired,
+            paymentStatus: order.paymentStatus,
+            deliveryStartedAt: order.deliveryStartedAt,
+            riderLocation: order.riderLocation,
+            routeEta: order.routeEta,
             updatedAt: order.updatedAt || new Date(),
             rider: isRiderVisible
                 ? {
@@ -334,9 +387,11 @@ export function emitOrderStatusChanged(order) {
                   }
                 : null,
         };
-
         ioInstance.to(`order:${orderId}`).emit('order:status_changed', payload);
         ioInstance.to('admin:orders').emit('order:status_changed', payload);
+        if (riderId) {
+            ioInstance.to(`rider:${riderId}`).emit('rider:delivery_updated', payload);
+        }
         logger.info(`[REALTIME] order:status_changed (${order.orderStatus}) emitted for Order #${order.orderNumber}`);
     } catch (err) {
         logger.error('[REALTIME] Failed to emit order:status_changed:', err.message);
@@ -379,6 +434,7 @@ export function emitOrderCancelled(order) {
             orderId,
             orderNumber: order.orderNumber,
             orderStatus: 'cancelled',
+            riderStatus: order.riderStatus,
             cancelledAt: order.updatedAt || new Date(),
         };
 
@@ -387,6 +443,10 @@ export function emitOrderCancelled(order) {
         // Also emit order:status_changed for universal compatibility
         ioInstance.to(`order:${orderId}`).emit('order:status_changed', payload);
         ioInstance.to('admin:orders').emit('order:status_changed', payload);
+        if (order.rider) {
+            const riderId = order.rider._id ? order.rider._id.toString() : order.rider.toString();
+            ioInstance.to(`rider:${riderId}`).emit('rider:delivery_updated', payload);
+        }
         logger.info(`[REALTIME] order:cancelled emitted for Order #${order.orderNumber}`);
     } catch (err) {
         logger.error('[REALTIME] Failed to emit order:cancelled:', err.message);
@@ -409,6 +469,7 @@ export function emitRiderAssigned(order) {
             orderId,
             orderNumber: order.orderNumber,
             riderAssigned: !!order.rider,
+            riderStatus: order.riderStatus || 'pending',
             rider: isRiderVisible
                 ? {
                       _id: order.rider._id ? order.rider._id.toString() : order.rider,
@@ -417,9 +478,26 @@ export function emitRiderAssigned(order) {
                   }
                 : null,
         };
+        const latestAssignment = [...(order.riderAssignmentHistory || [])].reverse()
+            .find((assignment) => assignment.rider?.toString?.() === (order.rider?._id || order.rider)?.toString?.()
+                && !assignment.unassignedAt);
+        payload.assignmentId = latestAssignment
+            ? `${orderId}:${(order.rider?._id || order.rider).toString()}:${latestAssignment.assignedAt.getTime()}`
+            : null;
+        payload.responseDeadline = latestAssignment?.responseDeadline || null;
 
         ioInstance.to(`order:${orderId}`).emit('rider:assigned', payload);
         ioInstance.to('admin:orders').emit('rider:assigned', payload);
+        if (order.rider?._id || typeof order.rider === 'string') {
+            const riderId = order.rider._id ? order.rider._id.toString() : order.rider.toString();
+            ioInstance.to(`rider:${riderId}`).emit('rider:assignment', {
+                orderId,
+                orderNumber: order.orderNumber,
+                riderId,
+                assignmentId: payload.assignmentId,
+                responseDeadline: payload.responseDeadline,
+            });
+        }
         logger.info(`[REALTIME] rider:assigned emitted for Order #${order.orderNumber}`);
     } catch (err) {
         logger.error('[REALTIME] Failed to emit rider:assigned:', err.message);
