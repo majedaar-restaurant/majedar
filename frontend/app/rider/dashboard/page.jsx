@@ -91,41 +91,6 @@ function getPerformancePeriod(range, customStart, customEnd) {
   };
 }
 
-function playRiderAssignmentChime() {
-  if (typeof window === "undefined") return;
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContextClass) return;
-  try {
-    const context = new AudioContextClass();
-    const play = () => {
-      const start = context.currentTime;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(740, start);
-      gain.gain.setValueAtTime(0.08, start);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(start);
-      oscillator.stop(start + 0.35);
-      window.setTimeout(() => {
-        context.close().catch((cause) => console.warn("[Rider] Unable to close notification audio:", cause));
-      }, 500);
-    };
-    if (context.state === "suspended") {
-      context.resume().then(play).catch((cause) => {
-        console.warn("[Rider] Assignment sound was blocked by browser policy:", cause);
-        context.close().catch(() => {});
-      });
-    } else {
-      play();
-    }
-  } catch (cause) {
-    console.warn("[Rider] Assignment sound is unavailable:", cause);
-  }
-}
-
 function etaRange(seconds) {
   if (!Number.isFinite(seconds)) return null;
   const minutes = Math.max(1, Math.ceil(seconds / 60));
@@ -179,6 +144,12 @@ export default function RiderDashboardPage() {
   const alertedAssignments = useRef(new Set());
   const processedAssignmentEvents = useRef(new Set());
   const processedTerminalUpdates = useRef(new Set());
+  const processedNotificationSounds = useRef(new Set());
+  const audioContextRef = useRef(null);
+  const pendingNotificationTone = useRef(false);
+  const activeOscillators = useRef(new Set());
+  const ringingAssignmentRef = useRef(null);
+  const ringingIntervalRef = useRef(null);
   const pendingAssignments = useMemo(() => orders
     .filter((order) => order.riderStatus === "pending")
     .map((order) => {
@@ -194,6 +165,102 @@ export default function RiderDashboardPage() {
   const pendingAssignmentAlarmDeadline = pendingAssignments.length
     ? Math.min(...pendingAssignments.map(({ assignment }) => new Date(assignment.responseDeadline).getTime()))
     : null;
+
+  const playNotificationTone = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      if (!audioContextRef.current) audioContextRef.current = new AudioContextClass();
+      const context = audioContextRef.current;
+      if (context.state !== "running") {
+        if (!ringingAssignmentRef.current) pendingNotificationTone.current = true;
+        return;
+      }
+
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = context.currentTime;
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(880, start);
+      oscillator.frequency.setValueAtTime(740, start + 0.14);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(0.12, start + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.4);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      activeOscillators.current.add(oscillator);
+      oscillator.onended = () => activeOscillators.current.delete(oscillator);
+      oscillator.start(start);
+      oscillator.stop(start + 0.42);
+    } catch (cause) {
+      console.warn("[Rider] Notification sound is unavailable:", cause);
+    }
+  }, []);
+
+  const stopAssignmentRinging = useCallback((orderId) => {
+    if (orderId && ringingAssignmentRef.current?.orderId !== String(orderId)) return;
+    ringingAssignmentRef.current = null;
+    if (ringingIntervalRef.current) {
+      window.clearInterval(ringingIntervalRef.current);
+      ringingIntervalRef.current = null;
+    }
+    for (const oscillator of activeOscillators.current) {
+      try {
+        oscillator.stop();
+      } catch {
+        activeOscillators.current.delete(oscillator);
+      }
+    }
+    activeOscillators.current.clear();
+  }, []);
+
+  const startAssignmentRinging = useCallback(({ key, orderId }) => {
+    if (!key || !orderId) return;
+    if (ringingAssignmentRef.current?.key === key) return;
+    stopAssignmentRinging();
+    ringingAssignmentRef.current = { key, orderId: String(orderId) };
+    playNotificationTone();
+    ringingIntervalRef.current = window.setInterval(playNotificationTone, 1600);
+  }, [playNotificationTone, stopAssignmentRinging]);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioContextRef.current || audioContextRef.current.state === "closed") {
+          audioContextRef.current = new AudioContextClass();
+        }
+        audioContextRef.current.resume().then(() => {
+          if (ringingAssignmentRef.current) {
+            pendingNotificationTone.current = false;
+            playNotificationTone();
+          } else if (pendingNotificationTone.current) {
+            pendingNotificationTone.current = false;
+            playNotificationTone();
+          }
+        }).catch((cause) => {
+          console.warn("[Rider] Unable to unlock notification sound:", cause);
+        });
+      } catch (cause) {
+        console.warn("[Rider] Unable to initialize notification sound:", cause);
+      }
+    };
+    window.addEventListener("pointerdown", unlockAudio);
+    window.addEventListener("keydown", unlockAudio);
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+      stopAssignmentRinging();
+      const context = audioContextRef.current;
+      if (context?.state === "running") {
+        context.suspend().catch((cause) => {
+          console.warn("[Rider] Unable to suspend notification audio:", cause);
+        });
+      }
+    };
+  }, [playNotificationTone, stopAssignmentRinging]);
 
   const refresh = useCallback(async () => {
     const [me, dashboard] = await Promise.all([
@@ -239,16 +306,26 @@ export default function RiderDashboardPage() {
     if (!socket) return undefined;
     const refreshOnChange = () => refresh().catch((cause) => setError(cause?.message || "Unable to refresh rider data."));
     const handleAssignment = (payload) => {
-      if (payload?.assignmentId) {
-        if (processedAssignmentEvents.current.has(payload.assignmentId)) return;
-        processedAssignmentEvents.current.add(payload.assignmentId);
-      }
+      if (!payload?.orderId) return;
+      const assignmentKey = payload.assignmentId
+        || `${payload.orderId}:${payload.responseDeadline || "assignment"}`;
+      if (processedAssignmentEvents.current.has(assignmentKey)) return;
+      processedAssignmentEvents.current.add(assignmentKey);
+      alertedAssignments.current.add(assignmentKey);
       if (process.env.NODE_ENV !== "production") console.info("[Socket] assignment received");
+      startAssignmentRinging({ key: assignmentKey, orderId: payload.orderId });
+      toast.info(`New order ${payload.orderNumber || ""} assigned. Accept or reject the assignment.`, {
+        toastId: assignmentKey,
+        onClick: () => stopAssignmentRinging(payload.orderId),
+      });
       refreshOnChange();
     };
     const handleDeliveryUpdate = (payload) => {
       if (!payload?.orderId) return;
       if (process.env.NODE_ENV !== "production") console.info("[Socket] order update received");
+      if (payload.riderStatus && payload.riderStatus !== "pending") {
+        stopAssignmentRinging(payload.orderId);
+      }
       const isTerminal = ["delivered", "failed", "rejected"].includes(payload.riderStatus)
         || ["cancelled", "completed"].includes(payload.orderStatus)
         || payload.riderId === null;
@@ -283,7 +360,24 @@ export default function RiderDashboardPage() {
     };
     const handleNotification = (payload) => {
       if (!payload?.message) return;
-      toast.info(payload.message, { toastId: payload._id || `${payload.event}:${payload.orderId}` });
+      const event = String(payload.eventType || payload.event || "").toLowerCase();
+      const notificationKey = payload._id || `${event}:${payload.orderId || ""}`;
+      const assignmentRequiresAction = payload.requiresAction === true
+        || payload.actionRequired === true
+        || ["rider_assignment", "new_order_assigned", "assignment_required", "action_required"].includes(event);
+      const isCancellation = ["order_cancelled", "order_cancelled_by_admin"].includes(event);
+      if ((assignmentRequiresAction || isCancellation) && !processedNotificationSounds.current.has(notificationKey)) {
+        processedNotificationSounds.current.add(notificationKey);
+        if (assignmentRequiresAction) {
+          startAssignmentRinging({ key: notificationKey, orderId: payload.orderId });
+        } else {
+          playNotificationTone();
+        }
+      }
+      toast.info(payload.message, {
+        toastId: notificationKey,
+        ...(assignmentRequiresAction ? { onClick: () => stopAssignmentRinging(payload.orderId) } : {}),
+      });
     };
     let hasConnected = socket.connected;
     const handleConnect = () => {
@@ -323,9 +417,10 @@ export default function RiderDashboardPage() {
       socket.off("rider:notification", handleNotification);
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
+      stopAssignmentRinging();
       disconnectSocket();
     };
-  }, [refresh]);
+  }, [playNotificationTone, refresh, startAssignmentRinging, stopAssignmentRinging]);
 
   useEffect(() => {
     if (!pendingAssignmentAlarmKey) return undefined;
@@ -339,15 +434,14 @@ export default function RiderDashboardPage() {
   }, [pendingAssignmentAlarmKey, pendingAssignmentAlarmDeadline, refresh]);
 
   useEffect(() => {
-    let hasNewAssignment = false;
     for (const { order, assignment } of pendingAssignments) {
-      const assignmentKey = `${order._id}:${new Date(assignment.assignedAt).getTime()}`;
+      const assignmentKey = `${order._id}:${String(order.rider?._id || order.rider)}:${new Date(assignment.assignedAt).getTime()}`;
       if (alertedAssignments.current.has(assignmentKey)) continue;
       alertedAssignments.current.add(assignmentKey);
-      hasNewAssignment = true;
+      processedAssignmentEvents.current.add(assignmentKey);
+      startAssignmentRinging({ key: assignmentKey, orderId: order._id });
     }
-    if (hasNewAssignment) playRiderAssignmentChime();
-  }, [pendingAssignments]);
+  }, [pendingAssignments, startAssignmentRinging]);
 
   useEffect(() => {
     if (!orders.some((order) => ["picked_up", "out_for_delivery"].includes(order.riderStatus))) return undefined;
@@ -416,8 +510,16 @@ export default function RiderDashboardPage() {
   const handleReject = (order) => {
     const reason = window.prompt("Why are you rejecting this assignment?");
     if (!reason?.trim()) return;
-    runAction(`assignment-${order._id}`, () => respondToRiderAssignment(order._id, "reject", reason.trim()));
+    runAction(`assignment-${order._id}`, async () => {
+      await respondToRiderAssignment(order._id, "reject", reason.trim());
+      stopAssignmentRinging(order._id);
+    });
   };
+
+  const handleAccept = (order) => runAction(`assignment-${order._id}`, async () => {
+    await respondToRiderAssignment(order._id, "accept");
+    stopAssignmentRinging(order._id);
+  });
 
   const handleFailureSubmit = (event) => {
     event.preventDefault();
@@ -457,11 +559,14 @@ export default function RiderDashboardPage() {
     });
   };
 
-  const logout = () => runAction("logout", async () => {
-    await riderLogout();
-    router.replace("/rider/login");
-    return false;
-  });
+  const logout = () => {
+    stopAssignmentRinging();
+    return runAction("logout", async () => {
+      await riderLogout();
+      router.replace("/rider/login");
+      return false;
+    });
+  };
 
   const saveProfile = (event) => {
     event.preventDefault();
@@ -801,7 +906,7 @@ export default function RiderDashboardPage() {
                           )}
                           {order.riderStatus === "pending" && (
                             <div className="grid grid-cols-2 gap-2">
-                              <button disabled={busyAction === `assignment-${order._id}`} onClick={() => runAction(`assignment-${order._id}`, () => respondToRiderAssignment(order._id, "accept"))} className="rounded-xl bg-[#1B3B2B] px-3 py-3 text-sm font-bold text-white disabled:opacity-50">Accept</button>
+                              <button disabled={busyAction === `assignment-${order._id}`} onClick={() => handleAccept(order)} className="rounded-xl bg-[#1B3B2B] px-3 py-3 text-sm font-bold text-white disabled:opacity-50">Accept</button>
                               <button disabled={busyAction === `assignment-${order._id}`} onClick={() => handleReject(order)} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-3 text-sm font-bold text-rose-800 disabled:opacity-50">Reject</button>
                             </div>
                           )}
